@@ -37,12 +37,17 @@ class _ExampleAppState extends State<ExampleApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter Foreground Task'),
-          centerTitle: true
+      // A widget that prevents the app from closing when the foreground task is running.
+      // Declare between the [MaterialApp] and [Scaffold] widgets.
+      home: WithForegroundTask(
+        foregroundTask: flutterForegroundTask,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Flutter Foreground Task'),
+            centerTitle: true
+          ),
+          body: buildContentView()
         ),
-        body: buildContentView()
       ),
     );
   }
