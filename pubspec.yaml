@@ -1,0 +1,26 @@
+name: flutter_foreground_task
+description: This plugin is used to implement a foreground service on the Android platform.
+version: 1.0.0
+author: WOO JIN HWANG <hwj930513@naver.com>
+homepage: https://github.com/Dev-hwang/flutter_foreground_task
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+  flutter: ">=1.20.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.pravera.flutter_foreground_task
+        pluginClass: FlutterForegroundTaskPlugin
+      ios:
+        pluginClass: FlutterForegroundTaskPlugin
