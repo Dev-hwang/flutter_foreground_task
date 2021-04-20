@@ -13,7 +13,8 @@ class _ExampleAppState extends State<ExampleApp> {
     notificationOptions: NotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
-      channelDescription: 'This notification appears when the foreground task is running.'
+      channelDescription: 'This notification appears when the foreground task is running.',
+      channelImportance: NotificationChannelImportance.DEFAULT
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
       interval: 5000

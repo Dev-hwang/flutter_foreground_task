@@ -16,6 +16,7 @@ open class ForegroundService: Service() {
 	open var notificationChannelId: String = ""
 	open var notificationChannelName: String = ""
 	open var notificationChannelDescription: String? = null
+	open var notificationChannelImportance: Int = 3
 	open var notificationContentTitle: String = ""
 	open var notificationContentText: String = ""
 
@@ -27,6 +28,8 @@ open class ForegroundService: Service() {
 				?: notificationChannelName
 		notificationChannelDescription = bundle?.getString("notificationChannelDescription")
 				?: notificationChannelDescription
+		notificationChannelImportance = bundle?.getInt("notificationChannelImportance")
+				?: notificationChannelImportance
 		notificationContentTitle = bundle?.getString("notificationContentTitle")
 				?: notificationContentTitle
 		notificationContentText = bundle?.getString("notificationContentText")
@@ -60,8 +63,8 @@ open class ForegroundService: Service() {
 		notificationBuilder.setVibrate(longArrayOf(0L))
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			val importance = NotificationManager.IMPORTANCE_LOW
-			val channel = NotificationChannel(notificationChannelId, notificationChannelName, importance)
+			val channel = NotificationChannel(
+					notificationChannelId, notificationChannelName, notificationChannelImportance)
 			channel.description = notificationChannelDescription
 			val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 			nm.createNotificationChannel(channel)

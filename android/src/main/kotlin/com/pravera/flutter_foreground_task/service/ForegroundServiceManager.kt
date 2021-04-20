@@ -27,6 +27,8 @@ class ForegroundServiceManager {
 					call.argument<String>("notificationChannelName"))			
 			putExtra("notificationChannelDescription",
 					call.argument<String>("notificationChannelDescription"))
+			putExtra("notificationChannelImportance",
+					call.argument<Int>("notificationChannelImportance"))
 			putExtra("notificationContentTitle",
 					call.argument<String>("notificationContentTitle"))
 			putExtra("notificationContentText",
