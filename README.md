@@ -14,7 +14,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^1.0.1
+  flutter_foreground_task: ^1.0.3
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -41,6 +41,8 @@ And specify the service inside the `<application>` tag as follows.
 * `channelId`: Unique ID of the notification channel.
 * `channelName`: The name of the notification channel. This value is displayed to the user in the notification settings.
 * `channelDescription`: The description of the notification channel. This value is displayed to the user in the notification settings.
+* `channelImportance`: The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.
+* `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
 
 ```dart
@@ -48,7 +50,9 @@ final flutterForegroundTask = FlutterForegroundTask.instance.init(
   notificationOptions: NotificationOptions(
     channelId: 'notification_channel_id',
     channelName: 'Foreground Notification',
-    channelDescription: 'This notification appears when the foreground task is running.'
+    channelDescription: 'This notification appears when the foreground task is running.',
+    channelImportance: NotificationChannelImportance.DEFAULT,
+    priority: NotificationPriority.DEFAULT
   ),
   foregroundTaskOptions: ForegroundTaskOptions(
     interval: 5000
