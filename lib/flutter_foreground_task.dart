@@ -12,6 +12,7 @@ export 'package:flutter_foreground_task/exception/foreground_task_exception.dart
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
 export 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 export 'package:flutter_foreground_task/models/notification_options.dart';
+export 'package:flutter_foreground_task/models/notification_priority.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
 /// Called with a timestamp value as a task callback function.

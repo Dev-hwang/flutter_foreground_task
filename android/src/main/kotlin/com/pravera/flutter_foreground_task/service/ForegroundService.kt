@@ -17,23 +17,19 @@ open class ForegroundService: Service() {
 	open var notificationChannelName: String = ""
 	open var notificationChannelDescription: String? = null
 	open var notificationChannelImportance: Int = 3
+	open var notificationPriority: Int = 0
 	open var notificationContentTitle: String = ""
 	open var notificationContentText: String = ""
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		val bundle = intent?.extras
-		notificationChannelId = bundle?.getString("notificationChannelId")
-				?: notificationChannelId
-		notificationChannelName = bundle?.getString("notificationChannelName")
-				?: notificationChannelName
-		notificationChannelDescription = bundle?.getString("notificationChannelDescription")
-				?: notificationChannelDescription
-		notificationChannelImportance = bundle?.getInt("notificationChannelImportance")
-				?: notificationChannelImportance
-		notificationContentTitle = bundle?.getString("notificationContentTitle")
-				?: notificationContentTitle
-		notificationContentText = bundle?.getString("notificationContentText")
-				?: notificationContentText
+		notificationChannelId = bundle?.getString("notificationChannelId") ?: notificationChannelId
+		notificationChannelName = bundle?.getString("notificationChannelName") ?: notificationChannelName
+		notificationChannelDescription = bundle?.getString("notificationChannelDescription") ?: notificationChannelDescription
+		notificationChannelImportance = bundle?.getInt("notificationChannelImportance") ?: notificationChannelImportance
+		notificationPriority = bundle?.getInt("notificationPriority") ?: notificationPriority
+		notificationContentTitle = bundle?.getString("notificationContentTitle") ?: notificationContentTitle
+		notificationContentText = bundle?.getString("notificationContentText") ?: notificationContentText
 
 		when (intent?.action) {
 			ForegroundServiceAction.START -> startForegroundService()
@@ -61,6 +57,7 @@ open class ForegroundService: Service() {
 		notificationBuilder.setContentTitle(notificationContentTitle)
 		notificationBuilder.setContentText(notificationContentText)
 		notificationBuilder.setVibrate(longArrayOf(0L))
+		notificationBuilder.priority = notificationPriority
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			val channel = NotificationChannel(

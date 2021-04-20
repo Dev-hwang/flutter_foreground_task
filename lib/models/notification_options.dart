@@ -1,4 +1,5 @@
 import 'package:flutter_foreground_task/models/notification_channel_importance.dart';
+import 'package:flutter_foreground_task/models/notification_priority.dart';
 
 /// Data class with notification options.
 class NotificationOptions {
@@ -7,7 +8,8 @@ class NotificationOptions {
     required this.channelId,
     required this.channelName,
     this.channelDescription,
-    this.channelImportance = NotificationChannelImportance.DEFAULT
+    this.channelImportance = NotificationChannelImportance.DEFAULT,
+    this.priority = NotificationPriority.DEFAULT
   });
 
   /// Unique ID of the notification channel.
@@ -26,13 +28,18 @@ class NotificationOptions {
   /// The default is `NotificationChannelImportance.DEFAULT`.
   final NotificationChannelImportance channelImportance;
 
+  /// Priority of notifications for Android 7.1 and lower.
+  /// The default is `NotificationPriority.DEFAULT`.
+  final NotificationPriority priority;
+
   /// Returns the data values of [NotificationOptions] in map format.
   Map<String, dynamic> toMap() {
     return {
       'notificationChannelId': channelId,
       'notificationChannelName': channelName,
       'notificationChannelDescription': channelDescription,
-      'notificationChannelImportance': channelImportance.rawValue
+      'notificationChannelImportance': channelImportance.rawValue,
+      'notificationPriority': priority.rawValue
     };
   }
 }

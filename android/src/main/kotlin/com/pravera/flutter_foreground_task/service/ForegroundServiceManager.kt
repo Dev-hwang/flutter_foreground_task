@@ -21,18 +21,13 @@ class ForegroundServiceManager {
 	fun start(activity: Activity, call: MethodCall) {
 		val intent = Intent(activity, ForegroundService::class.java).apply {
 			action = ForegroundServiceAction.START
-			putExtra("notificationChannelId",
-					call.argument<String>("notificationChannelId"))
-			putExtra("notificationChannelName",
-					call.argument<String>("notificationChannelName"))			
-			putExtra("notificationChannelDescription",
-					call.argument<String>("notificationChannelDescription"))
-			putExtra("notificationChannelImportance",
-					call.argument<Int>("notificationChannelImportance"))
-			putExtra("notificationContentTitle",
-					call.argument<String>("notificationContentTitle"))
-			putExtra("notificationContentText",
-					call.argument<String>("notificationContentText"))
+			putExtra("notificationChannelId", call.argument<String>("notificationChannelId"))
+			putExtra("notificationChannelName", call.argument<String>("notificationChannelName"))			
+			putExtra("notificationChannelDescription", call.argument<String>("notificationChannelDescription"))
+			putExtra("notificationChannelImportance", call.argument<Int>("notificationChannelImportance"))
+			putExtra("notificationPriority", call.argument<Int>("notificationPriority"))
+			putExtra("notificationContentTitle", call.argument<String>("notificationContentTitle"))
+			putExtra("notificationContentText", call.argument<String>("notificationContentText"))
 		}
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
