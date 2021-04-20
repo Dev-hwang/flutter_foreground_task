@@ -32,7 +32,7 @@ class NotificationOptions {
       'notificationChannelId': channelId,
       'notificationChannelName': channelName,
       'notificationChannelDescription': channelDescription,
-      'notificationChannelImportance': channelImportance.index
+      'notificationChannelImportance': channelImportance.rawValue
     };
   }
 }
