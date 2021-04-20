@@ -1,7 +1,7 @@
 package com.pravera.flutter_foreground_task.errors
 
 /**
- * Error codes that can occur in plugin.
+ * Error codes that may occur in plugin.
  *
  * @author Dev-hwang
  * @version 1.0

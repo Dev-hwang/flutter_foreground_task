@@ -38,7 +38,7 @@ class _ExampleAppState extends State<ExampleApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       // A widget that prevents the app from closing when the foreground task is running.
-      // Declare between the [MaterialApp] and [Scaffold] widgets.
+      // Declare on top of the [Scaffold] widget.
       home: WithForegroundTask(
         foregroundTask: flutterForegroundTask,
         child: Scaffold(

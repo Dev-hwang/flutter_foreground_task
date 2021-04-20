@@ -4,8 +4,8 @@ This plugin is used to implement a foreground service on the Android platform.
 
 ## Features
 
-* Can perform repetitive tasks with foreground service notification.
-* Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing tasks.
+* Can perform repetitive task with foreground service notification.
+* Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
 * Provides a widget that prevents the app from closing when the foreground task is running.
 
 ## Getting started
@@ -56,13 +56,13 @@ final flutterForegroundTask = FlutterForegroundTask.instance.init(
 );
 ```
 
-2. Add `WithForegroundTask` widget to prevent the app from closing when foreground task is running.
+2. Add `WithForegroundTask` widget to prevent the app from closing when the foreground task is running.
 ```dart
 @override
 Widget build(BuildContext context) {
   return MaterialApp(
     // A widget that prevents the app from closing when the foreground task is running.
-    // Declare between the [MaterialApp] and [Scaffold] widgets.
+    // Declare on top of the [Scaffold] widget.
     home: WithForegroundTask(
       foregroundTask: flutterForegroundTask,
       child: Scaffold(
@@ -94,7 +94,7 @@ void startForegroundTask() {
 }
 ```
 
-4. When you have completed the required foreground task, call `FlutterForegroundTask.stop()`.
+4. When you have completed the required foreground task, call `FlutterForegroundTask.instance.stop()`.
 
 ```dart
 void stopForegroundTask() {

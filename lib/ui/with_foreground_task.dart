@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 /// A widget that prevents the app from closing when the foreground task is running.
-/// Declare between the [MaterialApp] and [Scaffold] widgets.
+/// Declare on top of the [Scaffold] widget.
 class WithForegroundTask extends StatefulWidget {
   /// Foreground task instance being used on the current page.
   final FlutterForegroundTask foregroundTask;
 
-  /// Top-level widget on a page using foreground task.
+  /// A child widget that contains a [Scaffold] widget.
   final Widget child;
 
   const WithForegroundTask({
