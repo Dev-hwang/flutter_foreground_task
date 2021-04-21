@@ -18,6 +18,11 @@ import androidx.core.app.NotificationCompat
  * @version 1.0
  */
 open class ForegroundService: Service() {
+	companion object {
+		var isRunningService = false 
+			private set
+	}
+
 	open var serviceId: Int = 1000
 	open var notificationChannelId: String = ""
 	open var notificationChannelName: String = ""
@@ -49,7 +54,6 @@ open class ForegroundService: Service() {
 		return null
 	}
 
-	private var isRunningService = false
 	private fun startForegroundService() {
 		val pm = applicationContext.packageManager
 		val appIcon = getApplicationIcon(pm)
@@ -78,9 +82,6 @@ open class ForegroundService: Service() {
 	}
 
 	private fun stopForegroundService() {
-		if (!isRunningService) 
-			startForegroundService()
-
 		stopForeground(true)
 		stopSelf()
 		isRunningService = false

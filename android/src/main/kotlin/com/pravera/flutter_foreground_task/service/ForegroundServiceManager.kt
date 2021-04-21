@@ -42,6 +42,9 @@ class ForegroundServiceManager {
 	 * @param activity activity
 	 */
 	fun stop(activity: Activity) {
+		// This function runs only when the service is started.
+		if (!ForegroundService.isRunningService) return
+
 		val intent = Intent(activity, ForegroundService::class.java).apply {
 			action = ForegroundServiceAction.STOP
 		}
