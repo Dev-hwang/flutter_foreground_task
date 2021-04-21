@@ -49,7 +49,7 @@ open class ForegroundService: Service() {
 		return null
 	}
 
-	private var isRunningForegroundService = false
+	private var isRunningService = false
 	private fun startForegroundService() {
 		val pm = applicationContext.packageManager
 		val appIcon = getApplicationIcon(pm)
@@ -74,14 +74,16 @@ open class ForegroundService: Service() {
 		}
 
 		startForeground(serviceId, notificationBuilder.build())
-		isRunningForegroundService = true
+		isRunningService = true
 	}
 
 	private fun stopForegroundService() {
-		if (!isRunningForegroundService) return
+		if (!isRunningService) 
+			startForegroundService()
 
 		stopForeground(true)
 		stopSelf()
+		isRunningService = false
 	}
 
 	private fun getApplicationIcon(pm: PackageManager): Int {

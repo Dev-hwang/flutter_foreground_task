@@ -99,6 +99,9 @@ class FlutterForegroundTask {
     // This function only works on Android.
     if (Platform.isAndroid == false) return;
 
+    // This function runs only when the task is started.
+    if (_isRunningTask == false) return;
+
     _methodChannel.invokeMethod('stopForegroundService');
 
     _taskTimer?.cancel();
