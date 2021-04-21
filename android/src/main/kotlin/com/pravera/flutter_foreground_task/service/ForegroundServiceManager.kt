@@ -16,7 +16,7 @@ class ForegroundServiceManager {
 	 * Start the foreground service.
 	 *
 	 * @param activity activity
-	 * @param call This is the value passed from the method channel and contains options.
+	 * @param call Method call on the method channel. This includes notification options.
 	 */
 	fun start(activity: Activity, call: MethodCall) {
 		val intent = Intent(activity, ForegroundService::class.java).apply {

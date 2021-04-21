@@ -21,8 +21,11 @@ typedef TaskCallback = void Function(DateTime timestamp);
 /// A class that implement foreground task and provide useful utilities.
 class FlutterForegroundTask {
   FlutterForegroundTask._internal();
+
+  /// Instance of [FlutterForegroundTask].
   static final instance = FlutterForegroundTask._internal();
 
+  /// Method channel to communicate with the platform.
   final _methodChannel = MethodChannel('flutter_foreground_task/method');
 
   /// Whether the foreground task is running.

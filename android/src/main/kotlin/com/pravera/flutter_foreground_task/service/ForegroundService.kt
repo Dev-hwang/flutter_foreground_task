@@ -11,6 +11,12 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
+/**
+ * Service class for implementing foreground service.
+ *
+ * @author Dev-hwang
+ * @version 1.0
+ */
 open class ForegroundService: Service() {
 	open var serviceId: Int = 1000
 	open var notificationChannelId: String = ""
