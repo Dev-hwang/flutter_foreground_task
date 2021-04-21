@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Add `WillStartForegroundTask` widget.
+
 ## 1.0.3
 
 * Fix incorrect comments and documents.

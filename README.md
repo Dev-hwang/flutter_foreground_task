@@ -6,7 +6,8 @@ This plugin is used to implement a foreground service on the Android platform.
 
 * Can perform repetitive task with foreground service notification.
 * Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
-* Provides a widget that prevents the app from closing when the foreground task is running.
+* Provides a widget that prevents the app from closing when a foreground task is running.
+* Provides a widget that can start a foreground task when trying to minimize or close the app.
 
 ## Getting started
 
@@ -14,7 +15,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^1.0.3
+  flutter_foreground_task: ^1.0.4
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -36,6 +37,10 @@ And specify the service inside the `<application>` tag as follows.
 ```
 
 ## How to use
+
+This plugin has two ways to start a foreground task. There are two ways to start the foreground task manually and to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
+
+### :hatched_chick: Start manually
 
 1. Create a `FlutterForegroundTask` instance and perform initialization. `FlutterForegroundTask.instance.init()` provides notification and task options, detailed options are as follows:
 * `channelId`: Unique ID of the notification channel.
@@ -103,5 +108,45 @@ void startForegroundTask() {
 ```dart
 void stopForegroundTask() {
   flutterForegroundTask.stop();
+}
+```
+
+### :hatched_chick: Start with `WillStartForegroundTask` widget
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return MaterialApp(
+    // A widget used when you want to start a foreground task when trying to minimize or close the app.
+    // Declare on top of the [Scaffold] widget.
+    home: WillStartForegroundTask(
+      onWillStart: () {
+        // Please return whether to start the foreground task.
+        return true;
+      },
+      notificationOptions: NotificationOptions(
+        channelId: 'notification_channel_id',
+        channelName: 'Foreground Notification',
+        channelDescription: 'This notification appears when the foreground task is running.',
+        channelImportance: NotificationChannelImportance.LOW,
+        priority: NotificationPriority.LOW
+      ),
+      foregroundTaskOptions: ForegroundTaskOptions(
+        interval: 5000
+      ),
+      notificationTitle: 'Foreground task is running',
+      notificationText: 'Tap to return to the app',
+      taskCallback: (DateTime timestamp) {
+        print('timestamp: $timestamp');
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Flutter Foreground Task'),
+          centerTitle: true
+        ),
+        body: buildContentView()
+      ),
+    ),
+  );
 }
 ```
