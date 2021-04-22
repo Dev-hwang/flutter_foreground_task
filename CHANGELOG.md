@@ -1,3 +1,9 @@
+## 1.0.7
+
+* Fix incorrect comments and documents.
+* Add `enableVibration` notification options.
+* Add `playSound` notification options.
+
 ## 1.0.5
 
 * Fix an issue where `RemoteServiceException` occurs.
