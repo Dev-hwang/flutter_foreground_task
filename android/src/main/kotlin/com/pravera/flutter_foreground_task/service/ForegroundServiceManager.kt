@@ -28,6 +28,7 @@ class ForegroundServiceManager {
 			putExtra("notificationPriority", call.argument<Int>("notificationPriority"))
 			putExtra("notificationContentTitle", call.argument<String>("notificationContentTitle"))
 			putExtra("notificationContentText", call.argument<String>("notificationContentText"))
+			putExtra("enableVibration", call.argument<Boolean>("enableVibration"))
 			putExtra("playSound", call.argument<Boolean>("playSound"))
 		}
 

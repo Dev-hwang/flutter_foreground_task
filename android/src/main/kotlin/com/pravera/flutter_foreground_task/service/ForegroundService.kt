@@ -31,6 +31,7 @@ open class ForegroundService: Service() {
 	open var notificationPriority: Int = 0
 	open var notificationContentTitle: String = ""
 	open var notificationContentText: String = ""
+	open var enableVibration: Boolean = false
 	open var playSound: Boolean = true
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -42,6 +43,7 @@ open class ForegroundService: Service() {
 		notificationPriority = bundle?.getInt("notificationPriority") ?: notificationPriority
 		notificationContentTitle = bundle?.getString("notificationContentTitle") ?: notificationContentTitle
 		notificationContentText = bundle?.getString("notificationContentText") ?: notificationContentText
+		enableVibration = bundle?.getBoolean("enableVibration") ?: enableVibration
 		playSound = bundle?.getBoolean("playSound") ?: playSound
 
 		when (intent?.action) {
@@ -68,7 +70,7 @@ open class ForegroundService: Service() {
 		notificationBuilder.setContentIntent(pendingIntent)
 		notificationBuilder.setContentTitle(notificationContentTitle)
 		notificationBuilder.setContentText(notificationContentText)
-		notificationBuilder.setVibrate(longArrayOf(0L))
+		if (!enableVibration) notificationBuilder.setVibrate(longArrayOf(0L))
 		if (!playSound) notificationBuilder.setSound(null)
 		notificationBuilder.priority = notificationPriority
 
@@ -76,6 +78,7 @@ open class ForegroundService: Service() {
 			val channel = NotificationChannel(
 					notificationChannelId, notificationChannelName, notificationChannelImportance)
 			channel.description = notificationChannelDescription
+			channel.enableVibration(enableVibration)
 			if (!playSound) channel.setSound(null, null)
 			val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 			nm.createNotificationChannel(channel)

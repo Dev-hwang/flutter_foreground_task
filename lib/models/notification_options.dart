@@ -10,6 +10,7 @@ class NotificationOptions {
     this.channelDescription,
     this.channelImportance = NotificationChannelImportance.DEFAULT,
     this.priority = NotificationPriority.DEFAULT,
+    this.enableVibration = false,
     this.playSound = true
   });
 
@@ -33,6 +34,10 @@ class NotificationOptions {
   /// The default is `NotificationPriority.DEFAULT`.
   final NotificationPriority priority;
 
+  /// Whether to enable vibration when creating notifications.
+  /// The default is `false`.
+  final bool enableVibration;
+
   /// Whether to play sound when creating notifications.
   /// The default is `true`.
   final bool playSound;
@@ -45,6 +50,7 @@ class NotificationOptions {
       'notificationChannelDescription': channelDescription,
       'notificationChannelImportance': channelImportance.rawValue,
       'notificationPriority': priority.rawValue,
+      'enableVibration': enableVibration,
       'playSound': playSound
     };
   }
