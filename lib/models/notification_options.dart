@@ -32,7 +32,7 @@ class NotificationOptions {
   /// The default is `NotificationPriority.DEFAULT`.
   final NotificationPriority priority;
 
-  /// Returns the data values of [NotificationOptions] in map format.
+  /// Returns the data fields of [NotificationOptions] in [Map] format.
   Map<String, dynamic> toMap() {
     return {
       'notificationChannelId': channelId,

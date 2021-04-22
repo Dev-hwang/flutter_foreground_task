@@ -13,7 +13,7 @@ class _ExampleAppState extends State<ExampleApp> {
     notificationOptions: NotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
-      channelDescription: 'This notification appears when the foreground task is running.',
+      channelDescription: 'This notification appears when a foreground task is running.',
       channelImportance: NotificationChannelImportance.DEFAULT,
       priority: NotificationPriority.DEFAULT
     ),
@@ -39,7 +39,7 @@ class _ExampleAppState extends State<ExampleApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // A widget that prevents the app from closing when the foreground task is running.
+      // A widget that prevents the app from closing when a foreground task is running.
       // Declare on top of the [Scaffold] widget.
       home: WithForegroundTask(
         foregroundTask: flutterForegroundTask,

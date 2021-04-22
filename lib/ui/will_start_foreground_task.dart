@@ -22,7 +22,7 @@ class WillStartForegroundTask extends StatefulWidget {
   /// Callback function to be called every interval of `ForegroundTaskOptions`.
   final TaskCallback? taskCallback;
 
-  /// A child widget that contains a [Scaffold] widget.
+  /// A child widget that contains the [Scaffold] widget.
   final Widget child;
 
   /// Constructs an instance of [WillStartForegroundTask].

@@ -22,7 +22,7 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 ### :baby_chick: Android
 
-Since this plugin is based on the foreground service, we need to add the following permission to the `AndroidManifest.xml` file. Open the `AndroidManifest.xml` file and specify it between the `<manifest>` and `<application>` tags.
+Since this plugin is based on a foreground service, we need to add the following permission to the `AndroidManifest.xml` file. Open the `AndroidManifest.xml` file and specify it between the `<manifest>` and `<application>` tags.
 
 ```
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -55,7 +55,7 @@ final flutterForegroundTask = FlutterForegroundTask.instance.init(
   notificationOptions: NotificationOptions(
     channelId: 'notification_channel_id',
     channelName: 'Foreground Notification',
-    channelDescription: 'This notification appears when the foreground task is running.',
+    channelDescription: 'This notification appears when a foreground task is running.',
     channelImportance: NotificationChannelImportance.DEFAULT,
     priority: NotificationPriority.DEFAULT
   ),
@@ -65,12 +65,12 @@ final flutterForegroundTask = FlutterForegroundTask.instance.init(
 );
 ```
 
-2. Add `WithForegroundTask` widget to prevent the app from closing when the foreground task is running.
+2. Add `WithForegroundTask` widget to prevent the app from closing when a foreground task is running.
 ```dart
 @override
 Widget build(BuildContext context) {
   return MaterialApp(
-    // A widget that prevents the app from closing when the foreground task is running.
+    // A widget that prevents the app from closing when a foreground task is running.
     // Declare on top of the [Scaffold] widget.
     home: WithForegroundTask(
       foregroundTask: flutterForegroundTask,
@@ -86,7 +86,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-3. Start `FlutterForegroundTask` when the foreground task is needed. `FlutterForegroundTask.instance.start()` provides the following options:
+3. Start `FlutterForegroundTask` when a foreground task is needed. `FlutterForegroundTask.instance.start()` provides the following options:
 * `notificationTitle`: The title that will be displayed in the notification.
 * `notificationText`: The text that will be displayed in the notification.
 * `taskCallback`: Callback function to be called every interval of `ForegroundTaskOptions`.
@@ -127,7 +127,7 @@ Widget build(BuildContext context) {
       notificationOptions: NotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
-        channelDescription: 'This notification appears when the foreground task is running.',
+        channelDescription: 'This notification appears when a foreground task is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW
       ),

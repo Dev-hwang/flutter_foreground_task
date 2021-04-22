@@ -1,6 +1,6 @@
 ## 1.0.5
 
-* Fix an issue where RemoteServiceException occurs.
+* Fix an issue where `RemoteServiceException` occurs.
 
 ## 1.0.4
 
