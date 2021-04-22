@@ -48,6 +48,7 @@ This plugin has two ways to start a foreground task. There are two ways to start
 * `channelDescription`: The description of the notification channel. This value is displayed to the user in the notification settings.
 * `channelImportance`: The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.
 * `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
+* `playSound`: Whether to play sound when creating notifications. The default is `true`.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
 
 ```dart

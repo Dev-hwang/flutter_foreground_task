@@ -9,7 +9,8 @@ class NotificationOptions {
     required this.channelName,
     this.channelDescription,
     this.channelImportance = NotificationChannelImportance.DEFAULT,
-    this.priority = NotificationPriority.DEFAULT
+    this.priority = NotificationPriority.DEFAULT,
+    this.playSound = true
   });
 
   /// Unique ID of the notification channel.
@@ -32,6 +33,10 @@ class NotificationOptions {
   /// The default is `NotificationPriority.DEFAULT`.
   final NotificationPriority priority;
 
+  /// Whether to play sound when creating notifications.
+  /// The default is `true`.
+  final bool playSound;
+
   /// Returns the data fields of [NotificationOptions] in [Map] format.
   Map<String, dynamic> toMap() {
     return {
@@ -39,7 +44,8 @@ class NotificationOptions {
       'notificationChannelName': channelName,
       'notificationChannelDescription': channelDescription,
       'notificationChannelImportance': channelImportance.rawValue,
-      'notificationPriority': priority.rawValue
+      'notificationPriority': priority.rawValue,
+      'playSound': playSound
     };
   }
 }

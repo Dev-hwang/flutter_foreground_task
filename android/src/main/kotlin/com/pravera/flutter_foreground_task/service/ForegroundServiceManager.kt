@@ -28,6 +28,7 @@ class ForegroundServiceManager {
 			putExtra("notificationPriority", call.argument<Int>("notificationPriority"))
 			putExtra("notificationContentTitle", call.argument<String>("notificationContentTitle"))
 			putExtra("notificationContentText", call.argument<String>("notificationContentText"))
+			putExtra("playSound", call.argument<Boolean>("playSound"))
 		}
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
