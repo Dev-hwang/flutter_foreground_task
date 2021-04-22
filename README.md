@@ -48,8 +48,6 @@ This plugin has two ways to start a foreground task. There are two ways to start
 * `channelDescription`: The description of the notification channel. This value is displayed to the user in the notification settings.
 * `channelImportance`: The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.
 * `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
-* `enableVibration`: Whether to enable vibration when creating notifications. The default is `false`.
-* `playSound`: Whether to play sound when creating notifications. The default is `true`.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
 
 ```dart
@@ -152,3 +150,56 @@ Widget build(BuildContext context) {
   );
 }
 ```
+
+## Models
+
+### :chicken: NotificationOptions
+
+Data class with notification options.
+
+| Property | Description |
+|---|---|
+| `channelId` | Unique ID of the notification channel. |
+| `channelName` | The name of the notification channel. This value is displayed to the user in the notification settings. |
+| `channelDescription` | The description of the notification channel. This value is displayed to the user in the notification settings. |
+| `channelImportance` | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`. |
+| `priority` | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`. |
+| `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
+| `playSound` | Whether to play sound when creating notifications. The default is `true`. |
+
+### :chicken: ForegroundTaskOptions
+
+Data class with foreground task options.
+
+| Property | Description |
+|---|---|
+| `interval` | The task call interval in milliseconds. The default is `5000`. |
+
+### :chicken: NotificationChannelImportance
+
+The importance of the notification channel. See https://developer.android.com/training/notify-user/channels?hl=ko#importance
+
+| Value | Description |
+|---|---|
+| `NONE` | A notification with no importance: does not show in the shade. |
+| `MIN` | Min notification importance: only shows in the shade, below the fold. |
+| `LOW` | Low notification importance: shows in the shade, and potentially in the status bar (see shouldHideSilentStatusBarIcons()), but is not audibly intrusive. |
+| `DEFAULT` | Default notification importance: shows everywhere, makes noise, but does not visually intrude. |
+| `HIGH` | Higher notification importance: shows everywhere, makes noise and peeks. May use full screen intents. |
+| `MAX` | Max notification importance: same as HIGH, but generally not used. |
+
+### :chicken: NotificationPriority
+
+Priority of notifications for Android 7.1 and lower.
+
+| Value | Description |
+|---|---|
+| `MIN` | No sound and does not appear in the status bar. |
+| `LOW` | No sound. |
+| `DEFAULT` | Makes a sound. |
+| `HIGH` | Makes a sound and appears as a heads-up notification. |
+| `MAX` | Same as HIGH, but used when you want to notify notification immediately. |
+
+## Support
+
+If you find any bugs or issues while using the plugin, please register an issues on [GitHub](https://github.com/Dev-hwang/flutter_foreground_task/issues). You can also contact us at <hwj930513@naver.com>.
