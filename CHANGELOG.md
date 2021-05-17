@@ -1,3 +1,8 @@
+## 1.0.8
+
+* Add `FlutterForegroundTask.instance.update()` function.
+* Updates README.md
+
 ## 1.0.7
 
 * Fix incorrect comments and documents.

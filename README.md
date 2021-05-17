@@ -15,7 +15,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^1.0.7
+  flutter_foreground_task: ^1.0.8
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -103,7 +103,36 @@ void startForegroundTask() {
 }
 ```
 
-4. When you have completed the required foreground task, call `FlutterForegroundTask.instance.stop()`.
+4. Use `FlutterForegroundTask.instance.update()` to update the foreground task. The options are the same as the start function.
+```dart
+int count = 0;
+void startForegroundTask() {
+  flutterForegroundTask.start(
+    notificationTitle: 'Foreground task is running',
+    notificationText: 'Tap to return to the app',
+    taskCallback: (DateTime timestamp) {
+      count++;
+
+      // You can update the foreground task based on conditions
+      // such as count or specific timestamp.
+      if (count == 10)
+        updateWhenCount10();
+    }
+  );
+}
+
+void updateWhenCount10() {
+  flutterForegroundTask.update(
+    notificationTitle: 'Another Title',
+    notificationText: 'Another Text',
+    taskCallback: (DateTime timestamp) {
+      print('timestamp: $timestamp');
+    }
+  );
+}
+```
+
+5. When you have completed the required foreground task, call `FlutterForegroundTask.instance.stop()`.
 
 ```dart
 void stopForegroundTask() {
