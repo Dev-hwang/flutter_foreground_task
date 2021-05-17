@@ -70,7 +70,7 @@ class FlutterForegroundTask {
     TaskCallback? taskCallback
   }) {
     // This function only works on Android.
-    if (Platform.isAndroid == false) return;
+    if (!Platform.isAndroid) return;
 
     if (_isRunningTask)
       throw ForegroundTaskException('Already started. Please call this function after calling the stop function.');
@@ -84,9 +84,8 @@ class FlutterForegroundTask {
     _methodChannel.invokeMethod('startForegroundService', options);
 
     if (taskCallback != null) {
-      _taskCallback = taskCallback;
-      final taskInterval = Duration(milliseconds: _foregroundTaskOptions?.interval ?? 5000);
-      _taskTimer = Timer.periodic(taskInterval, (_) => _taskCallback!(DateTime.now()));
+      _stopTaskTimer();
+      _startTaskTimer(taskCallback);
     }
 
     _isRunningTask = true;
@@ -94,29 +93,65 @@ class FlutterForegroundTask {
       dev.log('FlutterForegroundTask started.');
   }
 
+  /// Update foreground task.
+  void update({
+    required String notificationTitle,
+    required String notificationText,
+    TaskCallback? taskCallback
+  }) {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return;
+
+    // This function runs only when the task is started.
+    if (!_isRunningTask) return;
+
+    final options = _notificationOptions?.toMap() ?? Map<String, dynamic>();
+    options['notificationContentTitle'] = notificationTitle;
+    options['notificationContentText'] = notificationText;
+    _methodChannel.invokeMethod('updateForegroundService', options);
+
+    if (taskCallback != null) {
+      _stopTaskTimer();
+      _startTaskTimer(taskCallback);
+    }
+
+    if (!kReleaseMode)
+      dev.log('FlutterForegroundTask updated.');
+  }
+
   /// Stop foreground task.
   void stop() {
     // This function only works on Android.
-    if (Platform.isAndroid == false) return;
+    if (!Platform.isAndroid) return;
 
     // This function runs only when the task is started.
-    if (_isRunningTask == false) return;
+    if (!_isRunningTask) return;
 
     _methodChannel.invokeMethod('stopForegroundService');
-
-    _taskTimer?.cancel();
-    _taskTimer = null;
-    _taskCallback = null;
+    _stopTaskTimer();
 
     _isRunningTask = false;
     if (!kReleaseMode)
       dev.log('FlutterForegroundTask stopped.');
   }
 
+  void _startTaskTimer(TaskCallback taskCallback) {
+    _taskCallback = taskCallback;
+    _taskTimer = Timer.periodic(
+        Duration(milliseconds: _foregroundTaskOptions?.interval ?? 5000),
+        (_) => _taskCallback!(DateTime.now()));
+  }
+
+  void _stopTaskTimer() {
+    _taskTimer?.cancel();
+    _taskTimer = null;
+    _taskCallback = null;
+  }
+
   /// Minimize without closing the app.
   void minimizeApp() {
     // This function only works on Android.
-    if (Platform.isAndroid == false) return;
+    if (!Platform.isAndroid) return;
 
     _methodChannel.invokeMethod('minimizeApp');
   }
@@ -124,7 +159,7 @@ class FlutterForegroundTask {
   /// Wake up the screen that is turned off.
   void wakeUpScreen() {
     // This function only works on Android.
-    if (Platform.isAndroid == false) return;
+    if (!Platform.isAndroid) return;
 
     _methodChannel.invokeMethod('wakeUpScreen');
   }

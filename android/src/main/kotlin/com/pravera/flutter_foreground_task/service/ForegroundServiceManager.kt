@@ -39,6 +39,32 @@ class ForegroundServiceManager {
 	}
 
 	/**
+	 * Update the foreground service.
+	 *
+	 * @param activity activity
+	 * @param call Method call on the method channel. This includes notification options.
+	 */
+	fun update(activity: Activity, call: MethodCall) {
+		val intent = Intent(activity, ForegroundService::class.java).apply {
+			action = ForegroundServiceAction.UPDATE
+			putExtra("notificationChannelId", call.argument<String>("notificationChannelId"))
+			putExtra("notificationChannelName", call.argument<String>("notificationChannelName"))
+			putExtra("notificationChannelDescription", call.argument<String>("notificationChannelDescription"))
+			putExtra("notificationChannelImportance", call.argument<Int>("notificationChannelImportance"))
+			putExtra("notificationPriority", call.argument<Int>("notificationPriority"))
+			putExtra("notificationContentTitle", call.argument<String>("notificationContentTitle"))
+			putExtra("notificationContentText", call.argument<String>("notificationContentText"))
+			putExtra("enableVibration", call.argument<Boolean>("enableVibration"))
+			putExtra("playSound", call.argument<Boolean>("playSound"))
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+			activity.startForegroundService(intent)
+		else
+			activity.startService(intent)
+	}
+
+	/**
 	 * Stop the foreground service.
 	 *
 	 * @param activity activity

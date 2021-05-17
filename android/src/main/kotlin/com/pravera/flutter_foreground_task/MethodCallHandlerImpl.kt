@@ -44,6 +44,7 @@ class MethodCallHandlerImpl: MethodChannel.MethodCallHandler {
 
 		when (call.method) {
 			"startForegroundService" -> foregroundServiceManager.start(activity!!, call)
+			"updateForegroundService" -> foregroundServiceManager.update(activity!!, call)
 			"stopForegroundService" -> foregroundServiceManager.stop(activity!!)
 			"minimizeApp" -> ScreenUtils.minimizeApp(activity!!)
 			"wakeUpScreen" -> ScreenUtils.wakeUpScreen(activity!!)

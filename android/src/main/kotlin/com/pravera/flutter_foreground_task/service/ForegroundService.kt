@@ -47,7 +47,8 @@ open class ForegroundService: Service() {
 		playSound = bundle?.getBoolean("playSound") ?: playSound
 
 		when (intent?.action) {
-			ForegroundServiceAction.START -> startForegroundService()
+			ForegroundServiceAction.START, 
+			ForegroundServiceAction.UPDATE -> startForegroundService()
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
 

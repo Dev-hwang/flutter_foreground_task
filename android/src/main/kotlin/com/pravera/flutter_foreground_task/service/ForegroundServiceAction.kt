@@ -9,5 +9,6 @@ package com.pravera.flutter_foreground_task.service
 object ForegroundServiceAction {
 	private const val prefix = "com.pravera.flutter_foreground_task.action."
 	const val START = prefix + "start"
+	const val UPDATE = prefix + "update"
 	const val STOP = prefix + "stop"
 }
