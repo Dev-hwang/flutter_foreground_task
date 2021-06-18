@@ -78,7 +78,7 @@ class FlutterForegroundTask {
     if (_notificationOptions == null)
       throw ForegroundTaskException('Not initialized. Please call this function after calling the init function.');
 
-    final options = _notificationOptions?.toMap() ?? Map<String, dynamic>();
+    final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
     _methodChannel.invokeMethod('startForegroundService', options);
@@ -105,7 +105,7 @@ class FlutterForegroundTask {
     // This function runs only when the task is started.
     if (!_isRunningTask) return;
 
-    final options = _notificationOptions?.toMap() ?? Map<String, dynamic>();
+    final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
     _methodChannel.invokeMethod('updateForegroundService', options);

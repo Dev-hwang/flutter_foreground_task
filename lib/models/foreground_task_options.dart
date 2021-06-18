@@ -8,4 +8,11 @@ class ForegroundTaskOptions {
   /// The task call interval in milliseconds.
   /// The default is `5000`.
   final int interval;
+
+  /// Returns the data fields of [ForegroundTaskOptions] in JSON format.
+  Map<String, dynamic> toJson() {
+    return {
+      'interval': interval,
+    };
+  }
 }

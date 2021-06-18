@@ -47,8 +47,8 @@ class NotificationOptions {
   /// If the value is null, the app icon is used.
   final String? icon;
 
-  /// Returns the data fields of [NotificationOptions] in [Map] format.
-  Map<String, dynamic> toMap() {
+  /// Returns the data fields of [NotificationOptions] in JSON format.
+  Map<String, dynamic> toJson() {
     return {
       'notificationChannelId': channelId,
       'notificationChannelName': channelName,
