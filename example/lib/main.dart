@@ -15,7 +15,8 @@ class _ExampleAppState extends State<ExampleApp> {
       channelName: 'Foreground Notification',
       channelDescription: 'This notification appears when a foreground task is running.',
       channelImportance: NotificationChannelImportance.DEFAULT,
-      priority: NotificationPriority.DEFAULT
+      priority: NotificationPriority.DEFAULT,
+      icon: '@mipmap/ic_launcher',
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
       interval: 5000

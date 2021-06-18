@@ -11,7 +11,8 @@ class NotificationOptions {
     this.channelImportance = NotificationChannelImportance.DEFAULT,
     this.priority = NotificationPriority.DEFAULT,
     this.enableVibration = false,
-    this.playSound = true
+    this.playSound = true,
+    this.icon,
   });
 
   /// Unique ID of the notification channel.
@@ -42,6 +43,10 @@ class NotificationOptions {
   /// The default is `true`.
   final bool playSound;
 
+  /// The icon name to be displayed in the notification.
+  /// If the value is null, the app icon is used.
+  final String? icon;
+
   /// Returns the data fields of [NotificationOptions] in [Map] format.
   Map<String, dynamic> toMap() {
     return {
@@ -51,7 +56,8 @@ class NotificationOptions {
       'notificationChannelImportance': channelImportance.rawValue,
       'notificationPriority': priority.rawValue,
       'enableVibration': enableVibration,
-      'playSound': playSound
+      'playSound': playSound,
+      'icon': icon,
     };
   }
 }

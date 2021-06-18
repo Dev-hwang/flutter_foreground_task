@@ -48,6 +48,7 @@ This plugin has two ways to start a foreground task. There are two ways to start
 * `channelDescription`: The description of the notification channel. This value is displayed to the user in the notification settings.
 * `channelImportance`: The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.
 * `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
+* `icon`: The icon name to be displayed in the notification. If the value is null, the app icon is used.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
 
 ```dart
@@ -57,7 +58,8 @@ final flutterForegroundTask = FlutterForegroundTask.instance.init(
     channelName: 'Foreground Notification',
     channelDescription: 'This notification appears when a foreground task is running.',
     channelImportance: NotificationChannelImportance.DEFAULT,
-    priority: NotificationPriority.DEFAULT
+    priority: NotificationPriority.DEFAULT,
+    icon: '@mipmap/ic_launcher',
   ),
   foregroundTaskOptions: ForegroundTaskOptions(
     interval: 5000
@@ -158,7 +160,8 @@ Widget build(BuildContext context) {
         channelName: 'Foreground Notification',
         channelDescription: 'This notification appears when a foreground task is running.',
         channelImportance: NotificationChannelImportance.LOW,
-        priority: NotificationPriority.LOW
+        priority: NotificationPriority.LOW,
+        icon: '@mipmap/ic_launcher',
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         interval: 5000
@@ -195,6 +198,7 @@ Data class with notification options.
 | `priority` | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`. |
 | `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
 | `playSound` | Whether to play sound when creating notifications. The default is `true`. |
+| `icon` | The icon name to be displayed in the notification. If the value is null, the app icon is used. |
 
 ### :chicken: ForegroundTaskOptions
 

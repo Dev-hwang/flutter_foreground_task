@@ -33,6 +33,7 @@ open class ForegroundService: Service() {
 	open var notificationContentText: String = ""
 	open var enableVibration: Boolean = false
 	open var playSound: Boolean = true
+	open var icon: String? = null
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		val bundle = intent?.extras
@@ -45,6 +46,7 @@ open class ForegroundService: Service() {
 		notificationContentText = bundle?.getString("notificationContentText") ?: notificationContentText
 		enableVibration = bundle?.getBoolean("enableVibration") ?: enableVibration
 		playSound = bundle?.getBoolean("playSound") ?: playSound
+		icon = bundle?.getString("icon") ?: icon
 
 		when (intent?.action) {
 			ForegroundServiceAction.START, 
@@ -61,13 +63,15 @@ open class ForegroundService: Service() {
 
 	private fun startForegroundService() {
 		val pm = applicationContext.packageManager
-		val appIcon = getApplicationIcon(pm)
+		val iconResId =
+				if (icon.isNullOrEmpty()) getAppIconResourceId(pm)
+				else getDrawableResourceId(icon!!)
 		val pendingIntent = getPendingIntent(pm)
 
 		val notificationBuilder = NotificationCompat.Builder(this, notificationChannelId)
 		notificationBuilder.setOngoing(true)
 		notificationBuilder.setShowWhen(false)
-		notificationBuilder.setSmallIcon(appIcon)
+		notificationBuilder.setSmallIcon(iconResId)
 		notificationBuilder.setContentIntent(pendingIntent)
 		notificationBuilder.setContentTitle(notificationContentTitle)
 		notificationBuilder.setContentText(notificationContentText)
@@ -95,9 +99,15 @@ open class ForegroundService: Service() {
 		isRunningService = false
 	}
 
-	private fun getApplicationIcon(pm: PackageManager): Int {
+	private fun getDrawableResourceId(icon: String): Int {
+		return applicationContext.resources.getIdentifier(
+				icon, "drawable", applicationContext.packageName)
+	}
+
+	private fun getAppIconResourceId(pm: PackageManager): Int {
 		return try {
-			val appInfo = pm.getApplicationInfo(applicationContext.packageName, 0)
+			val appInfo = pm.getApplicationInfo(
+					applicationContext.packageName, PackageManager.GET_META_DATA)
 			appInfo.icon
 		} catch (e: PackageManager.NameNotFoundException) {
 			0
