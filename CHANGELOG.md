@@ -1,3 +1,8 @@
+## 1.0.9
+
+* Add `icon` field to `NotificationOptions`.
+* Change the model's `toMap` function name to `toJson`.
+
 ## 1.0.8
 
 * Add `FlutterForegroundTask.instance.update()` function.
