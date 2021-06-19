@@ -1,6 +1,7 @@
 package com.pravera.flutter_foreground_task.service
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import io.flutter.plugin.common.MethodCall
@@ -15,53 +16,53 @@ class ForegroundServiceManager {
 	/**
 	 * Start the foreground service.
 	 *
-	 * @param activity activity
+	 * @param context context
 	 * @param call Method call on the method channel. This includes notification options.
 	 */
-	fun start(activity: Activity, call: MethodCall) {
-		val intent = Intent(activity, ForegroundService::class.java)
+	fun start(context: Context, call: MethodCall) {
+		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.START
 		putNotificationOptions(intent, call)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-			activity.startForegroundService(intent)
+			context.startForegroundService(intent)
 		else
-			activity.startService(intent)
+			context.startService(intent)
 	}
 
 	/**
 	 * Update the foreground service.
 	 *
-	 * @param activity activity
+	 * @param context context
 	 * @param call Method call on the method channel. This includes notification options.
 	 */
-	fun update(activity: Activity, call: MethodCall) {
-		val intent = Intent(activity, ForegroundService::class.java)
+	fun update(context: Context, call: MethodCall) {
+		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.UPDATE
 		putNotificationOptions(intent, call)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-			activity.startForegroundService(intent)
+			context.startForegroundService(intent)
 		else
-			activity.startService(intent)
+			context.startService(intent)
 	}
 
 	/**
 	 * Stop the foreground service.
 	 *
-	 * @param activity activity
+	 * @param context context
 	 */
-	fun stop(activity: Activity) {
+	fun stop(context: Context) {
 		// This function runs only when the service is started.
 		if (!ForegroundService.isRunningService) return
 
-		val intent = Intent(activity, ForegroundService::class.java)
+		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.STOP
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-			activity.startForegroundService(intent)
+			context.startForegroundService(intent)
 		else
-			activity.startService(intent)
+			context.startService(intent)
 	}
 
 	private fun putNotificationOptions(intent: Intent, call: MethodCall) {

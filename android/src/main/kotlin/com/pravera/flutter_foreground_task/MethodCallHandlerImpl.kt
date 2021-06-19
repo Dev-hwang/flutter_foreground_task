@@ -1,6 +1,7 @@
 package com.pravera.flutter_foreground_task
 
 import android.app.Activity
+import android.content.Context
 import androidx.annotation.NonNull
 import com.pravera.flutter_foreground_task.errors.ErrorCodes
 import com.pravera.flutter_foreground_task.service.ForegroundServiceManager
@@ -11,7 +12,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 /** MethodCallHandlerImpl */
-class MethodCallHandlerImpl: MethodChannel.MethodCallHandler {
+class MethodCallHandlerImpl(private val context: Context): MethodChannel.MethodCallHandler {
 	private lateinit var methodChannel : MethodChannel
 	private lateinit var foregroundServiceManager : ForegroundServiceManager
 
@@ -37,17 +38,19 @@ class MethodCallHandlerImpl: MethodChannel.MethodCallHandler {
 	}
 
 	override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
-		if (activity == null) {
-			handleError(result, ErrorCodes.ACTIVITY_NOT_REGISTERED)
-			return
-		}
-
 		when (call.method) {
-			"startForegroundService" -> foregroundServiceManager.start(activity!!, call)
-			"updateForegroundService" -> foregroundServiceManager.update(activity!!, call)
-			"stopForegroundService" -> foregroundServiceManager.stop(activity!!)
-			"minimizeApp" -> ScreenUtils.minimizeApp(activity!!)
-			"wakeUpScreen" -> ScreenUtils.wakeUpScreen(activity!!)
+			"startForegroundService" -> foregroundServiceManager.start(context, call)
+			"updateForegroundService" -> foregroundServiceManager.update(context, call)
+			"stopForegroundService" -> foregroundServiceManager.stop(context)
+			"minimizeApp" -> {
+				if (activity == null) {
+					handleError(result, ErrorCodes.ACTIVITY_NOT_REGISTERED)
+					return
+				}
+
+				ScreenUtils.minimizeApp(activity!!)
+			}
+			"wakeUpScreen" -> ScreenUtils.wakeUpScreen(context)
 			else -> result.notImplemented()
 		}
 	}

@@ -11,7 +11,7 @@ class FlutterForegroundTaskPlugin: FlutterPlugin, ActivityAware {
   private lateinit var methodCallHandler : MethodCallHandlerImpl
 
   override fun onAttachedToEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-    methodCallHandler = MethodCallHandlerImpl()
+    methodCallHandler = MethodCallHandlerImpl(binding.applicationContext)
     methodCallHandler.startListening(binding.binaryMessenger)
   }
 
