@@ -1,6 +1,5 @@
 package com.pravera.flutter_foreground_task.service
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -69,7 +68,7 @@ class ForegroundServiceManager {
 	 * Returns whether the foreground service is running.
 	 */
 	fun isRunningService(): Boolean {
-		return ForegroundService.isRunningService;
+		return ForegroundService.isRunningService
 	}
 
 	private fun putNotificationOptions(intent: Intent, call: MethodCall) {
