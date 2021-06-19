@@ -22,7 +22,7 @@ class WithForegroundTask extends StatefulWidget {
 
 class _WithForegroundTaskState extends State<WithForegroundTask> {
   Future<bool> _onWillPop() async {
-    if (widget.foregroundTask.isRunningTask) {
+    if (await widget.foregroundTask.isRunningTask) {
       widget.foregroundTask.minimizeApp();
       return false;
     }

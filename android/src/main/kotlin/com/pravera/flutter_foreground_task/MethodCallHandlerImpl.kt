@@ -42,6 +42,7 @@ class MethodCallHandlerImpl(private val context: Context): MethodChannel.MethodC
 			"startForegroundService" -> foregroundServiceManager.start(context, call)
 			"updateForegroundService" -> foregroundServiceManager.update(context, call)
 			"stopForegroundService" -> foregroundServiceManager.stop(context)
+			"isRunningService" -> result.success(foregroundServiceManager.isRunningService())
 			"minimizeApp" -> {
 				if (activity == null) {
 					handleError(result, ErrorCodes.ACTIVITY_NOT_REGISTERED)

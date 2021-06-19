@@ -65,6 +65,13 @@ class ForegroundServiceManager {
 			context.startService(intent)
 	}
 
+	/**
+	 * Returns whether the foreground service is running.
+	 */
+	fun isRunningService(): Boolean {
+		return ForegroundService.isRunningService;
+	}
+
 	private fun putNotificationOptions(intent: Intent, call: MethodCall) {
 		intent.putExtra("notificationChannelId", call.argument<String>("notificationChannelId"))
 		intent.putExtra("notificationChannelName", call.argument<String>("notificationChannelName"))

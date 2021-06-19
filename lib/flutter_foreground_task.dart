@@ -27,13 +27,7 @@ class FlutterForegroundTask {
   static final instance = FlutterForegroundTask._internal();
 
   /// Method channel to communicate with the platform.
-  final _methodChannel = MethodChannel('flutter_foreground_task/method');
-
-  /// Whether the foreground task is running.
-  bool _isRunningTask = false;
-
-  /// Returns whether the foreground task is running.
-  bool get isRunningTask => _isRunningTask;
+  final _methodChannel = const MethodChannel('flutter_foreground_task/method');
 
   /// Optional values for notification detail settings.
   NotificationOptions? _notificationOptions;
@@ -64,19 +58,21 @@ class FlutterForegroundTask {
   }
 
   /// Start foreground task with notification.
-  void start({
+  Future<void> start({
     required String notificationTitle,
     required String notificationText,
     TaskCallback? taskCallback
-  }) {
+  }) async {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
-    if (_isRunningTask)
-      throw ForegroundTaskException('Already started. Please call this function after calling the stop function.');
+    if (await isRunningTask)
+      throw ForegroundTaskException(
+          'Already started. Please call this function after calling the stop function.');
 
     if (_notificationOptions == null)
-      throw ForegroundTaskException('Not initialized. Please call this function after calling the init function.');
+      throw ForegroundTaskException(
+          'Not initialized. Please call this function after calling the init function.');
 
     final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
@@ -88,22 +84,21 @@ class FlutterForegroundTask {
       _startTaskTimer(taskCallback);
     }
 
-    _isRunningTask = true;
     if (!kReleaseMode)
       dev.log('FlutterForegroundTask started.');
   }
 
   /// Update foreground task.
-  void update({
+  Future<void> update({
     required String notificationTitle,
     required String notificationText,
     TaskCallback? taskCallback
-  }) {
+  }) async {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
     // This function runs only when the task is started.
-    if (!_isRunningTask) return;
+    if (!await isRunningTask) return;
 
     final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
@@ -120,20 +115,23 @@ class FlutterForegroundTask {
   }
 
   /// Stop foreground task.
-  void stop() {
+  Future<void> stop() async {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
     // This function runs only when the task is started.
-    if (!_isRunningTask) return;
+    if (!await isRunningTask) return;
 
     _methodChannel.invokeMethod('stopForegroundService');
     _stopTaskTimer();
 
-    _isRunningTask = false;
     if (!kReleaseMode)
       dev.log('FlutterForegroundTask stopped.');
   }
+
+  /// Returns whether the foreground task is running.
+  Future<bool> get isRunningTask async =>
+      await _methodChannel.invokeMethod('isRunningService');
 
   void _startTaskTimer(TaskCallback taskCallback) {
     _taskCallback = taskCallback;
