@@ -9,7 +9,7 @@ class ExampleApp extends StatefulWidget {
 }
 
 class _ExampleAppState extends State<ExampleApp> {
-  final flutterForegroundTask = FlutterForegroundTask.instance.init(
+  final _flutterForegroundTask = FlutterForegroundTask.instance.init(
     notificationOptions: NotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
@@ -19,22 +19,22 @@ class _ExampleAppState extends State<ExampleApp> {
       icon: '@mipmap/ic_launcher',
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
-      interval: 5000
-    )
+      interval: 5000,
+    ),
   );
 
-  void startForegroundTask() {
-    flutterForegroundTask.start(
+  void _startForegroundTask() {
+    _flutterForegroundTask.start(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
       taskCallback: (DateTime timestamp) {
         print('timestamp: $timestamp');
-      }
+      },
     );
   }
   
-  void stopForegroundTask() {
-    flutterForegroundTask.stop();
+  void _stopForegroundTask() {
+    _flutterForegroundTask.stop();
   }
 
   @override
@@ -43,23 +43,23 @@ class _ExampleAppState extends State<ExampleApp> {
       // A widget that prevents the app from closing when a foreground task is running.
       // Declare on top of the [Scaffold] widget.
       home: WithForegroundTask(
-        foregroundTask: flutterForegroundTask,
+        foregroundTask: _flutterForegroundTask,
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Flutter Foreground Task'),
-            centerTitle: true
+            centerTitle: true,
           ),
-          body: buildContentView()
+          body: _buildContentView(),
         ),
       ),
     );
   }
 
-  Widget buildContentView() {
+  Widget _buildContentView() {
     final buttonBuilder = (String text, {VoidCallback onPressed}) {
       return ElevatedButton(
         child: Text(text),
-        onPressed: onPressed
+        onPressed: onPressed,
       );
     };
 
@@ -67,8 +67,8 @@ class _ExampleAppState extends State<ExampleApp> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          buttonBuilder('start', onPressed: startForegroundTask),
-          buttonBuilder('stop', onPressed: stopForegroundTask)
+          buttonBuilder('start', onPressed: _startForegroundTask),
+          buttonBuilder('stop', onPressed: _stopForegroundTask),
         ],
       ),
     );

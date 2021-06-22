@@ -19,7 +19,7 @@ class WillStartForegroundTask extends StatefulWidget {
   /// The text that will be displayed in the notification.
   final String notificationText;
 
-  /// Callback function to be called every interval of `ForegroundTaskOptions`.
+  /// Callback function to be called every interval of [ForegroundTaskOptions].
   final TaskCallback? taskCallback;
 
   /// A child widget that contains the [Scaffold] widget.
@@ -43,14 +43,20 @@ class WillStartForegroundTask extends StatefulWidget {
 
 class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     with WidgetsBindingObserver {
-  void _startForegroundService() {
+  void _initForegroundTask() {
+    FlutterForegroundTask.instance.init(
+        notificationOptions: widget.notificationOptions,
+        foregroundTaskOptions: widget.foregroundTaskOptions);
+  }
+
+  void _startForegroundTask() {
     FlutterForegroundTask.instance.start(
         notificationTitle: widget.notificationTitle,
         notificationText: widget.notificationText,
         taskCallback: widget.taskCallback);
   }
 
-  void _stopForegroundService() {
+  void _stopForegroundTask() {
     FlutterForegroundTask.instance.stop();
   }
 
@@ -66,9 +72,7 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   @override
   void initState() {
     super.initState();
-    FlutterForegroundTask.instance.init(
-        notificationOptions: widget.notificationOptions,
-        foregroundTaskOptions: widget.foregroundTaskOptions);
+    _initForegroundTask();
     WidgetsBinding.instance?.addObserver(this);
   }
 
@@ -83,10 +87,10 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     if (widget.onWillStart()) {
       switch (state) {
         case AppLifecycleState.resumed:
-          _stopForegroundService();
+          _stopForegroundTask();
           break;
         case AppLifecycleState.paused:
-          _startForegroundService();
+          _startForegroundTask();
           break;
         case AppLifecycleState.inactive:
         case AppLifecycleState.detached:
@@ -95,7 +99,6 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return WillPopScope(onWillPop: _onWillPop, child: widget.child);
-  }
+  Widget build(BuildContext context) =>
+      WillPopScope(onWillPop: _onWillPop, child: widget.child);
 }

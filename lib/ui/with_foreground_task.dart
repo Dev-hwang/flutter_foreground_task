@@ -31,10 +31,6 @@ class _WithForegroundTaskState extends State<WithForegroundTask> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: widget.child
-    );
-  }
+  Widget build(BuildContext context) =>
+      WillPopScope(onWillPop: _onWillPop, child: widget.child);
 }

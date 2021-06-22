@@ -52,7 +52,7 @@ class ForegroundServiceManager {
 	 * @param context context
 	 */
 	fun stop(context: Context) {
-		// This function runs only when the service is started.
+		// If the service is not running, the stop function is not executed.
 		if (!ForegroundService.isRunningService) return
 
 		val intent = Intent(context, ForegroundService::class.java)

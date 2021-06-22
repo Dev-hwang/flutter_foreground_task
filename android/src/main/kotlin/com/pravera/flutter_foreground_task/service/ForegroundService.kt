@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 
 /**
@@ -19,6 +20,7 @@ import androidx.core.app.NotificationCompat
  */
 open class ForegroundService: Service() {
 	companion object {
+		const val TAG = "ForegroundService"
 		var isRunningService = false 
 			private set
 	}
@@ -37,19 +39,21 @@ open class ForegroundService: Service() {
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		val bundle = intent?.extras
-		notificationChannelId = bundle?.getString("notificationChannelId") ?: notificationChannelId
-		notificationChannelName = bundle?.getString("notificationChannelName") ?: notificationChannelName
-		notificationChannelDescription = bundle?.getString("notificationChannelDescription") ?: notificationChannelDescription
-		notificationChannelImportance = bundle?.getInt("notificationChannelImportance") ?: notificationChannelImportance
-		notificationPriority = bundle?.getInt("notificationPriority") ?: notificationPriority
-		notificationContentTitle = bundle?.getString("notificationContentTitle") ?: notificationContentTitle
-		notificationContentText = bundle?.getString("notificationContentText") ?: notificationContentText
-		enableVibration = bundle?.getBoolean("enableVibration") ?: enableVibration
-		playSound = bundle?.getBoolean("playSound") ?: playSound
-		icon = bundle?.getString("icon") ?: icon
+		if (bundle != null) {
+			notificationChannelId = bundle.getString("notificationChannelId", notificationChannelId)
+			notificationChannelName = bundle.getString("notificationChannelName", notificationChannelName)
+			notificationChannelDescription = bundle.getString("notificationChannelDescription")
+			notificationChannelImportance = bundle.getInt("notificationChannelImportance", notificationChannelImportance)
+			notificationPriority = bundle.getInt("notificationPriority", notificationPriority)
+			notificationContentTitle = bundle.getString("notificationContentTitle", notificationContentTitle)
+			notificationContentText = bundle.getString("notificationContentText", notificationContentText)
+			enableVibration = bundle.getBoolean("enableVibration", enableVibration)
+			playSound = bundle.getBoolean("playSound", playSound)
+			icon = bundle.getString("icon")
+		}
 
 		when (intent?.action) {
-			ForegroundServiceAction.START, 
+			ForegroundServiceAction.START,
 			ForegroundServiceAction.UPDATE -> startForegroundService()
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
@@ -110,6 +114,7 @@ open class ForegroundService: Service() {
 					applicationContext.packageName, PackageManager.GET_META_DATA)
 			appInfo.icon
 		} catch (e: PackageManager.NameNotFoundException) {
+			Log.e(TAG, "getAppIconResourceId()", e)
 			0
 		}
 	}

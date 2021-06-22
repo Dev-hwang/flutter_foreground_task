@@ -47,12 +47,8 @@ class FlutterForegroundTask {
     ForegroundTaskOptions? foregroundTaskOptions
   }) {
     _notificationOptions = notificationOptions;
-    if (_foregroundTaskOptions == null)
-      _foregroundTaskOptions = foregroundTaskOptions
-          ?? const ForegroundTaskOptions();
-    else
-      _foregroundTaskOptions = foregroundTaskOptions
-          ?? _foregroundTaskOptions;
+    _foregroundTaskOptions = foregroundTaskOptions ??
+        _foregroundTaskOptions ?? const ForegroundTaskOptions();
 
     return this;
   }
@@ -97,7 +93,7 @@ class FlutterForegroundTask {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
-    // This function runs only when the task is started.
+    // If the task is not running, the update function is not executed.
     if (!await isRunningTask) return;
 
     final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
@@ -119,7 +115,7 @@ class FlutterForegroundTask {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
-    // This function runs only when the task is started.
+    // If the task is not running, the stop function is not executed.
     if (!await isRunningTask) return;
 
     _methodChannel.invokeMethod('stopForegroundService');
@@ -130,8 +126,12 @@ class FlutterForegroundTask {
   }
 
   /// Returns whether the foreground task is running.
-  Future<bool> get isRunningTask async =>
-      await _methodChannel.invokeMethod('isRunningService');
+  Future<bool> get isRunningTask async {
+    // It always returns false on non-Android platforms.
+    if (!Platform.isAndroid) return false;
+
+    return await _methodChannel.invokeMethod('isRunningService');
+  }
 
   void _startTaskTimer(TaskCallback taskCallback) {
     _taskCallback = taskCallback;
