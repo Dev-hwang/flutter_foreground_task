@@ -136,11 +136,29 @@ class _ExampleAppState extends State<ExampleApp> {
 ```dart
 // The callback function should always be a top-level function.
 void callback() {
+  int updateCount = 0;
+
   FlutterForegroundTask.initDispatcher((timestamp) async {
     final strTimestamp = timestamp.toString();
-    print('timestamp: $strTimestamp');
+    print('callback() - timestamp: $strTimestamp');
 
-    FlutterForegroundTask.update(notificationText: strTimestamp);
+    FlutterForegroundTask.update(
+        notificationTitle: 'callback()',
+        notificationText: strTimestamp,
+        callback: updateCount >= 10 ? callback2 : null);
+
+    updateCount++;
+  });
+}
+
+void callback2() {
+  FlutterForegroundTask.initDispatcher((timestamp) async {
+    final strTimestamp = timestamp.toString();
+    print('callback2() - timestamp: $strTimestamp');
+
+    FlutterForegroundTask.update(
+        notificationTitle: 'callback2()',
+        notificationText: strTimestamp);
   });
 }
 ```
