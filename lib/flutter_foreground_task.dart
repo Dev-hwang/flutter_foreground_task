@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
@@ -17,47 +19,33 @@ export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
 /// Called with a timestamp value as a task callback function.
-typedef TaskCallback = void Function(DateTime timestamp);
+typedef TaskCallback = Future<void> Function(DateTime timestamp);
 
 /// A class that implement foreground task and provide useful utilities.
 class FlutterForegroundTask {
-  FlutterForegroundTask._internal();
+  static const _methodChannel = MethodChannel('flutter_foreground_task/method');
 
-  /// Instance of [FlutterForegroundTask].
-  static final instance = FlutterForegroundTask._internal();
-
-  /// Method channel to communicate with the platform.
-  final _methodChannel = const MethodChannel('flutter_foreground_task/method');
-
-  /// Optional values for notification detail settings.
-  NotificationOptions? _notificationOptions;
-
-  /// Optional values for foreground task detail settings.
-  ForegroundTaskOptions? _foregroundTaskOptions;
-
-  /// Callback function to be called every interval of [ForegroundTaskOptions].
-  TaskCallback? _taskCallback;
-
-  /// Timer that implements the interval of [ForegroundTaskOptions].
-  Timer? _taskTimer;
+  static NotificationOptions? _notificationOptions;
+  static ForegroundTaskOptions? _foregroundTaskOptions;
+  static bool _printDevLog = false;
 
   /// Initialize the [FlutterForegroundTask].
-  FlutterForegroundTask init({
+  static Future<void> init({
     required NotificationOptions notificationOptions,
-    ForegroundTaskOptions? foregroundTaskOptions
-  }) {
+    ForegroundTaskOptions? foregroundTaskOptions,
+    bool? printDevLog,
+  }) async {
     _notificationOptions = notificationOptions;
     _foregroundTaskOptions = foregroundTaskOptions ??
         _foregroundTaskOptions ?? const ForegroundTaskOptions();
-
-    return this;
+    _printDevLog = printDevLog ?? _printDevLog;
   }
 
   /// Start foreground task with notification.
-  Future<void> start({
+  static Future<void> start({
     required String notificationTitle,
     required String notificationText,
-    TaskCallback? taskCallback
+    Function? callback,
   }) async {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
@@ -73,22 +61,22 @@ class FlutterForegroundTask {
     final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
-    _methodChannel.invokeMethod('startForegroundService', options);
-
-    if (taskCallback != null) {
-      _stopTaskTimer();
-      _startTaskTimer(taskCallback);
+    if (callback != null) {
+      options.addAll(
+          _foregroundTaskOptions?.toJson() ?? Map<String, dynamic>());
+      options['callbackHandle'] =
+          PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    if (!kReleaseMode)
-      dev.log('FlutterForegroundTask started.');
+    _methodChannel.invokeMethod('startForegroundService', options);
+    _printMessage('FlutterForegroundTask started.');
   }
 
   /// Update foreground task.
-  Future<void> update({
-    required String notificationTitle,
-    required String notificationText,
-    TaskCallback? taskCallback
+  static Future<void> update({
+    String? notificationTitle,
+    String? notificationText,
+    Function? callback,
   }) async {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
@@ -96,22 +84,20 @@ class FlutterForegroundTask {
     // If the task is not running, the update function is not executed.
     if (!await isRunningTask) return;
 
-    final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
+    final options = Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
-    _methodChannel.invokeMethod('updateForegroundService', options);
-
-    if (taskCallback != null) {
-      _stopTaskTimer();
-      _startTaskTimer(taskCallback);
+    if (callback != null) {
+      options['callbackHandle'] =
+          PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    if (!kReleaseMode)
-      dev.log('FlutterForegroundTask updated.');
+    _methodChannel.invokeMethod('updateForegroundService', options);
+    _printMessage('FlutterForegroundTask updated.');
   }
 
   /// Stop foreground task.
-  Future<void> stop() async {
+  static Future<void> stop() async {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
@@ -119,35 +105,19 @@ class FlutterForegroundTask {
     if (!await isRunningTask) return;
 
     _methodChannel.invokeMethod('stopForegroundService');
-    _stopTaskTimer();
-
-    if (!kReleaseMode)
-      dev.log('FlutterForegroundTask stopped.');
+    _printMessage('FlutterForegroundTask stopped.');
   }
 
   /// Returns whether the foreground task is running.
-  Future<bool> get isRunningTask async {
+  static Future<bool> get isRunningTask async {
     // It always returns false on non-Android platforms.
     if (!Platform.isAndroid) return false;
 
     return await _methodChannel.invokeMethod('isRunningService');
   }
 
-  void _startTaskTimer(TaskCallback taskCallback) {
-    _taskCallback = taskCallback;
-    _taskTimer = Timer.periodic(
-        Duration(milliseconds: _foregroundTaskOptions?.interval ?? 5000),
-        (_) => _taskCallback!(DateTime.now()));
-  }
-
-  void _stopTaskTimer() {
-    _taskTimer?.cancel();
-    _taskTimer = null;
-    _taskCallback = null;
-  }
-
   /// Minimize without closing the app.
-  void minimizeApp() {
+  static void minimizeApp() {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
@@ -155,10 +125,35 @@ class FlutterForegroundTask {
   }
 
   /// Wake up the screen that is turned off.
-  void wakeUpScreen() {
+  static void wakeUpScreen() {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
     _methodChannel.invokeMethod('wakeUpScreen');
+  }
+
+  /// Initialize Dispatcher to relay events occurring in the foreground service to taskCallback.
+  /// It must always be called from a top-level function, otherwise foreground tasks will not work.
+  static void initDispatcher(TaskCallback taskCallback) {
+    // Create a method channel to communicate with the platform.
+    const _backgroundChannel = MethodChannel('flutter_foreground_task/background');
+
+    // Binding the framework to the flutter engine.
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // Set the method call handler for the background channel.
+    _backgroundChannel.setMethodCallHandler((call) async {
+      await taskCallback(DateTime.now());
+    });
+
+    // Initializes the plug-in background channel and starts a foreground task.
+    _backgroundChannel.invokeMethod('initialize');
+  }
+
+  static void _printMessage(String message) {
+    if (kReleaseMode || _printDevLog == false) return;
+
+    final nowDateTime = DateTime.now().toString();
+    dev.log('$nowDateTime\t$message');
   }
 }

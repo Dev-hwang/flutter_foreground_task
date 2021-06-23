@@ -2,7 +2,7 @@
 class ForegroundTaskOptions {
   /// Constructs an instance of [ForegroundTaskOptions].
   const ForegroundTaskOptions({
-    this.interval = 5000
+    this.interval = 5000,
   });
 
   /// The task call interval in milliseconds.

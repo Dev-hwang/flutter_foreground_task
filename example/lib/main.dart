@@ -3,38 +3,55 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 void main() => runApp(ExampleApp());
 
+// The callback function should always be a top-level function.
+void callback() {
+  FlutterForegroundTask.initDispatcher((timestamp) async {
+    final strTimestamp = timestamp.toString();
+    print('timestamp: $strTimestamp');
+
+    FlutterForegroundTask.update(notificationText: strTimestamp);
+  });
+}
+
 class ExampleApp extends StatefulWidget {
   @override
   _ExampleAppState createState() => _ExampleAppState();
 }
 
 class _ExampleAppState extends State<ExampleApp> {
-  final _flutterForegroundTask = FlutterForegroundTask.instance.init(
-    notificationOptions: NotificationOptions(
-      channelId: 'notification_channel_id',
-      channelName: 'Foreground Notification',
-      channelDescription: 'This notification appears when a foreground task is running.',
-      channelImportance: NotificationChannelImportance.DEFAULT,
-      priority: NotificationPriority.DEFAULT,
-      icon: '@mipmap/ic_launcher',
-    ),
-    foregroundTaskOptions: ForegroundTaskOptions(
-      interval: 5000,
-    ),
-  );
+  void _initForegroundTask() {
+    FlutterForegroundTask.init(
+      notificationOptions: NotificationOptions(
+        channelId: 'notification_channel_id',
+        channelName: 'Foreground Notification',
+        channelDescription: 'This notification appears when a foreground task is running.',
+        channelImportance: NotificationChannelImportance.LOW,
+        priority: NotificationPriority.LOW,
+        icon: '@mipmap/ic_launcher',
+      ),
+      foregroundTaskOptions: ForegroundTaskOptions(
+        interval: 5000,
+      ),
+      printDevLog: true,
+    );
+  }
 
   void _startForegroundTask() {
-    _flutterForegroundTask.start(
+    FlutterForegroundTask.start(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
-      taskCallback: (DateTime timestamp) {
-        print('timestamp: $timestamp');
-      },
+      callback: callback,
     );
   }
   
   void _stopForegroundTask() {
-    _flutterForegroundTask.stop();
+    FlutterForegroundTask.stop();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initForegroundTask();
   }
 
   @override
@@ -43,7 +60,6 @@ class _ExampleAppState extends State<ExampleApp> {
       // A widget that prevents the app from closing when a foreground task is running.
       // Declare on top of the [Scaffold] widget.
       home: WithForegroundTask(
-        foregroundTask: _flutterForegroundTask,
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Flutter Foreground Task'),

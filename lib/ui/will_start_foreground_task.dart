@@ -13,14 +13,20 @@ class WillStartForegroundTask extends StatefulWidget {
   /// Optional values for foreground task detail settings.
   final ForegroundTaskOptions? foregroundTaskOptions;
 
+  /// Whether to show the developer log.
+  /// If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin.
+  /// It does not work in release mode.
+  /// The default is `false`.
+  final bool? printDevLog;
+
   /// The title that will be displayed in the notification.
   final String notificationTitle;
 
   /// The text that will be displayed in the notification.
   final String notificationText;
 
-  /// Callback function to be called every interval of [ForegroundTaskOptions].
-  final TaskCallback? taskCallback;
+  /// A top-level function that calls the initDispatcher function.
+  final Function? callback;
 
   /// A child widget that contains the [Scaffold] widget.
   final Widget child;
@@ -31,10 +37,11 @@ class WillStartForegroundTask extends StatefulWidget {
     required this.onWillStart,
     required this.notificationOptions,
     this.foregroundTaskOptions,
+    this.printDevLog,
     required this.notificationTitle,
     required this.notificationText,
-    this.taskCallback,
-    required this.child
+    this.callback,
+    required this.child,
   })  : super(key: key);
 
   @override
@@ -44,25 +51,26 @@ class WillStartForegroundTask extends StatefulWidget {
 class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     with WidgetsBindingObserver {
   void _initForegroundTask() {
-    FlutterForegroundTask.instance.init(
+    FlutterForegroundTask.init(
         notificationOptions: widget.notificationOptions,
-        foregroundTaskOptions: widget.foregroundTaskOptions);
+        foregroundTaskOptions: widget.foregroundTaskOptions,
+        printDevLog: widget.printDevLog);
   }
 
   void _startForegroundTask() {
-    FlutterForegroundTask.instance.start(
+    FlutterForegroundTask.start(
         notificationTitle: widget.notificationTitle,
         notificationText: widget.notificationText,
-        taskCallback: widget.taskCallback);
+        callback: widget.callback);
   }
 
   void _stopForegroundTask() {
-    FlutterForegroundTask.instance.stop();
+    FlutterForegroundTask.stop();
   }
 
   Future<bool> _onWillPop() async {
     if (widget.onWillStart()) {
-      FlutterForegroundTask.instance.minimizeApp();
+      FlutterForegroundTask.minimizeApp();
       return false;
     }
 

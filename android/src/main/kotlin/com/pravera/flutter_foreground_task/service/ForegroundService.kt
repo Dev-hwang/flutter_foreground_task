@@ -8,9 +8,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import io.flutter.FlutterInjector
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.embedding.engine.loader.FlutterLoader
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.view.FlutterCallbackInformation
+import kotlinx.coroutines.*
 
 /**
  * Service class for implementing foreground service.
@@ -18,12 +28,17 @@ import androidx.core.app.NotificationCompat
  * @author Dev-hwang
  * @version 1.0
  */
-open class ForegroundService: Service() {
+open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	companion object {
 		const val TAG = "ForegroundService"
 		var isRunningService = false 
 			private set
 	}
+
+	private var flutterLoader: FlutterLoader? = null
+	private var flutterEngine: FlutterEngine? = null
+	private var backgroundChannel: MethodChannel? = null
+	private var backgroundJob: Job? = null
 
 	open var serviceId: Int = 1000
 	open var notificationChannelId: String = ""
@@ -36,25 +51,32 @@ open class ForegroundService: Service() {
 	open var enableVibration: Boolean = false
 	open var playSound: Boolean = true
 	open var icon: String? = null
+	open var interval: Long = 5000L
+	open var callbackHandle: Long? = null
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		val bundle = intent?.extras
 		if (bundle != null) {
 			notificationChannelId = bundle.getString("notificationChannelId", notificationChannelId)
 			notificationChannelName = bundle.getString("notificationChannelName", notificationChannelName)
-			notificationChannelDescription = bundle.getString("notificationChannelDescription")
+			notificationChannelDescription = bundle.getString("notificationChannelDescription", notificationChannelDescription)
 			notificationChannelImportance = bundle.getInt("notificationChannelImportance", notificationChannelImportance)
 			notificationPriority = bundle.getInt("notificationPriority", notificationPriority)
 			notificationContentTitle = bundle.getString("notificationContentTitle", notificationContentTitle)
 			notificationContentText = bundle.getString("notificationContentText", notificationContentText)
 			enableVibration = bundle.getBoolean("enableVibration", enableVibration)
 			playSound = bundle.getBoolean("playSound", playSound)
-			icon = bundle.getString("icon")
+			icon = bundle.getString("icon", icon)
+			interval = bundle.getLong("interval", interval)
+			callbackHandle = if (bundle.containsKey("callbackHandle")) bundle.getLong("callbackHandle") else null
 		}
 
 		when (intent?.action) {
 			ForegroundServiceAction.START,
-			ForegroundServiceAction.UPDATE -> startForegroundService()
+			ForegroundServiceAction.UPDATE -> {
+				startForegroundService()
+				initForegroundTask()
+			}
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
 
@@ -63,6 +85,11 @@ open class ForegroundService: Service() {
 
 	override fun onBind(p0: Intent?): IBinder? {
 		return null
+	}
+
+	override fun onDestroy() {
+		super.onDestroy()
+		destroyForegroundTask()
 	}
 
 	private fun startForegroundService() {
@@ -103,6 +130,62 @@ open class ForegroundService: Service() {
 		isRunningService = false
 	}
 
+	private fun initForegroundTask() {
+		// If there is no callback handle, the code below will not be executed.
+		if (callbackHandle == null) return
+
+		// If there is an already initialized foreground task, destroy it and perform initialization.
+		if (flutterEngine != null) destroyForegroundTask()
+
+		flutterEngine = FlutterEngine(this)
+
+		flutterLoader = FlutterInjector.instance().flutterLoader()
+		flutterLoader!!.startInitialization(this)
+		flutterLoader!!.ensureInitializationComplete(this, null)
+
+		val messenger = flutterEngine!!.dartExecutor.binaryMessenger
+		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
+		backgroundChannel!!.setMethodCallHandler(this)
+
+		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle!!)
+		val appBundlePath = flutterLoader!!.findAppBundlePath()
+		val dartCallback = DartExecutor.DartCallback(assets, appBundlePath, callbackInfo)
+		flutterEngine!!.dartExecutor.executeDartCallback(dartCallback)
+	}
+
+	private fun startForegroundTask() {
+		if (backgroundJob != null) stopForegroundTask()
+
+		val handler = Handler(Looper.getMainLooper())
+		backgroundJob = GlobalScope.launch {
+			while (isActive) {
+				handler.post {
+					try {
+						backgroundChannel?.invokeMethod("event", null)
+					} catch (e: Exception) {
+						Log.e(TAG, "invokeMethod", e)
+					}
+				}
+
+				delay(interval)
+			}
+		}
+	}
+
+	private fun stopForegroundTask() {
+		backgroundJob?.cancel()
+		backgroundJob = null
+	}
+
+	private fun destroyForegroundTask() {
+		stopForegroundTask()
+		backgroundChannel?.setMethodCallHandler(null)
+		backgroundChannel = null
+		flutterEngine?.destroy()
+		flutterEngine = null
+		flutterLoader = null
+	}
+
 	private fun getDrawableResourceId(icon: String): Int {
 		return applicationContext.resources.getIdentifier(
 				icon, "drawable", applicationContext.packageName)
@@ -114,7 +197,7 @@ open class ForegroundService: Service() {
 					applicationContext.packageName, PackageManager.GET_META_DATA)
 			appInfo.icon
 		} catch (e: PackageManager.NameNotFoundException) {
-			Log.e(TAG, "getAppIconResourceId()", e)
+			Log.e(TAG, "getAppIconResourceId", e)
 			0
 		}
 	}
@@ -122,5 +205,12 @@ open class ForegroundService: Service() {
 	private fun getPendingIntent(pm: PackageManager): PendingIntent {
 		val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
 		return PendingIntent.getActivity(this, 0, launchIntent, 0)
+	}
+
+	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+		when (call.method) {
+			"initialize" -> startForegroundTask()
+			else -> result.notImplemented()
+		}
 	}
 }

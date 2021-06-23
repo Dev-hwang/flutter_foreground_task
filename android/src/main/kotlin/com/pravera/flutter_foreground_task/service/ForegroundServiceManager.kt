@@ -21,7 +21,7 @@ class ForegroundServiceManager {
 	fun start(context: Context, call: MethodCall) {
 		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.START
-		putNotificationOptions(intent, call)
+		putOptions(intent, call)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
 			context.startForegroundService(intent)
@@ -38,7 +38,7 @@ class ForegroundServiceManager {
 	fun update(context: Context, call: MethodCall) {
 		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.UPDATE
-		putNotificationOptions(intent, call)
+		putOptions(intent, call)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
 			context.startForegroundService(intent)
@@ -71,7 +71,7 @@ class ForegroundServiceManager {
 		return ForegroundService.isRunningService
 	}
 
-	private fun putNotificationOptions(intent: Intent, call: MethodCall) {
+	private fun putOptions(intent: Intent, call: MethodCall) {
 		intent.putExtra("notificationChannelId", call.argument<String>("notificationChannelId"))
 		intent.putExtra("notificationChannelName", call.argument<String>("notificationChannelName"))
 		intent.putExtra("notificationChannelDescription", call.argument<String>("notificationChannelDescription"))
@@ -82,5 +82,11 @@ class ForegroundServiceManager {
 		intent.putExtra("enableVibration", call.argument<Boolean>("enableVibration"))
 		intent.putExtra("playSound", call.argument<Boolean>("playSound"))
 		intent.putExtra("icon", call.argument<String>("icon"))
+
+		val interval = call.argument<Int>("interval")
+		if (interval != null) intent.putExtra("interval", "$interval".toLong())
+
+		val callbackHandle = call.argument<Long>("callbackHandle")
+		if (callbackHandle != null) intent.putExtra("callbackHandle", callbackHandle)
 	}
 }

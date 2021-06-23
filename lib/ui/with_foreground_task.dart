@@ -4,16 +4,12 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 /// A widget that prevents the app from closing when a foreground task is running.
 /// Declare on top of the [Scaffold] widget.
 class WithForegroundTask extends StatefulWidget {
-  /// Foreground task instance being used on the current page.
-  final FlutterForegroundTask foregroundTask;
-
   /// A child widget that contains the [Scaffold] widget.
   final Widget child;
 
   const WithForegroundTask({
     Key? key,
-    required this.foregroundTask,
-    required this.child
+    required this.child,
   })  : super(key: key);
 
   @override
@@ -22,8 +18,8 @@ class WithForegroundTask extends StatefulWidget {
 
 class _WithForegroundTaskState extends State<WithForegroundTask> {
   Future<bool> _onWillPop() async {
-    if (await widget.foregroundTask.isRunningTask) {
-      widget.foregroundTask.minimizeApp();
+    if (await FlutterForegroundTask.isRunningTask) {
+      FlutterForegroundTask.minimizeApp();
       return false;
     }
 
