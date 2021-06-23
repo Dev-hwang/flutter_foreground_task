@@ -24,13 +24,13 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 Since this plugin is based on a foreground service, we need to add the following permission to the `AndroidManifest.xml` file. Open the `AndroidManifest.xml` file and specify it between the `<manifest>` and `<application>` tags.
 
-```
+```xml
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 ```
 
-And specify the service inside the `<application>` tag as follows.
+And specify the service inside the `<application>` tag as follows. Remove `stopWithTask` if you want the foreground task to run even if the user or system forces the app to close.
 
-```
+```xml
 <service
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
     android:stopWithTask="true" />
@@ -40,31 +40,43 @@ And specify the service inside the `<application>` tag as follows.
 
 This plugin has two ways to start a foreground task. There are two ways to start the foreground task manually and to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
 
-### :hatched_chick: Start manually
+#### :hatched_chick: Start manually
 
-1. Create a `FlutterForegroundTask` instance and perform initialization. `FlutterForegroundTask.instance.init()` provides notification and task options, detailed options are as follows:
+1. Initialize the `FlutterForegroundTask`. `FlutterForegroundTask.init()` provides notification and task options, detailed options are as follows:
 * `channelId`: Unique ID of the notification channel.
 * `channelName`: The name of the notification channel. This value is displayed to the user in the notification settings.
 * `channelDescription`: The description of the notification channel. This value is displayed to the user in the notification settings.
 * `channelImportance`: The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.
 * `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
+* `enableVibration`: Whether to enable vibration when creating notifications. The default is `false`.
+* `playSound`: Whether to play sound when creating notifications. The default is `true`.
 * `icon`: The icon name to be displayed in the notification. If the value is null, the app icon is used.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
+* `printDevLog`: Whether to show the developer log. If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin. It does not work in release mode. The default is `false`.
 
 ```dart
-final flutterForegroundTask = FlutterForegroundTask.instance.init(
-  notificationOptions: NotificationOptions(
-    channelId: 'notification_channel_id',
-    channelName: 'Foreground Notification',
-    channelDescription: 'This notification appears when a foreground task is running.',
-    channelImportance: NotificationChannelImportance.DEFAULT,
-    priority: NotificationPriority.DEFAULT,
-    icon: '@mipmap/ic_launcher',
-  ),
-  foregroundTaskOptions: ForegroundTaskOptions(
-    interval: 5000
-  )
-);
+void _initForegroundTask() {
+  FlutterForegroundTask.init(
+    notificationOptions: NotificationOptions(
+      channelId: 'notification_channel_id',
+      channelName: 'Foreground Notification',
+      channelDescription: 'This notification appears when a foreground task is running.',
+      channelImportance: NotificationChannelImportance.LOW,
+      priority: NotificationPriority.LOW,
+      icon: '@mipmap/ic_launcher',
+    ),
+    foregroundTaskOptions: ForegroundTaskOptions(
+      interval: 5000,
+    ),
+    printDevLog: true,
+  );
+}
+
+@override
+void initState() {
+  super.initState();
+  _initForegroundTask();
+}
 ```
 
 2. Add `WithForegroundTask` widget to prevent the app from closing when a foreground task is running.
@@ -79,70 +91,68 @@ Widget build(BuildContext context) {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter Foreground Task'),
-          centerTitle: true
+          centerTitle: true,
         ),
-        body: buildContentView()
+        body: buildContentView(),
       ),
     ),
   );
 }
 ```
 
-3. Start `FlutterForegroundTask` when a foreground task is needed. `FlutterForegroundTask.instance.start()` provides the following options:
+3. Write a foreground task start callback function and start the `FlutterForegroundTask`. `FlutterForegroundTask.start()` provides the following options:
 * `notificationTitle`: The title that will be displayed in the notification.
 * `notificationText`: The text that will be displayed in the notification.
-* `taskCallback`: Callback function to be called every interval of `ForegroundTaskOptions`.
+* `callback`: A top-level function that calls the initDispatcher function.
 
 ```dart
-void startForegroundTask() {
-  flutterForegroundTask.start(
-    notificationTitle: 'Foreground task is running',
-    notificationText: 'Tap to return to the app',
-    taskCallback: (DateTime timestamp) {
-      print('timestamp: $timestamp');
-    }
-  );
+// The callback function should always be a top-level function.
+void callback() {
+  FlutterForegroundTask.initDispatcher((timestamp) async {
+    final strTimestamp = timestamp.toString();
+    print('timestamp: $strTimestamp');
+  });
+}
+
+class ExampleApp extends StatefulWidget {
+  @override
+  _ExampleAppState createState() => _ExampleAppState();
+}
+
+class _ExampleAppState extends State<ExampleApp> {
+  // ...
+
+  void _startForegroundTask() {
+    FlutterForegroundTask.start(
+      notificationTitle: 'Foreground task is running',
+      notificationText: 'Tap to return to the app',
+      callback: callback,
+    );
+  }
 }
 ```
 
-4. Use `FlutterForegroundTask.instance.update()` to update the foreground task. The options are the same as the start function.
+4. Use `FlutterForegroundTask.update()` to update the foreground task. The options are the same as the start function.
 ```dart
-int count = 0;
-void startForegroundTask() {
-  flutterForegroundTask.start(
-    notificationTitle: 'Foreground task is running',
-    notificationText: 'Tap to return to the app',
-    taskCallback: (DateTime timestamp) {
-      count++;
+// The callback function should always be a top-level function.
+void callback() {
+  FlutterForegroundTask.initDispatcher((timestamp) async {
+    final strTimestamp = timestamp.toString();
+    print('timestamp: $strTimestamp');
 
-      // You can update the foreground task based on conditions
-      // such as count or specific timestamp.
-      if (count == 10)
-        updateWhenCount10();
-    }
-  );
-}
-
-void updateWhenCount10() {
-  flutterForegroundTask.update(
-    notificationTitle: 'Another Title',
-    notificationText: 'Another Text',
-    taskCallback: (DateTime timestamp) {
-      print('timestamp: $timestamp');
-    }
-  );
+    FlutterForegroundTask.update(notificationText: strTimestamp);
+  });
 }
 ```
 
-5. When you have completed the required foreground task, call `FlutterForegroundTask.instance.stop()`.
-
+5. When you have completed the required foreground task, call `FlutterForegroundTask.stop()`.
 ```dart
-void stopForegroundTask() {
-  flutterForegroundTask.stop();
+void _stopForegroundTask() {
+  FlutterForegroundTask.stop();
 }
 ```
 
-### :hatched_chick: Start with `WillStartForegroundTask` widget
+#### :hatched_chick: Start with `WillStartForegroundTask` widget
 
 ```dart
 @override
@@ -164,19 +174,18 @@ Widget build(BuildContext context) {
         icon: '@mipmap/ic_launcher',
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
-        interval: 5000
+        interval: 5000,
       ),
+      printDevLog: true,
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
-      taskCallback: (DateTime timestamp) {
-        print('timestamp: $timestamp');
-      },
+      callback: callback,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter Foreground Task'),
-          centerTitle: true
+          centerTitle: true,
         ),
-        body: buildContentView()
+        body: buildContentView(),
       ),
     ),
   );
