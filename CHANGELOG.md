@@ -1,3 +1,13 @@
+## 2.0.0
+
+* [**BREAKING**] Remove singleton `instance` of `FlutterForegroundTask`.
+* [**BREAKING**] `TaskCallback` return type changed from `void` to `Future<void>`.
+* [**BREAKING**] All functions of `FlutterForegroundTask` are applied as static.
+* [**BREAKING**] The way foreground task are registered has changed. See the readme for details.
+* Add `printDevLog` option.
+* Update Readme.
+* Update Example.
+
 ## 1.0.9
 
 * Add `icon` field to `NotificationOptions`.
