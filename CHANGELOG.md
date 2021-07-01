@@ -1,3 +1,8 @@
+## 2.0.1
+
+* Change the notification icon setting method.
+* Improved the code so that the notification icon is displayed properly even when using the resource shrinker.
+
 ## 2.0.0
 
 * [**BREAKING**] Remove singleton `instance` of `FlutterForegroundTask`.
