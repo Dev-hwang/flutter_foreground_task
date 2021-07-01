@@ -74,19 +74,26 @@ class ForegroundServiceManager {
 	private fun putOptions(intent: Intent, call: MethodCall) {
 		intent.putExtra("notificationChannelId", call.argument<String>("notificationChannelId"))
 		intent.putExtra("notificationChannelName", call.argument<String>("notificationChannelName"))
-		intent.putExtra("notificationChannelDescription", call.argument<String>("notificationChannelDescription"))
+		intent.putExtra("notificationChannelDescription", call.argument<String?>("notificationChannelDescription"))
 		intent.putExtra("notificationChannelImportance", call.argument<Int>("notificationChannelImportance"))
 		intent.putExtra("notificationPriority", call.argument<Int>("notificationPriority"))
 		intent.putExtra("notificationContentTitle", call.argument<String>("notificationContentTitle"))
 		intent.putExtra("notificationContentText", call.argument<String>("notificationContentText"))
 		intent.putExtra("enableVibration", call.argument<Boolean>("enableVibration"))
 		intent.putExtra("playSound", call.argument<Boolean>("playSound"))
-		intent.putExtra("icon", call.argument<String>("icon"))
+		val iconData = call.argument<HashMap<String, String>?>("iconData")
+		if (iconData != null) {
+			intent.putExtra("iconResType", iconData["resType"])
+			intent.putExtra("iconResPrefix", iconData["resPrefix"])
+			intent.putExtra("iconName", iconData["name"])
+		}
 
-		val interval = call.argument<Int>("interval")
-		if (interval != null) intent.putExtra("interval", "$interval".toLong())
+		val interval = call.argument<Int?>("interval")
+		if (interval != null)
+			intent.putExtra("interval", "$interval".toLong())
 
-		val callbackHandle = call.argument<Long>("callbackHandle")
-		if (callbackHandle != null) intent.putExtra("callbackHandle", callbackHandle)
+		val callbackHandle = call.argument<Long?>("callbackHandle")
+		if (callbackHandle != null)
+			intent.putExtra("callbackHandle", callbackHandle)
 	}
 }

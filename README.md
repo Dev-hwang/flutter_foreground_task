@@ -50,7 +50,7 @@ This plugin has two ways to start a foreground task. There are two ways to start
 * `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
 * `enableVibration`: Whether to enable vibration when creating notifications. The default is `false`.
 * `playSound`: Whether to play sound when creating notifications. The default is `true`.
-* `icon`: The icon name to be displayed in the notification. If the value is null, the app icon is used.
+* `iconData`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
 * `printDevLog`: Whether to show the developer log. If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin. It does not work in release mode. The default is `false`.
 
@@ -63,7 +63,11 @@ void _initForegroundTask() {
       channelDescription: 'This notification appears when a foreground task is running.',
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
-      icon: '@mipmap/ic_launcher',
+      iconData: NotificationIconData(
+        resType: ResourceType.mipmap,
+        resPrefix: ResourcePrefix.ic,
+        name: 'launcher',
+      ),
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
       interval: 5000,
@@ -189,7 +193,11 @@ Widget build(BuildContext context) {
         channelDescription: 'This notification appears when a foreground task is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
-        icon: '@mipmap/ic_launcher',
+        iconData: NotificationIconData(
+          resType: ResourceType.mipmap,
+          resPrefix: ResourcePrefix.ic,
+          name: 'launcher',
+        ),
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         interval: 5000,
@@ -225,7 +233,35 @@ Data class with notification options.
 | `priority` | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`. |
 | `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
 | `playSound` | Whether to play sound when creating notifications. The default is `true`. |
-| `icon` | The icon name to be displayed in the notification. If the value is null, the app icon is used. |
+| `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
+
+### :chicken: NotificationIconData
+
+Data for setting the notification icon.
+
+| Property | Description |
+|---|---|
+| `resType` | The resource type of the notification icon. If the resource is in the drawable folder, set it to `ResourceType.drawable`, if the resource is in the mipmap folder, set it to `ResourceType.mipmap`. |
+| `resPrefix` | The resource prefix of the notification icon. If the notification icon name is `ic_simple_notification`, set it to `ResourcePrefix.ic` and set `name` to `simple_notification`. |
+| `name` | Notification icon name without prefix. |
+
+### :chicken: ResourceType
+
+The resource type of the notification icon.
+
+| Value | Description |
+|---|---|
+| `drawable` | A resources in the drawable folder. The drawable folder is where all kinds of images are stored. |
+| `mipmap` | A resources in the mipmap folder. The mipmap folder is usually where the launcher icon image is stored. |
+
+### :chicken: ResourcePrefix
+
+The resource prefix of the notification icon.
+
+| Value | Description |
+|---|---|
+| `ic` | A resources with the `ic_` prefix. |
+| `img` | A resources with the `img_` prefix. |
 
 ### :chicken: ForegroundTaskOptions
 

@@ -1,4 +1,5 @@
 import 'package:flutter_foreground_task/models/notification_channel_importance.dart';
+import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 import 'package:flutter_foreground_task/models/notification_priority.dart';
 
 /// Data class with notification options.
@@ -12,7 +13,7 @@ class NotificationOptions {
     this.priority = NotificationPriority.DEFAULT,
     this.enableVibration = false,
     this.playSound = true,
-    this.icon,
+    this.iconData,
   });
 
   /// Unique ID of the notification channel.
@@ -43,9 +44,9 @@ class NotificationOptions {
   /// The default is `true`.
   final bool playSound;
 
-  /// The icon name to be displayed in the notification.
-  /// If the value is null, the app icon is used.
-  final String? icon;
+  /// The data of the icon to display in the notification.
+  /// If the value is null, the app launcher icon is used.
+  final NotificationIconData? iconData;
 
   /// Returns the data fields of [NotificationOptions] in JSON format.
   Map<String, dynamic> toJson() {
@@ -57,7 +58,7 @@ class NotificationOptions {
       'notificationPriority': priority.rawValue,
       'enableVibration': enableVibration,
       'playSound': playSound,
-      'icon': icon,
+      'iconData': iconData?.toJson(),
     };
   }
 }

@@ -50,7 +50,9 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	open var notificationContentText: String = ""
 	open var enableVibration: Boolean = false
 	open var playSound: Boolean = true
-	open var icon: String? = null
+	open var iconResType: String? = null
+	open var iconResPrefix: String? = null
+	open var iconName: String? = null
 	open var interval: Long = 5000L
 	open var callbackHandle: Long? = null
 
@@ -66,9 +68,14 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			notificationContentText = bundle.getString("notificationContentText", notificationContentText)
 			enableVibration = bundle.getBoolean("enableVibration", enableVibration)
 			playSound = bundle.getBoolean("playSound", playSound)
-			icon = bundle.getString("icon", icon)
+			iconResType = bundle.getString("iconResType", iconResType)
+			iconResPrefix = bundle.getString("iconResPrefix", iconResPrefix)
+			iconName = bundle.getString("iconName", iconName)
 			interval = bundle.getLong("interval", interval)
-			callbackHandle = if (bundle.containsKey("callbackHandle")) bundle.getLong("callbackHandle") else null
+			callbackHandle = if (bundle.containsKey("callbackHandle"))
+				bundle.getLong("callbackHandle")
+			else
+				null
 		}
 
 		when (intent?.action) {
@@ -94,9 +101,12 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	private fun startForegroundService() {
 		val pm = applicationContext.packageManager
-		val iconResId =
-				if (icon.isNullOrEmpty()) getAppIconResourceId(pm)
-				else getDrawableResourceId(icon!!)
+		val iconResId = if (iconResType.isNullOrEmpty()
+				|| iconResPrefix.isNullOrEmpty()
+				|| iconName.isNullOrEmpty())
+			getAppIconResourceId(pm)
+		else
+			getDrawableResourceId(iconResType!!, iconResPrefix!!, iconName!!)
 		val pendingIntent = getPendingIntent(pm)
 
 		val notificationBuilder = NotificationCompat.Builder(this, notificationChannelId)
@@ -186,9 +196,14 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		flutterLoader = null
 	}
 
-	private fun getDrawableResourceId(icon: String): Int {
+	private fun getDrawableResourceId(resType: String, resPrefix: String, name: String): Int {
+		val resName = if (resPrefix.contains("ic"))
+			String.format("ic_%s", name)
+		else
+			String.format("img_%s", name)
+
 		return applicationContext.resources.getIdentifier(
-				icon, "drawable", applicationContext.packageName)
+				resName, resType, applicationContext.packageName)
 	}
 
 	private fun getAppIconResourceId(pm: PackageManager): Int {
