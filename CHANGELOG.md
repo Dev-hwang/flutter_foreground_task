@@ -1,3 +1,7 @@
+## 2.0.2
+
+* Add `onDestroy` to clean up used resources in callback functions.
+
 ## 2.0.1
 
 * Change the notification icon setting method.
