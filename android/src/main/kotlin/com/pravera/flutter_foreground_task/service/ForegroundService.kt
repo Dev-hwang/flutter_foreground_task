@@ -36,7 +36,8 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private var flutterLoader: FlutterLoader? = null
-	private var flutterEngine: FlutterEngine? = null
+	private var prevFlutterEngine: FlutterEngine? = null
+	private var currFlutterEngine: FlutterEngine? = null
 	private var backgroundChannel: MethodChannel? = null
 	private var backgroundJob: Job? = null
 
@@ -82,7 +83,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			ForegroundServiceAction.START,
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
-				initForegroundTask()
+				executeDartCallback()
 			}
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
@@ -140,27 +141,27 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		isRunningService = false
 	}
 
-	private fun initForegroundTask() {
+	private fun executeDartCallback() {
 		// If there is no callback handle, the code below will not be executed.
 		if (callbackHandle == null) return
 
 		// If there is an already initialized foreground task, destroy it and perform initialization.
-		if (flutterEngine != null) destroyForegroundTask()
+		if (currFlutterEngine != null) destroyForegroundTask()
 
-		flutterEngine = FlutterEngine(this)
+		currFlutterEngine = FlutterEngine(this)
 
 		flutterLoader = FlutterInjector.instance().flutterLoader()
 		flutterLoader!!.startInitialization(this)
 		flutterLoader!!.ensureInitializationComplete(this, null)
 
-		val messenger = flutterEngine!!.dartExecutor.binaryMessenger
+		val messenger = currFlutterEngine!!.dartExecutor.binaryMessenger
 		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
 		backgroundChannel!!.setMethodCallHandler(this)
 
 		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle!!)
 		val appBundlePath = flutterLoader!!.findAppBundlePath()
 		val dartCallback = DartExecutor.DartCallback(assets, appBundlePath, callbackInfo)
-		flutterEngine!!.dartExecutor.executeDartCallback(dartCallback)
+		currFlutterEngine!!.dartExecutor.executeDartCallback(dartCallback)
 	}
 
 	private fun startForegroundTask() {
@@ -183,18 +184,33 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private fun stopForegroundTask() {
-		backgroundChannel?.invokeMethod("stop", null)
 		backgroundJob?.cancel()
 		backgroundJob = null
 	}
 
 	private fun destroyForegroundTask() {
 		stopForegroundTask()
+		flutterLoader = null
+		prevFlutterEngine = currFlutterEngine
+		currFlutterEngine = null
+		backgroundChannel?.invokeMethod("stop", null, object : MethodChannel.Result {
+			override fun success(result: Any?) {
+				prevFlutterEngine?.destroy()
+				prevFlutterEngine = null
+			}
+
+			override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
+				prevFlutterEngine?.destroy()
+				prevFlutterEngine = null
+			}
+
+			override fun notImplemented() {
+				prevFlutterEngine?.destroy()
+				prevFlutterEngine = null
+			}
+		})
 		backgroundChannel?.setMethodCallHandler(null)
 		backgroundChannel = null
-		flutterEngine?.destroy()
-		flutterEngine = null
-		flutterLoader = null
 	}
 
 	private fun getDrawableResourceId(resType: String, resPrefix: String, name: String): Int {
