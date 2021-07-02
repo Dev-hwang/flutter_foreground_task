@@ -22,8 +22,8 @@ export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 /// Called with a timestamp value as a task callback function.
 typedef TaskCallback = Future<void> Function(DateTime timestamp);
 
-/// Called with a timestamp value as a stop callback function.
-typedef StopCallback = Future<void> Function(DateTime timestamp);
+/// Called with a timestamp value as a task destroy callback function.
+typedef DestroyCallback = Future<void> Function(DateTime timestamp);
 
 /// A class that implement foreground task and provide useful utilities.
 class FlutterForegroundTask {
@@ -138,7 +138,7 @@ class FlutterForegroundTask {
 
   /// Initialize Dispatcher to relay events occurring in the foreground service to taskCallback.
   /// It must always be called from a top-level function, otherwise foreground tasks will not work.
-  static void initDispatcher(TaskCallback taskCallback, {StopCallback? onStop}) {
+  static void initDispatcher(TaskCallback taskCallback, {DestroyCallback? onDestroy}) {
     // Create a method channel to communicate with the platform.
     const _backgroundChannel = MethodChannel('flutter_foreground_task/background');
 
@@ -150,9 +150,9 @@ class FlutterForegroundTask {
       final timestamp = DateTime.now();
       if (call.method == 'event') {
         await taskCallback(timestamp);
-      } else if (call.method == 'stop') {
-        if (onStop != null)
-          await onStop(timestamp);
+      } else if (call.method == 'destroy') {
+        if (onDestroy != null)
+          await onDestroy(timestamp);
       }
     });
 

@@ -193,7 +193,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		flutterLoader = null
 		prevFlutterEngine = currFlutterEngine
 		currFlutterEngine = null
-		backgroundChannel?.invokeMethod("stop", null, object : MethodChannel.Result {
+		backgroundChannel?.invokeMethod("destroy", null, object : MethodChannel.Result {
 			override fun success(result: Any?) {
 				prevFlutterEngine?.destroy()
 				prevFlutterEngine = null

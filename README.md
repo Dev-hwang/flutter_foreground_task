@@ -115,7 +115,7 @@ void callback() {
   FlutterForegroundTask.initDispatcher((timestamp) async {
     final strTimestamp = timestamp.toString();
     print('timestamp: $strTimestamp');
-  }, onStop: (timestamp) async {
+  }, onDestroy: (timestamp) async {
     print('callback() is dead.. x_x');
   });
 }
@@ -154,7 +154,7 @@ void callback() {
         callback: updateCount >= 10 ? callback2 : null);
 
     updateCount++;
-  }, onStop: (timestamp) async {
+  }, onDestroy: (timestamp) async {
     print('callback() is dead.. x_x');
   });
 }
@@ -167,7 +167,7 @@ void callback2() {
     FlutterForegroundTask.update(
         notificationTitle: 'callback2()',
         notificationText: strTimestamp);
-  }, onStop: (timestamp) async {
+  }, onDestroy: (timestamp) async {
     print('callback2() is dead.. x_x');
   });
 }
