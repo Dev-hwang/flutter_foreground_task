@@ -183,6 +183,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private fun stopForegroundTask() {
+		backgroundChannel?.invokeMethod("stop", null)
 		backgroundJob?.cancel()
 		backgroundJob = null
 	}

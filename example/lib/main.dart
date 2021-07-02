@@ -17,6 +17,8 @@ void callback() {
         callback: updateCount >= 10 ? callback2 : null);
 
     updateCount++;
+  }, onStop: (timestamp) async {
+    print('callback() is dead.. x_x');
   });
 }
 
@@ -28,6 +30,8 @@ void callback2() {
     FlutterForegroundTask.update(
         notificationTitle: 'callback2()',
         notificationText: strTimestamp);
+  }, onStop: (timestamp) async {
+    print('callback2() is dead.. x_x');
   });
 }
 
