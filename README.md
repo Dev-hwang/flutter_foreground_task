@@ -8,6 +8,7 @@ This plugin is used to implement a foreground service on the Android platform.
 * Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
 * Provides a widget that prevents the app from closing when a foreground task is running.
 * Provides a widget that can start a foreground task when trying to minimize or close the app.
+* Can automatically resume foreground task at boot time.
 
 ## Getting started
 
@@ -15,7 +16,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^2.0.2
+  flutter_foreground_task: ^2.0.3
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.

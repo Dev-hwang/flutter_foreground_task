@@ -1,3 +1,7 @@
+## 2.0.3
+
+* Add `autoRunOnBoot` field to `ForegroundTaskOptions`. Check the readme for more details.
+
 ## 2.0.2
 
 * Add `onDestroy` to clean up used resources in callback functions.
