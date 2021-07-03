@@ -21,7 +21,7 @@ class ForegroundServiceManager {
 	fun start(context: Context, call: MethodCall) {
 		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.START
-		putOptions(intent, call)
+		saveOptions(context, call)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
 			context.startForegroundService(intent)
@@ -38,7 +38,7 @@ class ForegroundServiceManager {
 	fun update(context: Context, call: MethodCall) {
 		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.UPDATE
-		putOptions(intent, call)
+		updateOptions(context, call)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
 			context.startForegroundService(intent)
@@ -57,6 +57,7 @@ class ForegroundServiceManager {
 
 		val intent = Intent(context, ForegroundService::class.java)
 		intent.action = ForegroundServiceAction.STOP
+		clearOptions(context)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
 			context.startForegroundService(intent)
@@ -71,29 +72,82 @@ class ForegroundServiceManager {
 		return ForegroundService.isRunningService
 	}
 
-	private fun putOptions(intent: Intent, call: MethodCall) {
-		intent.putExtra("notificationChannelId", call.argument<String>("notificationChannelId"))
-		intent.putExtra("notificationChannelName", call.argument<String>("notificationChannelName"))
-		intent.putExtra("notificationChannelDescription", call.argument<String?>("notificationChannelDescription"))
-		intent.putExtra("notificationChannelImportance", call.argument<Int>("notificationChannelImportance"))
-		intent.putExtra("notificationPriority", call.argument<Int>("notificationPriority"))
-		intent.putExtra("notificationContentTitle", call.argument<String>("notificationContentTitle"))
-		intent.putExtra("notificationContentText", call.argument<String>("notificationContentText"))
-		intent.putExtra("enableVibration", call.argument<Boolean>("enableVibration"))
-		intent.putExtra("playSound", call.argument<Boolean>("playSound"))
-		val iconData = call.argument<HashMap<String, String>?>("iconData")
-		if (iconData != null) {
-			intent.putExtra("iconResType", iconData["resType"])
-			intent.putExtra("iconResPrefix", iconData["resPrefix"])
-			intent.putExtra("iconName", iconData["name"])
+	private fun saveOptions(context: Context, call: MethodCall) {
+		val prefs = context.getSharedPreferences(
+				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
+
+		val notificationChannelId = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID) ?: ""
+		val notificationChannelName = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_NAME) ?: ""
+		val notificationChannelDesc = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_DESC)
+		val notificationChannelImportance = call.argument<Int>(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE) ?: 3
+		val notificationPriority = call.argument<Int>(ForegroundServicePrefsKey.NOTIFICATION_PRIORITY) ?: 0
+		val notificationContentTitle = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE) ?: ""
+		val notificationContentText = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT) ?: ""
+		val enableVibration = call.argument<Boolean>(ForegroundServicePrefsKey.ENABLE_VIBRATION) ?: false
+		val playSound = call.argument<Boolean>(ForegroundServicePrefsKey.PLAY_SOUND) ?: true
+
+		val iconData = call.argument<HashMap<String, String>>("iconData")
+		val iconResType: String? = iconData?.get(ForegroundServicePrefsKey.ICON_RES_TYPE)
+		val iconResPrefix: String? = iconData?.get(ForegroundServicePrefsKey.ICON_RES_PREFIX)
+		val iconName: String? = iconData?.get(ForegroundServicePrefsKey.ICON_NAME)
+
+		val taskInterval = call.argument<Int>(ForegroundServicePrefsKey.TASK_INTERVAL) ?: 5000
+		val autoRunOnBoot = call.argument<Boolean>(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT) ?: false
+		val callbackHandle = call.argument<Long>(ForegroundServicePrefsKey.CALLBACK_HANDLE)
+
+		with (prefs.edit()) {
+			putString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId)
+			putString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName)
+			putString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_DESC, notificationChannelDesc)
+			putInt(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, notificationChannelImportance)
+			putInt(ForegroundServicePrefsKey.NOTIFICATION_PRIORITY, notificationPriority)
+			putString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle)
+			putString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText)
+			putBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
+			putBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
+			putString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
+			putString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
+			putString(ForegroundServicePrefsKey.ICON_NAME, iconName)
+			putLong(ForegroundServicePrefsKey.TASK_INTERVAL, "$taskInterval".toLong())
+			putBoolean(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT, autoRunOnBoot)
+			remove(ForegroundServicePrefsKey.CALLBACK_HANDLE)
+			if (callbackHandle != null) {
+				putLong(ForegroundServicePrefsKey.CALLBACK_HANDLE, callbackHandle)
+				putLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, callbackHandle)
+			}
+			commit()
 		}
+	}
 
-		val interval = call.argument<Int?>("interval")
-		if (interval != null)
-			intent.putExtra("interval", "$interval".toLong())
+	private fun updateOptions(context: Context, call: MethodCall) {
+		val prefs = context.getSharedPreferences(
+				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
 
-		val callbackHandle = call.argument<Long?>("callbackHandle")
-		if (callbackHandle != null)
-			intent.putExtra("callbackHandle", callbackHandle)
+		val notificationContentTitle = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE)
+				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, "")
+		val notificationContentText = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT)
+				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, "")
+		val callbackHandle = call.argument<Long>(ForegroundServicePrefsKey.CALLBACK_HANDLE)
+
+		with (prefs.edit()) {
+			putString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle)
+			putString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText)
+			remove(ForegroundServicePrefsKey.CALLBACK_HANDLE)
+			if (callbackHandle != null) {
+				putLong(ForegroundServicePrefsKey.CALLBACK_HANDLE, callbackHandle)
+				putLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, callbackHandle)
+			}
+			commit()
+		}
+	}
+
+	private fun clearOptions(context: Context) {
+		val prefs = context.getSharedPreferences(
+				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
+
+		with (prefs.edit()) {
+			clear()
+			commit()
+		}
 	}
 }

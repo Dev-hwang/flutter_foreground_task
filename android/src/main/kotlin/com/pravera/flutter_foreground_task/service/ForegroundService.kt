@@ -1,5 +1,6 @@
 package com.pravera.flutter_foreground_task.service
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -28,7 +29,7 @@ import kotlinx.coroutines.*
  * @author Dev-hwang
  * @version 1.0
  */
-open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
+class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	companion object {
 		const val TAG = "ForegroundService"
 		var isRunningService = false 
@@ -41,49 +42,56 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var backgroundChannel: MethodChannel? = null
 	private var backgroundJob: Job? = null
 
-	open var serviceId: Int = 1000
-	open var notificationChannelId: String = ""
-	open var notificationChannelName: String = ""
-	open var notificationChannelDescription: String? = null
-	open var notificationChannelImportance: Int = 3
-	open var notificationPriority: Int = 0
-	open var notificationContentTitle: String = ""
-	open var notificationContentText: String = ""
-	open var enableVibration: Boolean = false
-	open var playSound: Boolean = true
-	open var iconResType: String? = null
-	open var iconResPrefix: String? = null
-	open var iconName: String? = null
-	open var interval: Long = 5000L
-	open var callbackHandle: Long? = null
+	private var serviceId: Int = 1000
+	private var notificationChannelId: String = ""
+	private var notificationChannelName: String = ""
+	private var notificationChannelDesc: String? = null
+	private var notificationChannelImportance: Int = 3
+	private var notificationPriority: Int = 0
+	private var notificationContentTitle: String = ""
+	private var notificationContentText: String = ""
+	private var enableVibration: Boolean = false
+	private var playSound: Boolean = true
+	private var iconResType: String? = null
+	private var iconResPrefix: String? = null
+	private var iconName: String? = null
+	private var taskInterval: Long = 5000L
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-		val bundle = intent?.extras
-		if (bundle != null) {
-			notificationChannelId = bundle.getString("notificationChannelId", notificationChannelId)
-			notificationChannelName = bundle.getString("notificationChannelName", notificationChannelName)
-			notificationChannelDescription = bundle.getString("notificationChannelDescription", notificationChannelDescription)
-			notificationChannelImportance = bundle.getInt("notificationChannelImportance", notificationChannelImportance)
-			notificationPriority = bundle.getInt("notificationPriority", notificationPriority)
-			notificationContentTitle = bundle.getString("notificationContentTitle", notificationContentTitle)
-			notificationContentText = bundle.getString("notificationContentText", notificationContentText)
-			enableVibration = bundle.getBoolean("enableVibration", enableVibration)
-			playSound = bundle.getBoolean("playSound", playSound)
-			iconResType = bundle.getString("iconResType", iconResType)
-			iconResPrefix = bundle.getString("iconResPrefix", iconResPrefix)
-			iconName = bundle.getString("iconName", iconName)
-			interval = bundle.getLong("interval", interval)
-			callbackHandle = if (bundle.containsKey("callbackHandle"))
-				bundle.getLong("callbackHandle")
-			else
-				null
-		}
+		val prefs = applicationContext.getSharedPreferences(
+				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE)
+
+		notificationChannelId = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
+		notificationChannelName = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName) ?: ""
+		notificationChannelDesc = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_DESC, notificationChannelDesc)
+		notificationChannelImportance = prefs.getInt(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, notificationChannelImportance)
+		notificationPriority = prefs.getInt(ForegroundServicePrefsKey.NOTIFICATION_PRIORITY, notificationPriority)
+		notificationContentTitle = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle) ?: ""
+		notificationContentText = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText) ?: ""
+		enableVibration = prefs.getBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
+		playSound = prefs.getBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
+		iconResType = prefs.getString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
+		iconResPrefix = prefs.getString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
+		iconName = prefs.getString(ForegroundServicePrefsKey.ICON_NAME, iconName)
+		taskInterval = prefs.getLong(ForegroundServicePrefsKey.TASK_INTERVAL, taskInterval)
 
 		when (intent?.action) {
 			ForegroundServiceAction.START,
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
-				executeDartCallback()
+				val callbackHandle = if (prefs.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE))
+					prefs.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE, 0L)
+				else
+					null
+				executeDartCallback(callbackHandle)
+			}
+			ForegroundServiceAction.REBOOT -> {
+				startForegroundService()
+				val callbackHandle = if (prefs.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT))
+					prefs.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
+				else
+					null
+				executeDartCallback(callbackHandle)
 			}
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
@@ -100,6 +108,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		destroyForegroundTask()
 	}
 
+	@SuppressLint("WrongConstant")
 	private fun startForegroundService() {
 		val pm = applicationContext.packageManager
 		val iconResId = if (iconResType.isNullOrEmpty()
@@ -124,7 +133,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			val channel = NotificationChannel(
 					notificationChannelId, notificationChannelName, notificationChannelImportance)
-			channel.description = notificationChannelDescription
+			channel.description = notificationChannelDesc
 			channel.enableVibration(enableVibration)
 			if (!playSound) channel.setSound(null, null)
 			val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -141,7 +150,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		isRunningService = false
 	}
 
-	private fun executeDartCallback() {
+	private fun executeDartCallback(callbackHandle: Long?) {
 		// If there is no callback handle, the code below will not be executed.
 		if (callbackHandle == null) return
 
@@ -158,7 +167,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
 		backgroundChannel!!.setMethodCallHandler(this)
 
-		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle!!)
+		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
 		val appBundlePath = flutterLoader!!.findAppBundlePath()
 		val dartCallback = DartExecutor.DartCallback(assets, appBundlePath, callbackInfo)
 		currFlutterEngine!!.dartExecutor.executeDartCallback(dartCallback)
@@ -178,7 +187,7 @@ open class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 					}
 				}
 
-				delay(interval)
+				delay(taskInterval)
 			}
 		}
 	}

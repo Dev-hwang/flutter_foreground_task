@@ -28,6 +28,12 @@ Since this plugin is based on a foreground service, we need to add the following
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 ```
 
+And we need to add this permission to automatically resume foreground task at boot time.
+
+```xml
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+```
+
 And specify the service inside the `<application>` tag as follows. Remove `stopWithTask` if you want the foreground task to run even if the user or system forces the app to close.
 
 ```xml
@@ -52,6 +58,7 @@ This plugin has two ways to start a foreground task. There are two ways to start
 * `playSound`: Whether to play sound when creating notifications. The default is `true`.
 * `iconData`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
+* `autoRunOnBoot`: Whether to automatically run foreground task on boot. The default is `false`.
 * `printDevLog`: Whether to show the developer log. If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin. It does not work in release mode. The default is `false`.
 
 ```dart
@@ -71,6 +78,7 @@ void _initForegroundTask() {
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
       interval: 5000,
+      autoRunOnBoot: true,
     ),
     printDevLog: true,
   );
@@ -276,6 +284,7 @@ Data class with foreground task options.
 | Property | Description |
 |---|---|
 | `interval` | The task call interval in milliseconds. The default is `5000`. |
+| `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`. |
 
 ### :chicken: NotificationChannelImportance
 

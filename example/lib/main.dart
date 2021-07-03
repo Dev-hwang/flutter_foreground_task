@@ -57,6 +57,7 @@ class _ExampleAppState extends State<ExampleApp> {
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         interval: 5000,
+        autoRunOnBoot: true,
       ),
       printDevLog: true,
     );
