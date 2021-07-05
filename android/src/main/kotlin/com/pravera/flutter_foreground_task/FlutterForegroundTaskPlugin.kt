@@ -8,7 +8,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 /** FlutterForegroundTaskPlugin */
 class FlutterForegroundTaskPlugin: FlutterPlugin, ActivityAware {
-  private lateinit var methodCallHandler : MethodCallHandlerImpl
+  private lateinit var methodCallHandler: MethodCallHandlerImpl
 
   override fun onAttachedToEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     methodCallHandler = MethodCallHandlerImpl(binding.applicationContext)
@@ -22,6 +22,7 @@ class FlutterForegroundTaskPlugin: FlutterPlugin, ActivityAware {
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     methodCallHandler.setActivity(binding.activity)
+    binding.addActivityResultListener(methodCallHandler)
   }
 
   override fun onDetachedFromActivityForConfigChanges() {

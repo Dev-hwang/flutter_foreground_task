@@ -136,6 +136,22 @@ class FlutterForegroundTask {
     _methodChannel.invokeMethod('wakeUpScreen');
   }
 
+  /// Returns whether the app has been excluded from battery optimization.
+  static Future<bool> get isIgnoringBatteryOptimizations async {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return true;
+
+    return await _methodChannel.invokeMethod('isIgnoringBatteryOptimizations');
+  }
+
+  /// Open the settings page where you can set ignore battery optimization.
+  static Future<bool> openIgnoreBatteryOptimizationSettings() async {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return true;
+
+    return await _methodChannel.invokeMethod('openIgnoreBatteryOptimizationSettings');
+  }
+
   /// Initialize Dispatcher to relay events occurring in the foreground service to taskCallback.
   /// It must always be called from a top-level function, otherwise foreground tasks will not work.
   static void initDispatcher(TaskCallback taskCallback, {DestroyCallback? onDestroy}) {
