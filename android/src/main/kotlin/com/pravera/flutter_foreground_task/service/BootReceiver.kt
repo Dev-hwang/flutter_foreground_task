@@ -5,6 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 
+/**
+ * The receiver that receives the BOOT_COMPLETED event.
+ *
+ * @author Dev-hwang
+ * @version 1.0
+ */
 class BootReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == "android.intent.action.BOOT_COMPLETED") {

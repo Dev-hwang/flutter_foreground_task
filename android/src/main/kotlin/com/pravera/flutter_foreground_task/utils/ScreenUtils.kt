@@ -13,7 +13,7 @@ import android.os.PowerManager
 class ScreenUtils {
 	companion object {
 		/**
-		 * Minimize without closing the app.
+		 * Minimize the app to the background.
 		 *
 		 * @param activity activity
 		 */
@@ -22,7 +22,7 @@ class ScreenUtils {
 		}
 
 		/**
-		 * Wake up the screen that is turned off.
+		 * Wake up the screen of a device that is turned off.
 		 *
 		 * @param context context
 		 */

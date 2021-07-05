@@ -1,5 +1,11 @@
 package com.pravera.flutter_foreground_task.service
 
+/**
+ * Key values for data stored in SharedPreferences.
+ *
+ * @author Dev-hwang
+ * @version 1.0
+ */
 object ForegroundServicePrefsKey {
     const val PREFS_NAME = "com.pravera.flutter_foreground_task.PREFERENCES"
     const val NOTIFICATION_CHANNEL_ID = "notificationChannelId"
