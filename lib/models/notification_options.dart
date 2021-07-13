@@ -1,6 +1,7 @@
 import 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 import 'package:flutter_foreground_task/models/notification_priority.dart';
+import 'package:flutter_foreground_task/models/notification_visibility.dart';
 
 /// Data class with notification options.
 class NotificationOptions {
@@ -14,6 +15,7 @@ class NotificationOptions {
     this.enableVibration = false,
     this.playSound = true,
     this.showWhen = false,
+    this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
     this.iconData,
   });
 
@@ -49,6 +51,10 @@ class NotificationOptions {
   /// The default is `false`.
   final bool showWhen;
 
+  /// Control the level of detail displayed in notifications on the lock screen.
+  /// The default is `NotificationVisibility.VISIBILITY_PUBLIC`.
+  final NotificationVisibility visibility;
+
   /// The data of the icon to display in the notification.
   /// If the value is null, the app launcher icon is used.
   final NotificationIconData? iconData;
@@ -64,6 +70,7 @@ class NotificationOptions {
       'enableVibration': enableVibration,
       'playSound': playSound,
       'showWhen': showWhen,
+      'visibility': visibility.rawValue,
       'iconData': iconData?.toJson(),
     };
   }

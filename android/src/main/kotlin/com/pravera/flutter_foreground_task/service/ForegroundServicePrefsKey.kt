@@ -18,6 +18,7 @@ object ForegroundServicePrefsKey {
     const val ENABLE_VIBRATION = "enableVibration"
     const val PLAY_SOUND = "playSound"
     const val SHOW_WHEN = "showWhen"
+    const val VISIBILITY = "visibility"
     const val ICON_RES_TYPE = "resType"
     const val ICON_RES_PREFIX = "resPrefix"
     const val ICON_NAME = "name"

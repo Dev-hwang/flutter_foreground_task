@@ -58,6 +58,7 @@ This plugin has two ways to start a foreground task. There are two ways to start
 * `enableVibration`: Whether to enable vibration when creating notifications. The default is `false`.
 * `playSound`: Whether to play sound when creating notifications. The default is `true`.
 * `showWhen`: Whether to show the timestamp when the notification was created in the content view. The default is `false`.
+* `visibility`: Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`.
 * `iconData`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
 * `autoRunOnBoot`: Whether to automatically run foreground task on boot. The default is `false`.
@@ -250,6 +251,7 @@ Data class with notification options.
 | `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
 | `playSound` | Whether to play sound when creating notifications. The default is `true`. |
 | `showWhen` | Whether to show the timestamp when the notification was created in the content view. The default is `false`. |
+| `visibility` | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
 | `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
 
 ### :chicken: NotificationIconData
@@ -313,6 +315,16 @@ Priority of notifications for Android 7.1 and lower.
 | `DEFAULT` | Makes a sound. |
 | `HIGH` | Makes a sound and appears as a heads-up notification. |
 | `MAX` | Same as HIGH, but used when you want to notify notification immediately. |
+
+### :chicken: NotificationVisibility
+
+The level of detail displayed in notifications on the lock screen.
+
+| Value | Description |
+|---|---|
+| `VISIBILITY_PUBLIC` | Show this notification in its entirety on all lockscreens. |
+| `VISIBILITY_SECRET` | Do not reveal any part of this notification on a secure lockscreen. |
+| `VISIBILITY_PRIVATE` | Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens. |
 
 ## Support
 

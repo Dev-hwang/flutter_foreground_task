@@ -53,6 +53,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var enableVibration: Boolean = false
 	private var playSound: Boolean = true
 	private var showWhen: Boolean = false
+	private var visibility: Int = 1
 	private var iconResType: String? = null
 	private var iconResPrefix: String? = null
 	private var iconName: String? = null
@@ -72,6 +73,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		enableVibration = prefs.getBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
 		playSound = prefs.getBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
 		showWhen = prefs.getBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
+		visibility = prefs.getInt(ForegroundServicePrefsKey.VISIBILITY, visibility)
 		iconResType = prefs.getString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
 		iconResPrefix = prefs.getString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
 		iconName = prefs.getString(ForegroundServicePrefsKey.ICON_NAME, iconName)
@@ -128,6 +130,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		notificationBuilder.setContentIntent(pendingIntent)
 		notificationBuilder.setContentTitle(notificationContentTitle)
 		notificationBuilder.setContentText(notificationContentText)
+		notificationBuilder.setVisibility(visibility)
 		if (!enableVibration) notificationBuilder.setVibrate(longArrayOf(0L))
 		if (!playSound) notificationBuilder.setSound(null)
 		notificationBuilder.priority = notificationPriority

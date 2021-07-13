@@ -16,6 +16,7 @@ export 'package:flutter_foreground_task/models/notification_channel_importance.d
 export 'package:flutter_foreground_task/models/notification_icon_data.dart';
 export 'package:flutter_foreground_task/models/notification_options.dart';
 export 'package:flutter_foreground_task/models/notification_priority.dart';
+export 'package:flutter_foreground_task/models/notification_visibility.dart';
 export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
