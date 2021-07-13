@@ -52,6 +52,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var notificationContentText: String = ""
 	private var enableVibration: Boolean = false
 	private var playSound: Boolean = true
+	private var showWhen: Boolean = false
 	private var iconResType: String? = null
 	private var iconResPrefix: String? = null
 	private var iconName: String? = null
@@ -70,6 +71,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		notificationContentText = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText) ?: ""
 		enableVibration = prefs.getBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
 		playSound = prefs.getBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
+		showWhen = prefs.getBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
 		iconResType = prefs.getString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
 		iconResPrefix = prefs.getString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
 		iconName = prefs.getString(ForegroundServicePrefsKey.ICON_NAME, iconName)
@@ -121,7 +123,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 		val notificationBuilder = NotificationCompat.Builder(this, notificationChannelId)
 		notificationBuilder.setOngoing(true)
-		notificationBuilder.setShowWhen(false)
+		notificationBuilder.setShowWhen(showWhen)
 		notificationBuilder.setSmallIcon(iconResId)
 		notificationBuilder.setContentIntent(pendingIntent)
 		notificationBuilder.setContentTitle(notificationContentTitle)

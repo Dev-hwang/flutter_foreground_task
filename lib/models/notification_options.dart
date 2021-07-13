@@ -13,6 +13,7 @@ class NotificationOptions {
     this.priority = NotificationPriority.DEFAULT,
     this.enableVibration = false,
     this.playSound = true,
+    this.showWhen = false,
     this.iconData,
   });
 
@@ -44,6 +45,10 @@ class NotificationOptions {
   /// The default is `true`.
   final bool playSound;
 
+  /// Whether to show the timestamp when the notification was created in the content view.
+  /// The default is `false`.
+  final bool showWhen;
+
   /// The data of the icon to display in the notification.
   /// If the value is null, the app launcher icon is used.
   final NotificationIconData? iconData;
@@ -58,6 +63,7 @@ class NotificationOptions {
       'notificationPriority': priority.rawValue,
       'enableVibration': enableVibration,
       'playSound': playSound,
+      'showWhen': showWhen,
       'iconData': iconData?.toJson(),
     };
   }

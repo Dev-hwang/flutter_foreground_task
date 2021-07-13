@@ -57,6 +57,7 @@ This plugin has two ways to start a foreground task. There are two ways to start
 * `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
 * `enableVibration`: Whether to enable vibration when creating notifications. The default is `false`.
 * `playSound`: Whether to play sound when creating notifications. The default is `true`.
+* `showWhen`: Whether to show the timestamp when the notification was created in the content view. The default is `false`.
 * `iconData`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
 * `interval`: The task call interval in milliseconds. The default is `5000`.
 * `autoRunOnBoot`: Whether to automatically run foreground task on boot. The default is `false`.
@@ -248,6 +249,7 @@ Data class with notification options.
 | `priority` | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`. |
 | `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
 | `playSound` | Whether to play sound when creating notifications. The default is `true`. |
+| `showWhen` | Whether to show the timestamp when the notification was created in the content view. The default is `false`. |
 | `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
 
 ### :chicken: NotificationIconData
