@@ -1,3 +1,10 @@
+## 2.0.4
+
+* Add utility methods related to battery optimization.
+* Add `showWhen` option.
+* Add `visibility` option.
+* Migrate example to null safety.
+
 ## 2.0.3
 
 * Add `autoRunOnBoot` field to `ForegroundTaskOptions`. Check the readme for more details.
