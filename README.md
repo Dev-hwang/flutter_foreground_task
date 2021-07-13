@@ -326,6 +326,56 @@ The level of detail displayed in notifications on the lock screen.
 | `VISIBILITY_SECRET` | Do not reveal any part of this notification on a secure lockscreen. |
 | `VISIBILITY_PRIVATE` | Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens. |
 
+## Utility methods
+
+### :lollipop: minimizeApp
+
+Minimize the app to the background.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+void function() {
+  FlutterForegroundTask.minimizeApp();
+}
+```
+
+### :lollipop: wakeUpScreen
+
+Wake up the screen of a device that is turned off.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+void function() {
+  FlutterForegroundTask.wakeUpScreen();
+}
+```
+
+### :lollipop: isIgnoringBatteryOptimizations
+
+Returns whether the app has been excluded from battery optimization.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+void function() async {
+  var result = await FlutterForegroundTask.isIgnoringBatteryOptimizations;
+}
+```
+
+### :lollipop: openIgnoreBatteryOptimizationSettings
+
+Open the settings page where you can set ignore battery optimization.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+void function() async {
+  var result = await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
+}
+```
+
 ## Support
 
 If you find any bugs or issues while using the plugin, please register an issues on [GitHub](https://github.com/Dev-hwang/flutter_foreground_task/issues). You can also contact us at <hwj930513@naver.com>.
