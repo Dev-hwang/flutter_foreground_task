@@ -1,3 +1,7 @@
+## 2.0.5
+
+* Fix `callbackHandle` type casting error.
+
 ## 2.0.4
 
 * Add utility methods related to battery optimization.
