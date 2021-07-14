@@ -95,7 +95,7 @@ class ForegroundServiceManager {
 
 		val taskInterval = call.argument<Int>(ForegroundServicePrefsKey.TASK_INTERVAL) ?: 5000
 		val autoRunOnBoot = call.argument<Boolean>(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT) ?: false
-		val callbackHandle = call.argument<Long>(ForegroundServicePrefsKey.CALLBACK_HANDLE)
+		val callbackHandle = "${call.argument<Any>(ForegroundServicePrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
 
 		with (prefs.edit()) {
 			putString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId)
@@ -131,7 +131,7 @@ class ForegroundServiceManager {
 				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, "")
 		val notificationContentText = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT)
 				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, "")
-		val callbackHandle = call.argument<Long>(ForegroundServicePrefsKey.CALLBACK_HANDLE)
+		val callbackHandle = "${call.argument<Any>(ForegroundServicePrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
 
 		with (prefs.edit()) {
 			putString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle)
