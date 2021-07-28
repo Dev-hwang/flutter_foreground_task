@@ -35,12 +35,10 @@ And we need to add this permission to automatically resume foreground task at bo
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 ```
 
-And specify the service inside the `<application>` tag as follows. Remove `stopWithTask` if you want the foreground task to run even if the user or system forces the app to close.
+And specify the service inside the `<application>` tag as follows.
 
 ```xml
-<service
-    android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-    android:stopWithTask="true" />
+<service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
 ```
 
 ## How to use
@@ -95,6 +93,7 @@ void initState() {
 ```
 
 2. Add `WithForegroundTask` widget to prevent the app from closing when a foreground task is running.
+
 ```dart
 @override
 Widget build(BuildContext context) {
@@ -102,7 +101,6 @@ Widget build(BuildContext context) {
     // A widget that prevents the app from closing when a foreground task is running.
     // Declare on top of the [Scaffold] widget.
     home: WithForegroundTask(
-      foregroundTask: flutterForegroundTask,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter Foreground Task'),
@@ -123,6 +121,8 @@ Widget build(BuildContext context) {
 ```dart
 // The callback function should always be a top-level function.
 void callback() {
+  // The initDispatcher function must be called to handle the task in the background.
+  // And the code to be executed except for the variable declaration must be written inside the initDispatcher function.
   FlutterForegroundTask.initDispatcher((timestamp) async {
     final strTimestamp = timestamp.toString();
     print('timestamp: $strTimestamp');
@@ -149,7 +149,32 @@ class _ExampleAppState extends State<ExampleApp> {
 }
 ```
 
+If the plugin you want to use provides a stream, use it like this:
+
+```dart
+void callback() {
+  final positionStream = Geolocator.getPositionStream();
+  StreamSubscription<Position>? streamSubscription;
+
+  FlutterForegroundTask.initDispatcher((timestamp) async {
+    if (streamSubscription != null) return;
+
+    streamSubscription = positionStream.listen((event) {
+      print('timestamp: ${timestamp.toString()}');
+
+      FlutterForegroundTask.update(
+          notificationTitle: 'Current Position',
+          notificationText: '${event.latitude}, ${event.longitude}');
+    });
+  }, onDestroy: (timestamp) async {
+    await streamSubscription?.cancel();
+    print('callback() is dead.. x_x');
+  });
+}
+```
+
 4. Use `FlutterForegroundTask.update()` to update the foreground task. The options are the same as the start function.
+
 ```dart
 // The callback function should always be a top-level function.
 void callback() {
@@ -185,6 +210,7 @@ void callback2() {
 ```
 
 5. When you have completed the required foreground task, call `FlutterForegroundTask.stop()`.
+
 ```dart
 void _stopForegroundTask() {
   FlutterForegroundTask.stop();
@@ -360,7 +386,7 @@ Returns whether the app has been excluded from battery optimization.
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 void function() async {
-  var result = await FlutterForegroundTask.isIgnoringBatteryOptimizations;
+  var isIgnoring = await FlutterForegroundTask.isIgnoringBatteryOptimizations;
 }
 ```
 
@@ -372,7 +398,7 @@ Open the settings page where you can set ignore battery optimization.
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 void function() async {
-  var result = await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
+  var isIgnoring = await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
 }
 ```
 
