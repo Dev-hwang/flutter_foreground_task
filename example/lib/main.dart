@@ -7,6 +7,8 @@ void main() => runApp(ExampleApp());
 void callback() {
   int updateCount = 0;
 
+  // The initDispatcher function must be called to handle the task in the background.
+  // And the code to be executed except for the variable declaration must be written inside the initDispatcher function.
   FlutterForegroundTask.initDispatcher((timestamp) async {
     final strTimestamp = timestamp.toString();
     print('callback() - timestamp: $strTimestamp');
