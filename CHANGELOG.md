@@ -1,3 +1,7 @@
+## 2.0.5+1
+
+* Update README.md
+
 ## 2.0.5
 
 * Fix `callbackHandle` type casting error.
@@ -29,7 +33,7 @@
 * [**BREAKING**] All functions of `FlutterForegroundTask` are applied as static.
 * [**BREAKING**] The way foreground task are registered has changed. See the readme for details.
 * Add `printDevLog` option.
-* Update Readme.
+* Update README.md
 * Update Example.
 
 ## 1.0.9
@@ -40,7 +44,7 @@
 ## 1.0.8
 
 * Add `FlutterForegroundTask.instance.update()` function.
-* Updates README.md
+* Update README.md
 
 ## 1.0.7
 
