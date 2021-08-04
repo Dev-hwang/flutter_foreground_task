@@ -57,7 +57,9 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
         printDevLog: widget.printDevLog);
   }
 
-  void _startForegroundTask() {
+  void _startForegroundTask() async {
+    if (await FlutterForegroundTask.isRunningTask) return;
+
     FlutterForegroundTask.start(
         notificationTitle: widget.notificationTitle,
         notificationText: widget.notificationText,
