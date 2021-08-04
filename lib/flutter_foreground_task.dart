@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -20,8 +21,10 @@ export 'package:flutter_foreground_task/models/notification_visibility.dart';
 export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
+const String _kPortName = 'isolateComPort';
+
 /// Called with a timestamp value as a task callback function.
-typedef TaskCallback = Future<void> Function(DateTime timestamp);
+typedef TaskCallback = Future<void> Function(DateTime timestamp, SendPort? sendPort);
 
 /// Called with a timestamp value as a task destroy callback function.
 typedef DestroyCallback = Future<void> Function(DateTime timestamp);
@@ -47,13 +50,13 @@ class FlutterForegroundTask {
   }
 
   /// Start foreground task with notification.
-  static Future<void> start({
+  static Future<ReceivePort?> start({
     required String notificationTitle,
     required String notificationText,
     Function? callback,
   }) async {
     // This function only works on Android.
-    if (!Platform.isAndroid) return;
+    if (!Platform.isAndroid) return null;
 
     if (await isRunningTask)
       throw ForegroundTaskException(
@@ -62,6 +65,11 @@ class FlutterForegroundTask {
     if (_notificationOptions == null)
       throw ForegroundTaskException(
           'Not initialized. Please call this function after calling the init function.');
+
+    final receivePort = _registerPort();
+    if (receivePort == null)
+      throw ForegroundTaskException(
+          'Failed to register SendPort to communicate with background isolate.');
 
     final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
@@ -75,6 +83,8 @@ class FlutterForegroundTask {
 
     _methodChannel.invokeMethod('startForegroundService', options);
     _printMessage('FlutterForegroundTask started.');
+
+    return receivePort;
   }
 
   /// Update foreground task.
@@ -84,10 +94,8 @@ class FlutterForegroundTask {
     Function? callback,
   }) async {
     // This function only works on Android.
-    if (!Platform.isAndroid) return;
-
-    // If the task is not running, the update function is not executed.
-    if (!await isRunningTask) return;
+    // And if the task is not running, the update function is not executed.
+    if (!Platform.isAndroid || !await isRunningTask) return;
 
     final options = Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
@@ -104,10 +112,10 @@ class FlutterForegroundTask {
   /// Stop foreground task.
   static Future<void> stop() async {
     // This function only works on Android.
-    if (!Platform.isAndroid) return;
+    // And if the task is not running, the update function is not executed.
+    if (!Platform.isAndroid || !await isRunningTask) return;
 
-    // If the task is not running, the stop function is not executed.
-    if (!await isRunningTask) return;
+    _removePort();
 
     _methodChannel.invokeMethod('stopForegroundService');
     _printMessage('FlutterForegroundTask stopped.');
@@ -166,7 +174,7 @@ class FlutterForegroundTask {
     _backgroundChannel.setMethodCallHandler((call) async {
       final timestamp = DateTime.now();
       if (call.method == 'event') {
-        await taskCallback(timestamp);
+        await taskCallback(timestamp, _lookupPort());
       } else if (call.method == 'destroy') {
         if (onDestroy != null)
           await onDestroy(timestamp);
@@ -175,6 +183,28 @@ class FlutterForegroundTask {
 
     // Initializes the plug-in background channel and starts a foreground task.
     _backgroundChannel.invokeMethod('initialize');
+  }
+
+  static ReceivePort? _registerPort() {
+    if (_removePort()) {
+      final receivePort = ReceivePort();
+      final sendPort = receivePort.sendPort;
+      if (IsolateNameServer.registerPortWithName(sendPort, _kPortName))
+        return receivePort;
+    }
+
+    return null;
+  }
+
+  static SendPort? _lookupPort() {
+    return IsolateNameServer.lookupPortByName(_kPortName);
+  }
+
+  static bool _removePort() {
+    if (_lookupPort() != null)
+      return IsolateNameServer.removePortNameMapping(_kPortName);
+
+    return true;
   }
 
   static void _printMessage(String message) {

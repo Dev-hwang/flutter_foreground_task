@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
@@ -10,7 +12,7 @@ void startCallback() {
   // The initDispatcher function must be called to handle the task in the background.
   // And the code to be executed except for the variable declaration
   // must be written inside the initDispatcher function.
-  FlutterForegroundTask.initDispatcher((timestamp) async {
+  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
     final strTimestamp = timestamp.toString();
     print('startCallback - timestamp: $strTimestamp');
 
@@ -19,6 +21,10 @@ void startCallback() {
         notificationText: strTimestamp,
         callback: updateCount >= 10 ? updateCallback : null);
 
+    // Send data to the main isolate.
+    sendPort?.send(timestamp);
+    sendPort?.send(updateCount);
+
     updateCount++;
   }, onDestroy: (timestamp) async {
     print('Dispatcher is dead.. x_x');
@@ -26,7 +32,7 @@ void startCallback() {
 }
 
 void updateCallback() {
-  FlutterForegroundTask.initDispatcher((timestamp) async {
+  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
     final strTimestamp = timestamp.toString();
     print('updateCallback - timestamp: $strTimestamp');
 
@@ -44,6 +50,8 @@ class ExampleApp extends StatefulWidget {
 }
 
 class _ExampleAppState extends State<ExampleApp> {
+  ReceivePort? _receivePort;
+
   void _initForegroundTask() {
     FlutterForegroundTask.init(
       notificationOptions: NotificationOptions(
@@ -66,12 +74,19 @@ class _ExampleAppState extends State<ExampleApp> {
     );
   }
 
-  void _startForegroundTask() {
-    FlutterForegroundTask.start(
+  void _startForegroundTask() async {
+    _receivePort = await FlutterForegroundTask.start(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,
     );
+
+    _receivePort?.listen((message) {
+      if (message is DateTime)
+        print('receive timestamp: $message');
+      else if (message is int)
+        print('receive updateCount: $message');
+    });
   }
   
   void _stopForegroundTask() {
@@ -82,6 +97,12 @@ class _ExampleAppState extends State<ExampleApp> {
   void initState() {
     super.initState();
     _initForegroundTask();
+  }
+
+  @override
+  void dispose() {
+    _receivePort?.close();
+    super.dispose();
   }
 
   @override
