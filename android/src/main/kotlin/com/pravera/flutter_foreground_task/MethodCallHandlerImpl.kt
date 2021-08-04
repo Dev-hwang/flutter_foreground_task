@@ -36,7 +36,7 @@ class MethodCallHandlerImpl(
 			}
 		}
 
-		when (call.method) {
+		when (reqMethod) {
 			"startForegroundService" ->
 				serviceProvider.getForegroundServiceManager().start(context, call)
 			"updateForegroundService" ->
