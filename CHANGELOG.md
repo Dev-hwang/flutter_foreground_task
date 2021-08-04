@@ -1,3 +1,9 @@
+## 2.1.0
+
+* Fixed duplicate call to startForegroundTask function.
+* Optimize android native code.
+* Add `sendPort` parameter to TaskCallback.
+
 ## 2.0.5+1
 
 * Update README.md
