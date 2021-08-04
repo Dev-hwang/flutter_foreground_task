@@ -68,9 +68,7 @@ class ForegroundServiceManager {
 	/**
 	 * Returns whether the foreground service is running.
 	 */
-	fun isRunningService(): Boolean {
-		return ForegroundService.isRunningService
-	}
+	fun isRunningService(): Boolean = ForegroundService.isRunningService
 
 	private fun saveOptions(context: Context, call: MethodCall) {
 		val prefs = context.getSharedPreferences(

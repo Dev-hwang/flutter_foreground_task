@@ -20,8 +20,8 @@ class ForegroundServiceUtils {
 		 *
 		 * @param activity activity
 		 */
-		fun minimizeApp(activity: Activity) {
-			activity.moveTaskToBack(true)
+		fun minimizeApp(activity: Activity?) {
+			activity?.moveTaskToBack(true)
 		}
 
 		/**
@@ -61,10 +61,10 @@ class ForegroundServiceUtils {
 		 * @param activity activity
 		 * @param requestCode the intent action request code.
 		 */
-		fun openIgnoreBatteryOptimizationSettings(activity: Activity, requestCode: Int) {
+		fun openIgnoreBatteryOptimizationSettings(activity: Activity?, requestCode: Int) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-				return activity.startActivityForResult(intent, requestCode)
+				activity?.startActivityForResult(intent, requestCode)
 			}
 		}
 	}
