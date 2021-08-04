@@ -4,36 +4,37 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 void main() => runApp(ExampleApp());
 
 // The callback function should always be a top-level function.
-void callback() {
+void startCallback() {
   int updateCount = 0;
 
   // The initDispatcher function must be called to handle the task in the background.
-  // And the code to be executed except for the variable declaration must be written inside the initDispatcher function.
+  // And the code to be executed except for the variable declaration
+  // must be written inside the initDispatcher function.
   FlutterForegroundTask.initDispatcher((timestamp) async {
     final strTimestamp = timestamp.toString();
-    print('callback() - timestamp: $strTimestamp');
+    print('startCallback - timestamp: $strTimestamp');
 
     FlutterForegroundTask.update(
-        notificationTitle: 'callback()',
+        notificationTitle: 'startCallback',
         notificationText: strTimestamp,
-        callback: updateCount >= 10 ? callback2 : null);
+        callback: updateCount >= 10 ? updateCallback : null);
 
     updateCount++;
   }, onDestroy: (timestamp) async {
-    print('callback() is dead.. x_x');
+    print('Dispatcher is dead.. x_x');
   });
 }
 
-void callback2() {
+void updateCallback() {
   FlutterForegroundTask.initDispatcher((timestamp) async {
     final strTimestamp = timestamp.toString();
-    print('callback2() - timestamp: $strTimestamp');
+    print('updateCallback - timestamp: $strTimestamp');
 
     FlutterForegroundTask.update(
-        notificationTitle: 'callback2()',
+        notificationTitle: 'updateCallback',
         notificationText: strTimestamp);
   }, onDestroy: (timestamp) async {
-    print('callback2() is dead.. x_x');
+    print('Dispatcher is dead.. x_x');
   });
 }
 
@@ -69,7 +70,7 @@ class _ExampleAppState extends State<ExampleApp> {
     FlutterForegroundTask.start(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
-      callback: callback,
+      callback: startCallback,
     );
   }
   
