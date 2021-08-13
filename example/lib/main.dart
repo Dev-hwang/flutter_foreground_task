@@ -66,6 +66,10 @@ class _ExampleAppState extends State<ExampleApp> {
           name: 'launcher',
         ),
       ),
+      iosNotificationOptions: IOSNotificationOptions(
+        showNotification: true,
+        playSound: true,
+      ),
       foregroundTaskOptions: ForegroundTaskOptions(
         interval: 5000,
         autoRunOnBoot: true,

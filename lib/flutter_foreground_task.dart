@@ -9,10 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
+import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/notification_options.dart';
 
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
+export 'package:flutter_foreground_task/models/ios_notification_options.dart';
 export 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 export 'package:flutter_foreground_task/models/notification_icon_data.dart';
 export 'package:flutter_foreground_task/models/notification_options.dart';
@@ -34,16 +36,19 @@ class FlutterForegroundTask {
   static const _methodChannel = MethodChannel('flutter_foreground_task/method');
 
   static NotificationOptions? _notificationOptions;
+  static IOSNotificationOptions? _iosNotificationOptions;
   static ForegroundTaskOptions? _foregroundTaskOptions;
   static bool _printDevLog = false;
 
   /// Initialize the [FlutterForegroundTask].
   static Future<void> init({
     required NotificationOptions notificationOptions,
+    required IOSNotificationOptions iosNotificationOptions,
     ForegroundTaskOptions? foregroundTaskOptions,
     bool? printDevLog,
   }) async {
     _notificationOptions = notificationOptions;
+    _iosNotificationOptions = iosNotificationOptions;
     _foregroundTaskOptions = foregroundTaskOptions ??
         _foregroundTaskOptions ?? const ForegroundTaskOptions();
     _printDevLog = printDevLog ?? _printDevLog;
@@ -59,7 +64,7 @@ class FlutterForegroundTask {
       throw ForegroundTaskException(
           'Already started. Please call this function after calling the stop function.');
 
-    if (_notificationOptions == null)
+    if (_foregroundTaskOptions == null)
       throw ForegroundTaskException(
           'Not initialized. Please call this function after calling the init function.');
 
@@ -68,7 +73,9 @@ class FlutterForegroundTask {
       throw ForegroundTaskException(
           'Failed to register SendPort to communicate with background isolate.');
 
-    final options = _notificationOptions?.toJson() ?? Map<String, dynamic>();
+    final options = Platform.isAndroid
+        ? _notificationOptions?.toJson() ?? Map<String, dynamic>()
+        : _iosNotificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
     if (callback != null) {
