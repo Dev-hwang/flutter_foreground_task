@@ -21,7 +21,7 @@ export 'package:flutter_foreground_task/models/notification_visibility.dart';
 export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
-const String _kPortName = 'isolateComPort';
+const String _kPortName = 'flutter_foreground_task/isolateComPort';
 
 /// Called with a timestamp value as a task callback function.
 typedef TaskCallback = Future<void> Function(DateTime timestamp, SendPort? sendPort);
@@ -55,9 +55,6 @@ class FlutterForegroundTask {
     required String notificationText,
     Function? callback,
   }) async {
-    // This function only works on Android.
-    if (!Platform.isAndroid) return null;
-
     if (await isRunningTask)
       throw ForegroundTaskException(
           'Already started. Please call this function after calling the stop function.');
@@ -93,9 +90,8 @@ class FlutterForegroundTask {
     String? notificationText,
     Function? callback,
   }) async {
-    // This function only works on Android.
-    // And if the task is not running, the update function is not executed.
-    if (!Platform.isAndroid || !await isRunningTask) return;
+    // If the task is not running, the update function is not executed.
+    if (!await isRunningTask) return;
 
     final options = Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
@@ -111,9 +107,8 @@ class FlutterForegroundTask {
 
   /// Stop foreground task.
   static Future<void> stop() async {
-    // This function only works on Android.
-    // And if the task is not running, the update function is not executed.
-    if (!Platform.isAndroid || !await isRunningTask) return;
+    // If the task is not running, the update function is not executed.
+    if (!await isRunningTask) return;
 
     _removePort();
 
@@ -122,12 +117,8 @@ class FlutterForegroundTask {
   }
 
   /// Returns whether the foreground task is running.
-  static Future<bool> get isRunningTask async {
-    // It always returns false on non-Android platforms.
-    if (!Platform.isAndroid) return false;
-
-    return await _methodChannel.invokeMethod('isRunningService');
-  }
+  static Future<bool> get isRunningTask async =>
+      await _methodChannel.invokeMethod('isRunningService');
 
   /// Minimize the app to the background.
   static void minimizeApp() {
