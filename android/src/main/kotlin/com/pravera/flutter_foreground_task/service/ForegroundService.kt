@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
@@ -36,13 +37,10 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			private set
 	}
 
-	private var flutterLoader: FlutterLoader? = null
-	private var prevFlutterEngine: FlutterEngine? = null
-	private var currFlutterEngine: FlutterEngine? = null
-	private var backgroundChannel: MethodChannel? = null
-	private var backgroundJob: Job? = null
-
+	private lateinit var sharedPreferences: SharedPreferences
+	private lateinit var serviceAction: String
 	private var serviceId: Int = 1000
+
 	private var notificationChannelId: String = ""
 	private var notificationChannelName: String = ""
 	private var notificationChannelDesc: String? = null
@@ -59,48 +57,68 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var iconName: String? = null
 	private var taskInterval: Long = 5000L
 
-	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-		val prefs = applicationContext.getSharedPreferences(
+	private var flutterLoader: FlutterLoader? = null
+	private var prevFlutterEngine: FlutterEngine? = null
+	private var currFlutterEngine: FlutterEngine? = null
+	private var backgroundChannel: MethodChannel? = null
+	private var backgroundJob: Job? = null
+
+	override fun onCreate() {
+		super.onCreate()
+		sharedPreferences = applicationContext.getSharedPreferences(
 				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE)
+	}
 
-		notificationChannelId = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
-		notificationChannelName = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName) ?: ""
-		notificationChannelDesc = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_DESC, notificationChannelDesc)
-		notificationChannelImportance = prefs.getInt(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, notificationChannelImportance)
-		notificationPriority = prefs.getInt(ForegroundServicePrefsKey.NOTIFICATION_PRIORITY, notificationPriority)
-		notificationContentTitle = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle) ?: ""
-		notificationContentText = prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText) ?: ""
-		enableVibration = prefs.getBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
-		playSound = prefs.getBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
-		showWhen = prefs.getBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
-		visibility = prefs.getInt(ForegroundServicePrefsKey.VISIBILITY, visibility)
-		iconResType = prefs.getString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
-		iconResPrefix = prefs.getString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
-		iconName = prefs.getString(ForegroundServicePrefsKey.ICON_NAME, iconName)
-		taskInterval = prefs.getLong(ForegroundServicePrefsKey.TASK_INTERVAL, taskInterval)
+	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		serviceAction = intent?.action ?: ForegroundServiceAction.STOP
 
-		when (intent?.action) {
+		notificationChannelId = sharedPreferences.getString(
+				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
+		notificationChannelName = sharedPreferences.getString(
+				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName) ?: ""
+		notificationChannelDesc = sharedPreferences.getString(
+				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_DESC, notificationChannelDesc)
+		notificationChannelImportance = sharedPreferences.getInt(
+				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, notificationChannelImportance)
+		notificationPriority = sharedPreferences.getInt(
+				ForegroundServicePrefsKey.NOTIFICATION_PRIORITY, notificationPriority)
+		notificationContentTitle = sharedPreferences.getString(
+				ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle) ?: ""
+		notificationContentText = sharedPreferences.getString(
+				ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText) ?: ""
+		enableVibration = sharedPreferences.getBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
+		playSound = sharedPreferences.getBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
+		showWhen = sharedPreferences.getBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
+		visibility = sharedPreferences.getInt(ForegroundServicePrefsKey.VISIBILITY, visibility)
+		iconResType = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
+		iconResPrefix = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
+		iconName = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_NAME, iconName)
+		taskInterval = sharedPreferences.getLong(ForegroundServicePrefsKey.TASK_INTERVAL, taskInterval)
+
+		when (serviceAction) {
 			ForegroundServiceAction.START,
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
-				val callbackHandle = if (prefs.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE))
-					prefs.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE, 0L)
-				else
-					null
-				executeDartCallback(callbackHandle)
+				if (sharedPreferences.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE)) {
+					val callback = sharedPreferences.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE, 0L)
+					executeDartCallback(callback)
+				}
+
+				return START_STICKY
 			}
 			ForegroundServiceAction.REBOOT -> {
 				startForegroundService()
-				val callbackHandle = if (prefs.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT))
-					prefs.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
-				else
-					null
-				executeDartCallback(callbackHandle)
+				if (sharedPreferences.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT)) {
+					val callback = sharedPreferences.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
+					executeDartCallback(callback)
+				}
+
+				return START_STICKY
 			}
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
 
-		return super.onStartCommand(intent, flags, startId)
+		return START_NOT_STICKY
 	}
 
 	override fun onBind(p0: Intent?): IBinder? {
