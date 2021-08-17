@@ -54,7 +54,7 @@ class _ExampleAppState extends State<ExampleApp> {
 
   void _initForegroundTask() {
     FlutterForegroundTask.init(
-      notificationOptions: NotificationOptions(
+      androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
         channelDescription: 'This notification appears when a foreground task is running.',

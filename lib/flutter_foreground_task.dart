@@ -10,14 +10,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
-import 'package:flutter_foreground_task/models/notification_options.dart';
+import 'package:flutter_foreground_task/models/android_notification_options.dart';
 
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
 export 'package:flutter_foreground_task/models/ios_notification_options.dart';
 export 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 export 'package:flutter_foreground_task/models/notification_icon_data.dart';
-export 'package:flutter_foreground_task/models/notification_options.dart';
+export 'package:flutter_foreground_task/models/android_notification_options.dart';
 export 'package:flutter_foreground_task/models/notification_priority.dart';
 export 'package:flutter_foreground_task/models/notification_visibility.dart';
 export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
@@ -35,19 +35,19 @@ typedef DestroyCallback = Future<void> Function(DateTime timestamp);
 class FlutterForegroundTask {
   static const _methodChannel = MethodChannel('flutter_foreground_task/method');
 
-  static NotificationOptions? _notificationOptions;
+  static AndroidNotificationOptions? _androidNotificationOptions;
   static IOSNotificationOptions? _iosNotificationOptions;
   static ForegroundTaskOptions? _foregroundTaskOptions;
   static bool _printDevLog = false;
 
   /// Initialize the [FlutterForegroundTask].
   static Future<void> init({
-    required NotificationOptions notificationOptions,
+    required AndroidNotificationOptions androidNotificationOptions,
     required IOSNotificationOptions iosNotificationOptions,
     ForegroundTaskOptions? foregroundTaskOptions,
     bool? printDevLog,
   }) async {
-    _notificationOptions = notificationOptions;
+    _androidNotificationOptions = androidNotificationOptions;
     _iosNotificationOptions = iosNotificationOptions;
     _foregroundTaskOptions = foregroundTaskOptions ??
         _foregroundTaskOptions ?? const ForegroundTaskOptions();
@@ -74,7 +74,7 @@ class FlutterForegroundTask {
           'Failed to register SendPort to communicate with background isolate.');
 
     final options = Platform.isAndroid
-        ? _notificationOptions?.toJson() ?? Map<String, dynamic>()
+        ? _androidNotificationOptions?.toJson() ?? Map<String, dynamic>()
         : _iosNotificationOptions?.toJson() ?? Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;

@@ -3,10 +3,10 @@ import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 import 'package:flutter_foreground_task/models/notification_priority.dart';
 import 'package:flutter_foreground_task/models/notification_visibility.dart';
 
-/// Data class with notification options.
-class NotificationOptions {
-  /// Constructs an instance of [NotificationOptions].
-  const NotificationOptions({
+/// Notification options for Android platform.
+class AndroidNotificationOptions {
+  /// Constructs an instance of [AndroidNotificationOptions].
+  const AndroidNotificationOptions({
     required this.channelId,
     required this.channelName,
     this.channelDescription,
@@ -59,7 +59,7 @@ class NotificationOptions {
   /// If the value is null, the app launcher icon is used.
   final NotificationIconData? iconData;
 
-  /// Returns the data fields of [NotificationOptions] in JSON format.
+  /// Returns the data fields of [AndroidNotificationOptions] in JSON format.
   Map<String, dynamic> toJson() {
     return {
       'notificationChannelId': channelId,

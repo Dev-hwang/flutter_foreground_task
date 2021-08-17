@@ -8,7 +8,7 @@ class WillStartForegroundTask extends StatefulWidget {
   final ValueGetter<bool> onWillStart;
 
   /// Optional values for notification detail settings.
-  final NotificationOptions notificationOptions;
+  final AndroidNotificationOptions androidNotificationOptions;
 
   /// Optional values for notification detail settings.
   final IOSNotificationOptions iosNotificationOptions;
@@ -38,7 +38,7 @@ class WillStartForegroundTask extends StatefulWidget {
   const WillStartForegroundTask({
     Key? key,
     required this.onWillStart,
-    required this.notificationOptions,
+    required this.androidNotificationOptions,
     required this.iosNotificationOptions,
     this.foregroundTaskOptions,
     this.printDevLog,
@@ -56,7 +56,7 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     with WidgetsBindingObserver {
   void _initForegroundTask() {
     FlutterForegroundTask.init(
-        notificationOptions: widget.notificationOptions,
+        androidNotificationOptions: widget.androidNotificationOptions,
         iosNotificationOptions: widget.iosNotificationOptions,
         foregroundTaskOptions: widget.foregroundTaskOptions,
         printDevLog: widget.printDevLog);
