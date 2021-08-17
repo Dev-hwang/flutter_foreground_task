@@ -113,6 +113,7 @@ class ForegroundServiceManager {
 			putLong(ForegroundServicePrefsKey.TASK_INTERVAL, "$taskInterval".toLong())
 			putBoolean(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT, autoRunOnBoot)
 			remove(ForegroundServicePrefsKey.CALLBACK_HANDLE)
+			remove(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT)
 			if (callbackHandle != null) {
 				putLong(ForegroundServicePrefsKey.CALLBACK_HANDLE, callbackHandle)
 				putLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, callbackHandle)
