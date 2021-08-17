@@ -41,6 +41,77 @@ And specify the service inside the `<application>` tag as follows.
 <service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
 ```
 
+### :baby_chick: iOS
+
+We can also launch `flutter_foreground_task` on iOS platform. However, it has the following limitations.
+
+* Works only on iOS 10.0 or later.
+* If the app is forcibly closed, the task will not work.
+* Task cannot be started automatically on device reboot.
+
+**Objective-C**:
+
+1. To use this plugin developed in Swift language in a project using Objective-C, you need to add a bridge header. If you don't have an `ios/Runner/Runner-Bridging-Header.h` file in your project, check this [page](https://developer.apple.com/documentation/swift/imported_c_and_objective-c_apis/importing_objective-c_into_swift).
+
+2. Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
+
+```objc
+#import "AppDelegate.h"
+#import "GeneratedPluginRegistrant.h"
+
+// here
+#import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
+
+// here
+void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
+  [GeneratedPluginRegistrant registerWithRegistry:registry];
+}
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application
+    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  [GeneratedPluginRegistrant registerWithRegistry:self];
+  [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins];  // here
+  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
+
+@end
+
+```
+
+**Swift**:
+
+1. Declare the import statement below in the `ios/Runner/Runner-Bridging-Header.h` file.
+
+```objc
+#import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
+```
+
+2. Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
+
+```swift
+import UIKit
+import Flutter
+
+@UIApplicationMain
+@objc class AppDelegate: FlutterAppDelegate {
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    GeneratedPluginRegistrant.register(with: self)
+    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)   // here
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+
+// here
+func registerPlugins(registry: FlutterPluginRegistry) {
+  GeneratedPluginRegistrant.register(with: registry)
+}
+```
+
 ## How to use
 
 This plugin has two ways to start a foreground task. There are two ways to start the foreground task manually and to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
@@ -48,24 +119,15 @@ This plugin has two ways to start a foreground task. There are two ways to start
 #### :hatched_chick: Start manually
 
 1. Initialize the `FlutterForegroundTask`. `FlutterForegroundTask.init()` provides notification and task options, detailed options are as follows:
-* `channelId`: Unique ID of the notification channel.
-* `channelName`: The name of the notification channel. This value is displayed to the user in the notification settings.
-* `channelDescription`: The description of the notification channel. This value is displayed to the user in the notification settings.
-* `channelImportance`: The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.
-* `priority`: Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.
-* `enableVibration`: Whether to enable vibration when creating notifications. The default is `false`.
-* `playSound`: Whether to play sound when creating notifications. The default is `true`.
-* `showWhen`: Whether to show the timestamp when the notification was created in the content view. The default is `false`.
-* `visibility`: Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`.
-* `iconData`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
-* `interval`: The task call interval in milliseconds. The default is `5000`.
-* `autoRunOnBoot`: Whether to automatically run foreground task on boot. The default is `false`.
+* `androidNotificationOptions`: Notification options for Android platform. See [Models](#Models) for more information.
+* `iosNotificationOptions`: Notification options for iOS platform. See [Models](#Models) for more information.
+* `foregroundTaskOptions`: Options for setting the foreground task behavior in detail. See [Models](#Models) for more information.
 * `printDevLog`: Whether to show the developer log. If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin. It does not work in release mode. The default is `false`.
 
 ```dart
 void _initForegroundTask() {
   FlutterForegroundTask.init(
-    notificationOptions: NotificationOptions(
+    androidNotificationOptions: AndroidNotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
       channelDescription: 'This notification appears when a foreground task is running.',
@@ -76,6 +138,10 @@ void _initForegroundTask() {
         resPrefix: ResourcePrefix.ic,
         name: 'launcher',
       ),
+    ),
+    iosNotificationOptions: IOSNotificationOptions(
+      showNotification: true,
+      playSound: true,
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
       interval: 5000,
@@ -247,7 +313,7 @@ Widget build(BuildContext context) {
         // Please return whether to start the foreground task.
         return true;
       },
-      notificationOptions: NotificationOptions(
+      androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
         channelDescription: 'This notification appears when a foreground task is running.',
@@ -259,8 +325,13 @@ Widget build(BuildContext context) {
           name: 'launcher',
         ),
       ),
+      iosNotificationOptions: IOSNotificationOptions(
+        showNotification: true,
+        playSound: true,
+      ),
       foregroundTaskOptions: ForegroundTaskOptions(
         interval: 5000,
+        autoRunOnBoot: false,
       ),
       printDevLog: true,
       notificationTitle: 'Foreground task is running',
@@ -280,9 +351,9 @@ Widget build(BuildContext context) {
 
 ## Models
 
-### :chicken: NotificationOptions
+### :chicken: AndroidNotificationOptions
 
-Data class with notification options.
+Notification options for Android platform.
 
 | Property | Description |
 |---|---|
@@ -324,6 +395,15 @@ The resource prefix of the notification icon.
 |---|---|
 | `ic` | A resources with the `ic_` prefix. |
 | `img` | A resources with the `img_` prefix. |
+
+### :chicken: IOSNotificationOptions
+
+Notification options for iOS platform.
+
+| Property | Description |
+|---|---|
+| `showNotification` | Whether to show notifications. The default is `true`. |
+| `playSound` | Whether to play sound when creating notifications. The default is `true`. |
 
 ### :chicken: ForegroundTaskOptions
 
