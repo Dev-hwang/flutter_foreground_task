@@ -12,4 +12,7 @@
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   [SwiftFlutterForegroundTaskPlugin registerWithRegistrar:registrar];
 }
++ (void)setPluginRegistrantCallback:(FlutterPluginRegistrantCallback)callback {
+  [SwiftFlutterForegroundTaskPlugin setPluginRegistrantCallback:callback];
+}
 @end
