@@ -3,7 +3,7 @@ class IOSNotificationOptions {
   /// Constructs an instance of [IOSNotificationOptions].
   const IOSNotificationOptions({
     this.showNotification = true,
-    this.playSound = true,
+    this.playSound = false,
   });
 
   /// Whether to show notifications.
@@ -11,7 +11,7 @@ class IOSNotificationOptions {
   final bool showNotification;
 
   /// Whether to play sound when creating notifications.
-  /// The default is `true`.
+  /// The default is `false`.
   final bool playSound;
 
   /// Returns the data fields of [IOSNotificationOptions] in JSON format.

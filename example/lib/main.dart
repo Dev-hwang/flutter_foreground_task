@@ -68,7 +68,7 @@ class _ExampleAppState extends State<ExampleApp> {
       ),
       iosNotificationOptions: IOSNotificationOptions(
         showNotification: true,
-        playSound: true,
+        playSound: false,
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         interval: 5000,

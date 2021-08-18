@@ -47,7 +47,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var notificationContentTitle: String = ""
 	private var notificationContentText: String = ""
 	private var enableVibration: Boolean = false
-	private var playSound: Boolean = true
+	private var playSound: Boolean = false
 	private var showWhen: Boolean = false
 	private var visibility: Int = 1
 	private var iconResType: String? = null

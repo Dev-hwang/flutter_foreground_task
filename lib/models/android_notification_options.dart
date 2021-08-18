@@ -13,7 +13,7 @@ class AndroidNotificationOptions {
     this.channelImportance = NotificationChannelImportance.DEFAULT,
     this.priority = NotificationPriority.DEFAULT,
     this.enableVibration = false,
-    this.playSound = true,
+    this.playSound = false,
     this.showWhen = false,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
     this.iconData,
@@ -44,7 +44,7 @@ class AndroidNotificationOptions {
   final bool enableVibration;
 
   /// Whether to play sound when creating notifications.
-  /// The default is `true`.
+  /// The default is `false`.
   final bool playSound;
 
   /// Whether to show the timestamp when the notification was created in the content view.

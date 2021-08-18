@@ -21,7 +21,7 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
   private var notificationContentTitle: String = ""
   private var notificationContentText: String = ""
   private var showNotification: Bool = true
-  private var playSound: Bool = true
+  private var playSound: Bool = false
   private var taskInterval: Int = 5000
   
   private var flutterEngine: FlutterEngine? = nil

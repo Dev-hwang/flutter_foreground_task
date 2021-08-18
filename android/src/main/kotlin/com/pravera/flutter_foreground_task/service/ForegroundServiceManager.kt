@@ -82,7 +82,7 @@ class ForegroundServiceManager {
 		val notificationContentTitle = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE) ?: ""
 		val notificationContentText = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT) ?: ""
 		val enableVibration = call.argument<Boolean>(ForegroundServicePrefsKey.ENABLE_VIBRATION) ?: false
-		val playSound = call.argument<Boolean>(ForegroundServicePrefsKey.PLAY_SOUND) ?: true
+		val playSound = call.argument<Boolean>(ForegroundServicePrefsKey.PLAY_SOUND) ?: false
 		val showWhen = call.argument<Boolean>(ForegroundServicePrefsKey.SHOW_WHEN) ?: false
 		val visibility = call.argument<Int>(ForegroundServicePrefsKey.VISIBILITY) ?: 1
 

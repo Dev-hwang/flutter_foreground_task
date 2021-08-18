@@ -51,7 +51,7 @@ class BackgroundServiceManager: NSObject {
     let notificationContentTitle = argsDict[NOTIFICATION_CONTENT_TITLE] as? String ?? ""
     let notificationContentText = argsDict[NOTIFICATION_CONTENT_TEXT] as? String ?? ""
     let showNotification = argsDict[SHOW_NOTIFICATION] as? Bool ?? true
-    let playSound = argsDict[PLAY_SOUND] as? Bool ?? true
+    let playSound = argsDict[PLAY_SOUND] as? Bool ?? false
     let taskInterval = argsDict[TASK_INTERVAL] as? Int ?? 5000
     let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
     
