@@ -1,3 +1,12 @@
+## 2.2.0
+
+* Implement background task on iOS platform. Please check Readme as setup is required.
+* Implement a service restart function to deal with unexpected errors.
+* Remove `notification_options.dart`.
+* Add `android_notification_options.dart`.
+* Add `ios_notification_options.dart`.
+* Change the `playSound` default value from `true` to `false`.
+
 ## 2.1.0
 
 * Fixed duplicate call to startForegroundTask function.
