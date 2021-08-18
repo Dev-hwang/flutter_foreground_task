@@ -1,10 +1,7 @@
 package com.pravera.flutter_foreground_task.service
 
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -23,6 +20,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
+import java.util.*
 
 /**
  * Service class for implementing foreground service.
@@ -70,7 +68,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-		serviceAction = intent?.action ?: ForegroundServiceAction.STOP
+		super.onStartCommand(intent, flags, startId)
+		serviceAction = intent?.action ?: ForegroundServiceAction.RESTART
 
 		notificationChannelId = sharedPreferences.getString(
 				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
@@ -106,7 +105,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 				return START_STICKY
 			}
-			ForegroundServiceAction.REBOOT -> {
+			ForegroundServiceAction.REBOOT,
+			ForegroundServiceAction.RESTART -> {
 				startForegroundService()
 				if (sharedPreferences.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT)) {
 					val callback = sharedPreferences.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
@@ -128,6 +128,10 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	override fun onDestroy() {
 		super.onDestroy()
 		destroyForegroundTask()
+		if (serviceAction != ForegroundServiceAction.STOP) {
+			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
+			setRestartAlarm()
+		}
 	}
 
 	@SuppressLint("WrongConstant")
@@ -171,6 +175,19 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		stopForeground(true)
 		stopSelf()
 		isRunningService = false
+	}
+
+	private fun setRestartAlarm() {
+		val calendar = Calendar.getInstance().apply {
+			timeInMillis = System.currentTimeMillis()
+			add(Calendar.SECOND, 1)
+		}
+
+		val intent = Intent(this, RestartReceiver::class.java)
+		val sender = PendingIntent.getBroadcast(this, 0, intent, 0)
+
+		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+		alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
 	}
 
 	private fun executeDartCallback(callbackHandle: Long?) {
