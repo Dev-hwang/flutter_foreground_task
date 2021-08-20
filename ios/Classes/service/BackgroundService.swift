@@ -91,7 +91,9 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
       let notificationContent = UNMutableNotificationContent()
       notificationContent.title = notificationContentTitle
       notificationContent.body = notificationContentText
-      notificationContent.sound = UNNotificationSound.default
+      if playSound {
+        notificationContent.sound = UNNotificationSound.default
+      }
       
       let request = UNNotificationRequest(identifier: "BackgroundNotification", content: notificationContent, trigger: nil)
       userNotificationCenter.add(request, withCompletionHandler: nil)
