@@ -37,6 +37,8 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
         backgroundServiceManager?.stop()
       case "isRunningService":
         result(backgroundServiceManager?.isRunningService() ?? false)
+      case "minimizeApp":
+        UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
       default:
         result(FlutterMethodNotImplemented)
     }

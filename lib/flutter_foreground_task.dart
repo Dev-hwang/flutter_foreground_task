@@ -128,12 +128,7 @@ class FlutterForegroundTask {
       await _methodChannel.invokeMethod('isRunningService');
 
   /// Minimize the app to the background.
-  static void minimizeApp() {
-    // This function only works on Android.
-    if (!Platform.isAndroid) return;
-
-    _methodChannel.invokeMethod('minimizeApp');
-  }
+  static void minimizeApp() => _methodChannel.invokeMethod('minimizeApp');
 
   /// Wake up the screen of a device that is turned off.
   static void wakeUpScreen() {
