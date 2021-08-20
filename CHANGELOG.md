@@ -1,3 +1,7 @@
+## 2.2.1
+
+* Fixed playSound option not working properly in the background.
+
 ## 2.2.0
 
 * Implement background task on iOS platform. Please check Readme as setup is required.

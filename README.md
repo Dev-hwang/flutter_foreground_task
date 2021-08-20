@@ -16,7 +16,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^2.2.0
+  flutter_foreground_task: ^2.2.1
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -119,9 +119,9 @@ This plugin has two ways to start a foreground task. There are two ways to start
 #### :hatched_chick: Start manually
 
 1. Initialize the `FlutterForegroundTask`. `FlutterForegroundTask.init()` provides notification and task options, detailed options are as follows:
-* `androidNotificationOptions`: Notification options for Android platform. See [Models](#Models) for more information.
-* `iosNotificationOptions`: Notification options for iOS platform. See [Models](#Models) for more information.
-* `foregroundTaskOptions`: Options for setting the foreground task behavior in detail. See [Models](#Models) for more information.
+* `androidNotificationOptions`: Notification options for Android platform.
+* `iosNotificationOptions`: Notification options for iOS platform.
+* `foregroundTaskOptions`: Options for setting the foreground task behavior in detail.
 * `printDevLog`: Whether to show the developer log. If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin. It does not work in release mode. The default is `false`.
 
 ```dart
