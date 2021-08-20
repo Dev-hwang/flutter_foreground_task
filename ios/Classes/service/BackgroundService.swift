@@ -102,6 +102,7 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
   
   private func removeAllNotification() {
     userNotificationCenter.removeAllPendingNotificationRequests()
+    userNotificationCenter.removeAllDeliveredNotifications()
   }
   
   private func executeDartCallback(callbackHandle: Int64) {
