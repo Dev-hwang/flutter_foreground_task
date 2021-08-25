@@ -4,11 +4,11 @@ This plugin is used to implement a foreground service on the Android platform.
 
 ## Features
 
-* Can perform repetitive task with foreground service notification.
+* Can perform repetitive task with foreground service.
 * Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
-* Provides a widget that prevents the app from closing when a foreground task is running.
-* Provides a widget that can start a foreground task when trying to minimize or close the app.
-* Can automatically resume foreground task at boot time.
+* Provides a widget that prevents the app from closing when the foreground service is running.
+* Provides a widget for starting a foreground service when the app is about to be minimized or closed.
+* Provides an option to automatically resume foreground service on boot.
 
 ## Getting started
 
@@ -158,14 +158,14 @@ void initState() {
 }
 ```
 
-2. Add `WithForegroundTask` widget to prevent the app from closing when a foreground task is running.
+2. Add `WithForegroundTask` widget to prevent the app from closing when the foreground service is running.
 
 ```dart
 @override
 Widget build(BuildContext context) {
   return MaterialApp(
-    // A widget that prevents the app from closing when a foreground task is running.
-    // Declare on top of the [Scaffold] widget.
+    // A widget that prevents the app from closing when the foreground service is running.
+    // This widget must be declared above the [Scaffold] widget.
     home: WithForegroundTask(
       child: Scaffold(
         appBar: AppBar(
@@ -275,7 +275,7 @@ class FirstTaskHandler implements TaskHandler {
 }
 ```
 
-4. Use `FlutterForegroundTask.update()` to update the foreground task. The options are the same as the start function.
+4. Use `FlutterForegroundTask.updateService()` to update the foreground service. The options are the same as the start function.
 
 ```dart
 // The callback function should always be a top-level function.
@@ -345,7 +345,7 @@ class SecondTaskHandler implements TaskHandler {
 }
 ```
 
-5. When you have completed the required foreground task, call `FlutterForegroundTask.stop()`.
+5. If you no longer use the foreground service, call `FlutterForegroundTask.stopService()`.
 
 ```dart
 void _stopForegroundTask() {

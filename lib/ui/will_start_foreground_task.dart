@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-/// A widget used when you want to start a foreground task when trying to minimize or close the app.
-/// Declare on top of the [Scaffold] widget.
+/// A widget for starting a foreground service when the app is about to be minimized or closed.
+/// This widget must be declared above the [Scaffold] widget.
 class WillStartForegroundTask extends StatefulWidget {
-  /// Called to ask if you want to start the foreground task.
+  /// Called to ask if you want to start the foreground service.
   final ValueGetter<bool> onWillStart;
 
-  /// Optional values for notification detail settings.
+  /// Options for setting up notifications on the Android platform.
   final AndroidNotificationOptions androidNotificationOptions;
 
-  /// Optional values for notification detail settings.
+  /// Options for setting up notifications on the iOS platform.
   final IOSNotificationOptions iosNotificationOptions;
 
-  /// Optional values for foreground task detail settings.
+  /// Options for setting the foreground task.
   final ForegroundTaskOptions? foregroundTaskOptions;
 
   /// Whether to show the developer log.
@@ -46,10 +46,11 @@ class WillStartForegroundTask extends StatefulWidget {
     required this.notificationText,
     this.callback,
     required this.child,
-  })  : super(key: key);
+  }) : super(key: key);
 
   @override
-  _WillStartForegroundTaskState createState() => _WillStartForegroundTaskState();
+  _WillStartForegroundTaskState createState() =>
+      _WillStartForegroundTaskState();
 }
 
 class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
