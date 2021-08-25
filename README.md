@@ -118,7 +118,7 @@ This plugin has two ways to start a foreground task. There are two ways to start
 
 #### :hatched_chick: Start manually
 
-1. Initialize the `FlutterForegroundTask`. `FlutterForegroundTask.init()` provides notification and task options, detailed options are as follows:
+1. Initialize the `FlutterForegroundTask`. You can use the `FlutterForegroundTask.init()` function to set notifications and task options.
 * `androidNotificationOptions`: Notification options for Android platform.
 * `iosNotificationOptions`: Notification options for iOS platform.
 * `foregroundTaskOptions`: Options for setting the foreground task behavior in detail.
@@ -179,26 +179,37 @@ Widget build(BuildContext context) {
 }
 ```
 
-3. Write a foreground task start callback function and start the `FlutterForegroundTask`. `FlutterForegroundTask.start()` provides the following options:
+3. Write callback and handler and start the `FlutterForegroundTask`. `FlutterForegroundTask.start()` provides the following options:
 * `notificationTitle`: The title that will be displayed in the notification.
 * `notificationText`: The text that will be displayed in the notification.
-* `callback`: A top-level function that calls the initDispatcher function.
+* `callback`: A top-level function that calls the setTaskHandler function.
 
 ```dart
 // The callback function should always be a top-level function.
 void startCallback() {
-  // The initDispatcher function must be called to handle the task in the background.
-  // And the code to be executed except for the variable declaration
-  // must be written inside the initDispatcher function.
-  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
+  // The setTaskHandler function must be called to handle the task in the background.
+  FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
+}
+
+class FirstTaskHandler implements TaskHandler {
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+    print('FirstTaskHandler :: onStart');
+  }
+
+  @override
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     final strTimestamp = timestamp.toString();
-    print('timestamp: $strTimestamp');
+    print('FirstTaskHandler :: onEvent');
 
     // Send data to the main isolate.
     sendPort?.send(timestamp);
-  }, onDestroy: (timestamp) async {
-    print('Dispatcher is dead.. x_x');
-  });
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp) async {
+    print('FirstTaskHandler :: onDestroy');
+  }
 }
 
 class ExampleApp extends StatefulWidget {
@@ -235,24 +246,32 @@ class _ExampleAppState extends State<ExampleApp> {
 If the plugin you want to use provides a stream, use it like this:
 
 ```dart
-void startCallback() {
-  final positionStream = Geolocator.getPositionStream();
+class FirstTaskHandler implements TaskHandler {
   StreamSubscription<Position>? streamSubscription;
 
-  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
-    if (streamSubscription != null) return;
-
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+    final positionStream = Geolocator.getPositionStream();
     streamSubscription = positionStream.listen((event) {
-      print('timestamp: ${timestamp.toString()}');
-
+      // Update notification content.
       FlutterForegroundTask.update(
           notificationTitle: 'Current Position',
           notificationText: '${event.latitude}, ${event.longitude}');
+
+      // Send data to the main isolate.
+      sendPort?.send(event);
     });
-  }, onDestroy: (timestamp) async {
+  }
+
+  @override
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp) async {
     await streamSubscription?.cancel();
-    print('Dispatcher is dead.. x_x');
-  });
+  }
 }
 ```
 
@@ -261,34 +280,61 @@ void startCallback() {
 ```dart
 // The callback function should always be a top-level function.
 void startCallback() {
+  // The setTaskHandler function must be called to handle the task in the background.
+  FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
+}
+
+class FirstTaskHandler implements TaskHandler {
   int updateCount = 0;
 
-  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+    print('FirstTaskHandler :: onStart');
+  }
+
+  @override
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     final strTimestamp = timestamp.toString();
-    print('startCallback - timestamp: $strTimestamp');
+    print('FirstTaskHandler :: onEvent');
 
     FlutterForegroundTask.update(
-        notificationTitle: 'startCallback',
+        notificationTitle: 'FirstTaskHandler',
         notificationText: strTimestamp,
         callback: updateCount >= 10 ? updateCallback : null);
 
     updateCount++;
-  }, onDestroy: (timestamp) async {
-    print('Dispatcher is dead.. x_x');
-  });
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp) async {
+    print('FirstTaskHandler :: onDestroy');
+  }
 }
 
 void updateCallback() {
-  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
+  FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
+}
+
+class SecondTaskHandler implements TaskHandler {
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+    print('SecondTaskHandler :: onStart');
+  }
+
+  @override
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     final strTimestamp = timestamp.toString();
-    print('updateCallback - timestamp: $strTimestamp');
+    print('SecondTaskHandler :: onEvent');
 
     FlutterForegroundTask.update(
-        notificationTitle: 'updateCallback',
+        notificationTitle: 'SecondTaskHandler',
         notificationText: strTimestamp);
-  }, onDestroy: (timestamp) async {
-    print('Dispatcher is dead.. x_x');
-  });
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp) async {
+    print('SecondTaskHandler :: onDestroy');
+  }
 }
 ```
 

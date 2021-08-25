@@ -7,17 +7,25 @@ void main() => runApp(ExampleApp());
 
 // The callback function should always be a top-level function.
 void startCallback() {
+  // The setTaskHandler function must be called to handle the task in the background.
+  FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
+}
+
+class FirstTaskHandler implements TaskHandler {
   int updateCount = 0;
 
-  // The initDispatcher function must be called to handle the task in the background.
-  // And the code to be executed except for the variable declaration
-  // must be written inside the initDispatcher function.
-  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+    print('FirstTaskHandler :: onStart');
+  }
+
+  @override
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     final strTimestamp = timestamp.toString();
-    print('startCallback - timestamp: $strTimestamp');
+    print('FirstTaskHandler :: onEvent');
 
     FlutterForegroundTask.update(
-        notificationTitle: 'startCallback',
+        notificationTitle: 'FirstTaskHandler',
         notificationText: strTimestamp,
         callback: updateCount >= 10 ? updateCallback : null);
 
@@ -26,22 +34,38 @@ void startCallback() {
     sendPort?.send(updateCount);
 
     updateCount++;
-  }, onDestroy: (timestamp) async {
-    print('Dispatcher is dead.. x_x');
-  });
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp) async {
+    print('FirstTaskHandler :: onDestroy');
+  }
 }
 
 void updateCallback() {
-  FlutterForegroundTask.initDispatcher((timestamp, sendPort) async {
+  FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
+}
+
+class SecondTaskHandler implements TaskHandler {
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+    print('SecondTaskHandler :: onStart');
+  }
+
+  @override
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     final strTimestamp = timestamp.toString();
-    print('updateCallback - timestamp: $strTimestamp');
+    print('SecondTaskHandler :: onEvent');
 
     FlutterForegroundTask.update(
-        notificationTitle: 'updateCallback',
+        notificationTitle: 'SecondTaskHandler',
         notificationText: strTimestamp);
-  }, onDestroy: (timestamp) async {
-    print('Dispatcher is dead.. x_x');
-  });
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp) async {
+    print('SecondTaskHandler :: onDestroy');
+  }
 }
 
 class ExampleApp extends StatefulWidget {

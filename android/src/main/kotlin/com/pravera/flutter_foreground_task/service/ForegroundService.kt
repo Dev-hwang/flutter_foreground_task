@@ -216,20 +216,28 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private fun startForegroundTask() {
 		if (backgroundJob != null) stopForegroundTask()
 
-		val handler = Handler(Looper.getMainLooper())
-		backgroundJob = GlobalScope.launch {
-			while (isActive) {
-				handler.post {
-					try {
-						backgroundChannel?.invokeMethod("event", null)
-					} catch (e: Exception) {
-						Log.e(TAG, "invokeMethod", e)
+		backgroundChannel?.invokeMethod("start", null, object : MethodChannel.Result {
+			override fun success(result: Any?) {
+				val handler = Handler(Looper.getMainLooper())
+				backgroundJob = GlobalScope.launch {
+					while (isActive) {
+						handler.post {
+							try {
+								backgroundChannel?.invokeMethod("event", null)
+							} catch (e: Exception) {
+								Log.e(TAG, "invokeMethod", e)
+							}
+						}
+
+						delay(taskInterval)
 					}
 				}
-
-				delay(taskInterval)
 			}
-		}
+
+			override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) { }
+
+			override fun notImplemented() { }
+		})
 	}
 
 	private fun stopForegroundTask() {

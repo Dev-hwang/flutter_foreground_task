@@ -129,9 +129,11 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
   private func startBackgroundTask() {
     if backgroundTaskTimer != nil { stopBackgroundTask() }
     
-    let timeInterval = TimeInterval(taskInterval / 1000)
-    backgroundTaskTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
-      self.backgroundChannel?.invokeMethod("event", arguments: nil)
+    backgroundChannel?.invokeMethod("start", arguments: nil) { _ in
+      let timeInterval = TimeInterval(self.taskInterval / 1000)
+      self.backgroundTaskTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
+        self.backgroundChannel?.invokeMethod("event", arguments: nil)
+      }
     }
   }
   

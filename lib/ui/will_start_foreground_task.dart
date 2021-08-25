@@ -28,7 +28,7 @@ class WillStartForegroundTask extends StatefulWidget {
   /// The text that will be displayed in the notification.
   final String notificationText;
 
-  /// A top-level function that calls the initDispatcher function.
+  /// A top-level function that calls the setTaskHandler function.
   final Function? callback;
 
   /// A child widget that contains the [Scaffold] widget.

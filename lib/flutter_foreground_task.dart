@@ -25,13 +25,19 @@ export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
 const String _kPortName = 'flutter_foreground_task/isolateComPort';
 
-/// Called with a timestamp value as a task callback function.
-typedef TaskCallback = Future<void> Function(DateTime timestamp, SendPort? sendPort);
+/// A class that implements a task handler.
+abstract class TaskHandler {
+  /// Called when the task is started.
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort);
 
-/// Called with a timestamp value as a task destroy callback function.
-typedef DestroyCallback = Future<void> Function(DateTime timestamp);
+  /// Called when an event occurs.
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort);
 
-/// A class that implement foreground task and provide useful utilities.
+  /// Called when the task is destroyed.
+  Future<void> onDestroy(DateTime timestamp);
+}
+
+/// A class that implements foreground task and provides useful utilities.
 class FlutterForegroundTask {
   static const _methodChannel = MethodChannel('flutter_foreground_task/method');
 
@@ -154,9 +160,9 @@ class FlutterForegroundTask {
     return await _methodChannel.invokeMethod('openIgnoreBatteryOptimizationSettings');
   }
 
-  /// Initialize Dispatcher to relay events occurring in the foreground service to taskCallback.
-  /// It must always be called from a top-level function, otherwise foreground tasks will not work.
-  static void initDispatcher(TaskCallback taskCallback, {DestroyCallback? onDestroy}) {
+  /// Set up the task handler and start the foreground task.
+  /// It must always be called from a top-level function, otherwise foreground task will not work.
+  static void setTaskHandler(TaskHandler handler) {
     // Create a method channel to communicate with the platform.
     const _backgroundChannel = MethodChannel('flutter_foreground_task/background');
 
@@ -166,11 +172,13 @@ class FlutterForegroundTask {
     // Set the method call handler for the background channel.
     _backgroundChannel.setMethodCallHandler((call) async {
       final timestamp = DateTime.now();
-      if (call.method == 'event') {
-        await taskCallback(timestamp, _lookupPort());
-      } else if (call.method == 'destroy') {
-        if (onDestroy != null)
-          await onDestroy(timestamp);
+      switch (call.method) {
+        case 'start':
+          return await handler.onStart(timestamp, _lookupPort());
+        case 'event':
+          return await handler.onEvent(timestamp, _lookupPort());
+        case 'destroy':
+          return await handler.onDestroy(timestamp);
       }
     });
 
