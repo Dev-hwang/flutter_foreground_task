@@ -24,7 +24,7 @@ class FirstTaskHandler implements TaskHandler {
     final strTimestamp = timestamp.toString();
     print('FirstTaskHandler :: onEvent');
 
-    FlutterForegroundTask.update(
+    FlutterForegroundTask.updateService(
         notificationTitle: 'FirstTaskHandler',
         notificationText: strTimestamp,
         callback: updateCount >= 10 ? updateCallback : null);
@@ -57,9 +57,12 @@ class SecondTaskHandler implements TaskHandler {
     final strTimestamp = timestamp.toString();
     print('SecondTaskHandler :: onEvent');
 
-    FlutterForegroundTask.update(
+    FlutterForegroundTask.updateService(
         notificationTitle: 'SecondTaskHandler',
         notificationText: strTimestamp);
+
+    // Send data to the main isolate.
+    sendPort?.send(timestamp);
   }
 
   @override
@@ -103,7 +106,7 @@ class _ExampleAppState extends State<ExampleApp> {
   }
 
   void _startForegroundTask() async {
-    _receivePort = await FlutterForegroundTask.start(
+    _receivePort = await FlutterForegroundTask.startService(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,
@@ -118,7 +121,7 @@ class _ExampleAppState extends State<ExampleApp> {
   }
   
   void _stopForegroundTask() {
-    FlutterForegroundTask.stop();
+    FlutterForegroundTask.stopService();
   }
 
   @override

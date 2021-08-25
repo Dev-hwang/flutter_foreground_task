@@ -60,13 +60,13 @@ class FlutterForegroundTask {
     _printDevLog = printDevLog ?? _printDevLog;
   }
 
-  /// Start foreground task with notification.
-  static Future<ReceivePort?> start({
+  /// Start the foreground service with notification.
+  static Future<ReceivePort?> startService({
     required String notificationTitle,
     required String notificationText,
     Function? callback,
   }) async {
-    if (await isRunningTask)
+    if (await isRunningService)
       throw ForegroundTaskException(
           'Already started. Please call this function after calling the stop function.');
 
@@ -97,14 +97,14 @@ class FlutterForegroundTask {
     return receivePort;
   }
 
-  /// Update foreground task.
-  static Future<void> update({
+  /// Update the foreground service.
+  static Future<void> updateService({
     String? notificationTitle,
     String? notificationText,
     Function? callback,
   }) async {
-    // If the task is not running, the update function is not executed.
-    if (!await isRunningTask) return;
+    // If the service is not running, the update function is not executed.
+    if (!await isRunningService) return;
 
     final options = Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
@@ -118,10 +118,10 @@ class FlutterForegroundTask {
     _printMessage('FlutterForegroundTask updated.');
   }
 
-  /// Stop foreground task.
-  static Future<void> stop() async {
-    // If the task is not running, the update function is not executed.
-    if (!await isRunningTask) return;
+  /// Stop the foreground service.
+  static Future<void> stopService() async {
+    // If the service is not running, the stop function is not executed.
+    if (!await isRunningService) return;
 
     _removePort();
 
@@ -129,8 +129,8 @@ class FlutterForegroundTask {
     _printMessage('FlutterForegroundTask stopped.');
   }
 
-  /// Returns whether the foreground task is running.
-  static Future<bool> get isRunningTask async =>
+  /// Returns whether the foreground service is running.
+  static Future<bool> get isRunningService async =>
       await _methodChannel.invokeMethod('isRunningService');
 
   /// Minimize the app to the background.

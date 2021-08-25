@@ -72,7 +72,7 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [GeneratedPluginRegistrant registerWithRegistry:self];
-  [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins];  // here
+  [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins]; // here
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
@@ -101,7 +101,7 @@ import Flutter
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)   // here
+    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins) // here
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
@@ -179,7 +179,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-3. Write callback and handler and start the `FlutterForegroundTask`. `FlutterForegroundTask.start()` provides the following options:
+3. Write callback and handler and start the foreground service. `FlutterForegroundTask.startService()` provides the following options:
 * `notificationTitle`: The title that will be displayed in the notification.
 * `notificationText`: The text that will be displayed in the notification.
 * `callback`: A top-level function that calls the setTaskHandler function.
@@ -223,7 +223,7 @@ class _ExampleAppState extends State<ExampleApp> {
   // ...
 
   void _startForegroundTask() async {
-    _receivePort = FlutterForegroundTask.start(
+    _receivePort = FlutterForegroundTask.startService(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,
@@ -254,7 +254,7 @@ class FirstTaskHandler implements TaskHandler {
     final positionStream = Geolocator.getPositionStream();
     streamSubscription = positionStream.listen((event) {
       // Update notification content.
-      FlutterForegroundTask.update(
+      FlutterForegroundTask.updateService(
           notificationTitle: 'Current Position',
           notificationText: '${event.latitude}, ${event.longitude}');
 
@@ -297,10 +297,14 @@ class FirstTaskHandler implements TaskHandler {
     final strTimestamp = timestamp.toString();
     print('FirstTaskHandler :: onEvent');
 
-    FlutterForegroundTask.update(
+    FlutterForegroundTask.updateService(
         notificationTitle: 'FirstTaskHandler',
         notificationText: strTimestamp,
         callback: updateCount >= 10 ? updateCallback : null);
+
+    // Send data to the main isolate.
+    sendPort?.send(timestamp);
+    sendPort?.send(updateCount);
 
     updateCount++;
   }
@@ -326,9 +330,12 @@ class SecondTaskHandler implements TaskHandler {
     final strTimestamp = timestamp.toString();
     print('SecondTaskHandler :: onEvent');
 
-    FlutterForegroundTask.update(
+    FlutterForegroundTask.updateService(
         notificationTitle: 'SecondTaskHandler',
         notificationText: strTimestamp);
+
+    // Send data to the main isolate.
+    sendPort?.send(timestamp);
   }
 
   @override
@@ -342,7 +349,7 @@ class SecondTaskHandler implements TaskHandler {
 
 ```dart
 void _stopForegroundTask() {
-  FlutterForegroundTask.stop();
+  FlutterForegroundTask.stopService();
 }
 ```
 

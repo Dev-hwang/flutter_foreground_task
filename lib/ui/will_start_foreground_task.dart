@@ -63,16 +63,16 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   }
 
   void _startForegroundTask() async {
-    if (await FlutterForegroundTask.isRunningTask) return;
+    if (await FlutterForegroundTask.isRunningService) return;
 
-    FlutterForegroundTask.start(
+    FlutterForegroundTask.startService(
         notificationTitle: widget.notificationTitle,
         notificationText: widget.notificationText,
         callback: widget.callback);
   }
 
   void _stopForegroundTask() {
-    FlutterForegroundTask.stop();
+    FlutterForegroundTask.stopService();
   }
 
   Future<bool> _onWillPop() async {
