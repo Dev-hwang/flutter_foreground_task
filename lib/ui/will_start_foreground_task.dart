@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-/// A widget for starting a foreground service when the app is about to be minimized or closed.
+/// A widget to start the foreground service when the app is minimized or closed.
 /// This widget must be declared above the [Scaffold] widget.
 class WillStartForegroundTask extends StatefulWidget {
   /// Called to ask if you want to start the foreground service.

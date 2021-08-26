@@ -89,7 +89,7 @@ class _ExampleAppState extends State<ExampleApp> {
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
-        channelDescription: 'This notification appears when a foreground task is running.',
+        channelDescription: 'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         iconData: NotificationIconData(
@@ -115,7 +115,7 @@ class _ExampleAppState extends State<ExampleApp> {
     await FlutterForegroundTask.saveData('customData', 'hello');
 
     _receivePort = await FlutterForegroundTask.startService(
-      notificationTitle: 'Foreground task is running',
+      notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,
     );
@@ -147,8 +147,8 @@ class _ExampleAppState extends State<ExampleApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // A widget that prevents the app from closing when a foreground task is running.
-      // Declare on top of the [Scaffold] widget.
+      // A widget that prevents the app from closing when the foreground service is running.
+      // This widget must be declared above the [Scaffold] widget.
       home: WithForegroundTask(
         child: Scaffold(
           appBar: AppBar(

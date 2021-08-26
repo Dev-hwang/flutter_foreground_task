@@ -7,7 +7,7 @@ This plugin is used to implement a foreground service on the Android platform.
 * Can perform repetitive task with foreground service.
 * Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
 * Provides a widget that prevents the app from closing when the foreground service is running.
-* Provides a widget for starting a foreground service when the app is about to be minimized or closed.
+* Provides a widget to start the foreground service when the app is minimized or closed.
 * Provides an option to automatically resume foreground service on boot.
 
 ## Getting started
@@ -130,7 +130,7 @@ void _initForegroundTask() {
     androidNotificationOptions: AndroidNotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
-      channelDescription: 'This notification appears when a foreground task is running.',
+      channelDescription: 'This notification appears when the foreground service is running.',
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
       iconData: NotificationIconData(
@@ -233,7 +233,7 @@ class _ExampleAppState extends State<ExampleApp> {
     await FlutterForegroundTask.saveData('customData', 'hello');
 
     _receivePort = FlutterForegroundTask.startService(
-      notificationTitle: 'Foreground task is running',
+      notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,
     );
@@ -377,17 +377,17 @@ void _stopForegroundTask() {
 @override
 Widget build(BuildContext context) {
   return MaterialApp(
-    // A widget used when you want to start a foreground task when trying to minimize or close the app.
-    // Declare on top of the [Scaffold] widget.
+    // A widget to start the foreground service when the app is minimized or closed.
+    // This widget must be declared above the [Scaffold] widget.
     home: WillStartForegroundTask(
       onWillStart: () {
-        // Please return whether to start the foreground task.
+        // Return whether to start the foreground service.
         return true;
       },
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
-        channelDescription: 'This notification appears when a foreground task is running.',
+        channelDescription: 'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         iconData: NotificationIconData(
@@ -405,7 +405,7 @@ Widget build(BuildContext context) {
         autoRunOnBoot: false,
       ),
       printDevLog: true,
-      notificationTitle: 'Foreground task is running',
+      notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
       callback: callback,
       child: Scaffold(
