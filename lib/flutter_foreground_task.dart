@@ -11,6 +11,7 @@ import 'package:flutter_foreground_task/exception/foreground_task_exception.dart
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/android_notification_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
@@ -132,6 +133,42 @@ class FlutterForegroundTask {
   /// Returns whether the foreground service is running.
   static Future<bool> get isRunningService async =>
       await _methodChannel.invokeMethod('isRunningService');
+
+  /// Get the stored data with [key].
+  static Future<T?> getData<T>({required String key}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final value = prefs.get(key);
+
+    return (value is T) ? value : null;
+  }
+
+  /// Save data with [key].
+  static Future<bool> saveData(String key, Object value) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (value is int)
+      return prefs.setInt(key, value);
+    else if (value is double)
+      return prefs.setDouble(key, value);
+    else if (value is String)
+      return prefs.setString(key, value);
+    else if (value is bool)
+      return prefs.setBool(key, value);
+    else
+      return false;
+  }
+
+  /// Remove data with [key].
+  static Future<bool> removeData({required String key}) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.remove(key);
+  }
+
+  /// Clears all stored data.
+  static Future<bool> clearAllData() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.clear();
+  }
 
   /// Minimize the app to the background.
   static void minimizeApp() => _methodChannel.invokeMethod('minimizeApp');

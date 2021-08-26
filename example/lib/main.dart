@@ -17,16 +17,19 @@ class FirstTaskHandler implements TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
     print('FirstTaskHandler :: onStart');
+
+    // You can use the getData function to get the data you saved.
+    final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
+    print('customData: $customData');
   }
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    final strTimestamp = timestamp.toString();
     print('FirstTaskHandler :: onEvent');
 
     FlutterForegroundTask.updateService(
         notificationTitle: 'FirstTaskHandler',
-        notificationText: strTimestamp,
+        notificationText: timestamp.toString(),
         callback: updateCount >= 10 ? updateCallback : null);
 
     // Send data to the main isolate.
@@ -39,6 +42,9 @@ class FirstTaskHandler implements TaskHandler {
   @override
   Future<void> onDestroy(DateTime timestamp) async {
     print('FirstTaskHandler :: onDestroy');
+
+    // You can use the clearAllData function to clear all the stored data.
+    await FlutterForegroundTask.clearAllData();
   }
 }
 
@@ -54,12 +60,11 @@ class SecondTaskHandler implements TaskHandler {
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    final strTimestamp = timestamp.toString();
     print('SecondTaskHandler :: onEvent');
 
     FlutterForegroundTask.updateService(
         notificationTitle: 'SecondTaskHandler',
-        notificationText: strTimestamp);
+        notificationText: timestamp.toString());
 
     // Send data to the main isolate.
     sendPort?.send(timestamp);
@@ -106,6 +111,9 @@ class _ExampleAppState extends State<ExampleApp> {
   }
 
   void _startForegroundTask() async {
+    // You can save data using the saveData function.
+    await FlutterForegroundTask.saveData('customData', 'hello');
+
     _receivePort = await FlutterForegroundTask.startService(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',

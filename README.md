@@ -195,11 +195,14 @@ class FirstTaskHandler implements TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
     print('FirstTaskHandler :: onStart');
+
+    // You can use the getData function to get the data you saved.
+    final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
+    print('customData: $customData');
   }
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    final strTimestamp = timestamp.toString();
     print('FirstTaskHandler :: onEvent');
 
     // Send data to the main isolate.
@@ -209,6 +212,9 @@ class FirstTaskHandler implements TaskHandler {
   @override
   Future<void> onDestroy(DateTime timestamp) async {
     print('FirstTaskHandler :: onDestroy');
+
+    // You can use the clearAllData function to clear all the stored data.
+    await FlutterForegroundTask.clearAllData();
   }
 }
 
@@ -223,6 +229,9 @@ class _ExampleAppState extends State<ExampleApp> {
   // ...
 
   void _startForegroundTask() async {
+    // You can save data using the saveData function.
+    await FlutterForegroundTask.saveData('customData', 'hello');
+
     _receivePort = FlutterForegroundTask.startService(
       notificationTitle: 'Foreground task is running',
       notificationText: 'Tap to return to the app',
@@ -240,6 +249,17 @@ class _ExampleAppState extends State<ExampleApp> {
     _receivePort?.close();
     super.dispose();
   }
+}
+```
+
+As you can see in the code above, you can manage data with the following functions.
+
+```dart
+void function() async {
+  await FlutterForegroundTask.getData(key: String);
+  await FlutterForegroundTask.saveData(String, Object);
+  await FlutterForegroundTask.removeData(key: String);
+  await FlutterForegroundTask.clearAllData();
 }
 ```
 
@@ -294,12 +314,11 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    final strTimestamp = timestamp.toString();
     print('FirstTaskHandler :: onEvent');
 
     FlutterForegroundTask.updateService(
         notificationTitle: 'FirstTaskHandler',
-        notificationText: strTimestamp,
+        notificationText: timestamp.toString(),
         callback: updateCount >= 10 ? updateCallback : null);
 
     // Send data to the main isolate.
@@ -327,12 +346,11 @@ class SecondTaskHandler implements TaskHandler {
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    final strTimestamp = timestamp.toString();
     print('SecondTaskHandler :: onEvent');
 
     FlutterForegroundTask.updateService(
         notificationTitle: 'SecondTaskHandler',
-        notificationText: strTimestamp);
+        notificationText: timestamp.toString());
 
     // Send data to the main isolate.
     sendPort?.send(timestamp);
