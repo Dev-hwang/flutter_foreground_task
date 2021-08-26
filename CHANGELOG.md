@@ -1,3 +1,14 @@
+## 3.0.0
+
+* [**BREAKING**] The way you start the foreground service and register tasks has changed. Check [readme](https://pub.dev/packages/flutter_foreground_task#how-to-use) for more information.
+* [**BREAKING**] Change function name from `start` to `startService`.
+* [**BREAKING**] Change function name from `update` to `updateService`.
+* [**BREAKING**] Change function name from `stop` to `stopService`.
+* [**BREAKING**] Change function name from `isRunningTask` to `isRunningService`.
+* Added functions for data management.
+* Fixed an issue where notifications were not removed when the service was stopped.
+* Fixed incorrect documentation.
+
 ## 2.2.1
 
 * Fixed playSound option not working properly in the background.
