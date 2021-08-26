@@ -50,12 +50,13 @@ class FlutterForegroundTask {
   /// Initialize the [FlutterForegroundTask].
   static Future<void> init({
     required AndroidNotificationOptions androidNotificationOptions,
-    required IOSNotificationOptions iosNotificationOptions,
+    IOSNotificationOptions? iosNotificationOptions,
     ForegroundTaskOptions? foregroundTaskOptions,
     bool? printDevLog,
   }) async {
     _androidNotificationOptions = androidNotificationOptions;
-    _iosNotificationOptions = iosNotificationOptions;
+    _iosNotificationOptions = iosNotificationOptions ??
+        _iosNotificationOptions ?? const IOSNotificationOptions();
     _foregroundTaskOptions = foregroundTaskOptions ??
         _foregroundTaskOptions ?? const ForegroundTaskOptions();
     _printDevLog = printDevLog ?? _printDevLog;
