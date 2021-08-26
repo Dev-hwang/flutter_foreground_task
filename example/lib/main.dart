@@ -16,8 +16,6 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    print('FirstTaskHandler :: onStart');
-
     // You can use the getData function to get the data you saved.
     final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
     print('customData: $customData');
@@ -25,8 +23,6 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    print('FirstTaskHandler :: onEvent');
-
     FlutterForegroundTask.updateService(
         notificationTitle: 'FirstTaskHandler',
         notificationText: timestamp.toString(),
@@ -41,8 +37,6 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp) async {
-    print('FirstTaskHandler :: onDestroy');
-
     // You can use the clearAllData function to clear all the stored data.
     await FlutterForegroundTask.clearAllData();
   }
@@ -55,13 +49,11 @@ void updateCallback() {
 class SecondTaskHandler implements TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    print('SecondTaskHandler :: onStart');
+
   }
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    print('SecondTaskHandler :: onEvent');
-
     FlutterForegroundTask.updateService(
         notificationTitle: 'SecondTaskHandler',
         notificationText: timestamp.toString());
@@ -72,7 +64,7 @@ class SecondTaskHandler implements TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp) async {
-    print('SecondTaskHandler :: onDestroy');
+
   }
 }
 

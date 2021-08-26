@@ -29,7 +29,7 @@ Since this plugin is based on a foreground service, we need to add the following
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 ```
 
-And we need to add this permission to automatically resume foreground task at boot time.
+And we need to add this permission to automatically resume foreground service at boot time.
 
 ```xml
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -72,7 +72,10 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [GeneratedPluginRegistrant registerWithRegistry:self];
-  [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins]; // here
+
+  // here, Without this code the task will not work.
+  [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins];
+
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
@@ -101,7 +104,10 @@ import Flutter
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins) // here
+
+    // here, Without this code the task will not work.
+    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
@@ -194,8 +200,6 @@ void startCallback() {
 class FirstTaskHandler implements TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    print('FirstTaskHandler :: onStart');
-
     // You can use the getData function to get the data you saved.
     final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
     print('customData: $customData');
@@ -203,16 +207,12 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    print('FirstTaskHandler :: onEvent');
-
     // Send data to the main isolate.
     sendPort?.send(timestamp);
   }
 
   @override
   Future<void> onDestroy(DateTime timestamp) async {
-    print('FirstTaskHandler :: onDestroy');
-
     // You can use the clearAllData function to clear all the stored data.
     await FlutterForegroundTask.clearAllData();
   }
@@ -309,13 +309,13 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    print('FirstTaskHandler :: onStart');
+    // You can use the getData function to get the data you saved.
+    final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
+    print('customData: $customData');
   }
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    print('FirstTaskHandler :: onEvent');
-
     FlutterForegroundTask.updateService(
         notificationTitle: 'FirstTaskHandler',
         notificationText: timestamp.toString(),
@@ -330,7 +330,8 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp) async {
-    print('FirstTaskHandler :: onDestroy');
+    // You can use the clearAllData function to clear all the stored data.
+    await FlutterForegroundTask.clearAllData();
   }
 }
 
@@ -341,13 +342,11 @@ void updateCallback() {
 class SecondTaskHandler implements TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    print('SecondTaskHandler :: onStart');
+
   }
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    print('SecondTaskHandler :: onEvent');
-
     FlutterForegroundTask.updateService(
         notificationTitle: 'SecondTaskHandler',
         notificationText: timestamp.toString());
@@ -358,7 +357,7 @@ class SecondTaskHandler implements TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp) async {
-    print('SecondTaskHandler :: onDestroy');
+
   }
 }
 ```
