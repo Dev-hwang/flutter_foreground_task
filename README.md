@@ -48,6 +48,7 @@ We can also launch `flutter_foreground_task` on iOS platform. However, it has th
 * Works only on iOS 10.0 or later.
 * If the app is forcibly closed, the task will not work.
 * Task cannot be started automatically on device reboot.
+* Due to the background processing limitations of the platform, the `onEvent` event may not work properly in the background. But in the foreground it works fine.
 
 **Objective-C**:
 
