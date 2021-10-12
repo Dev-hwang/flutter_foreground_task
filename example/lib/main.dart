@@ -104,7 +104,7 @@ class _ExampleAppState extends State<ExampleApp> {
 
   void _startForegroundTask() async {
     // You can save data using the saveData function.
-    await FlutterForegroundTask.saveData('customData', 'hello');
+    await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
     _receivePort = await FlutterForegroundTask.startService(
       notificationTitle: 'Foreground Service is running',

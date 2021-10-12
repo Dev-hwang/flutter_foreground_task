@@ -144,7 +144,8 @@ class FlutterForegroundTask {
   }
 
   /// Save data with [key].
-  static Future<bool> saveData(String key, Object value) async {
+  static Future<bool> saveData(
+      {required String key, required Object value}) async {
     final prefs = await SharedPreferences.getInstance();
 
     if (value is int)
