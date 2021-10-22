@@ -46,7 +46,7 @@ class BackgroundServiceManager: NSObject {
   
   private func saveOptions(call: FlutterMethodCall) {
     guard let argsDict = call.arguments as? Dictionary<String, Any> else { return }
-    let prefs = UserDefaults.standard
+    let prefs = UserDefaults(suiteName: USER_DEFAULTS_DOMAIN)
     
     let notificationContentTitle = argsDict[NOTIFICATION_CONTENT_TITLE] as? String ?? ""
     let notificationContentText = argsDict[NOTIFICATION_CONTENT_TEXT] as? String ?? ""
@@ -55,41 +55,38 @@ class BackgroundServiceManager: NSObject {
     let taskInterval = argsDict[TASK_INTERVAL] as? Int ?? 5000
     let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
     
-    prefs.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
-    prefs.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
-    prefs.set(showNotification, forKey: SHOW_NOTIFICATION)
-    prefs.set(playSound, forKey: PLAY_SOUND)
-    prefs.set(taskInterval, forKey: TASK_INTERVAL)
-    prefs.removeObject(forKey: CALLBACK_HANDLE)
+    prefs?.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
+    prefs?.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
+    prefs?.set(showNotification, forKey: SHOW_NOTIFICATION)
+    prefs?.set(playSound, forKey: PLAY_SOUND)
+    prefs?.set(taskInterval, forKey: TASK_INTERVAL)
+    prefs?.removeObject(forKey: CALLBACK_HANDLE)
     if callbackHandle != nil {
-      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
+      prefs?.set(callbackHandle, forKey: CALLBACK_HANDLE)
     }
   }
   
   private func updateOptions(call: FlutterMethodCall) {
     guard let argsDict = call.arguments as? Dictionary<String, Any> else { return }
-    let prefs = UserDefaults.standard
+    let prefs = UserDefaults(suiteName: USER_DEFAULTS_DOMAIN)
     
     let notificationContentTitle = argsDict[NOTIFICATION_CONTENT_TITLE] as? String
-      ?? prefs.string(forKey: NOTIFICATION_CONTENT_TITLE)
+      ?? prefs?.string(forKey: NOTIFICATION_CONTENT_TITLE)
       ?? ""
     let notificationContentText = argsDict[NOTIFICATION_CONTENT_TEXT] as? String
-      ?? prefs.string(forKey: NOTIFICATION_CONTENT_TEXT)
+      ?? prefs?.string(forKey: NOTIFICATION_CONTENT_TEXT)
       ?? ""
     let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
     
-    prefs.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
-    prefs.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
-    prefs.removeObject(forKey: CALLBACK_HANDLE)
+    prefs?.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
+    prefs?.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
+    prefs?.removeObject(forKey: CALLBACK_HANDLE)
     if callbackHandle != nil {
-      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
+      prefs?.set(callbackHandle, forKey: CALLBACK_HANDLE)
     }
   }
   
   private func clearOptions() {
-    let prefs = UserDefaults.standard
-    for key in prefs.dictionaryRepresentation().keys {
-      prefs.removeObject(forKey: key.description)
-    }
+    UserDefaults.standard.removeSuite(named: USER_DEFAULTS_DOMAIN)
   }
 }
