@@ -15,6 +15,7 @@ class AndroidNotificationOptions {
     this.enableVibration = false,
     this.playSound = false,
     this.showWhen = false,
+    this.isSticky = true,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
     this.iconData,
   });
@@ -51,6 +52,8 @@ class AndroidNotificationOptions {
   /// The default is `false`.
   final bool showWhen;
 
+  final bool isSticky;
+
   /// Control the level of detail displayed in notifications on the lock screen.
   /// The default is `NotificationVisibility.VISIBILITY_PUBLIC`.
   final NotificationVisibility visibility;
@@ -70,6 +73,7 @@ class AndroidNotificationOptions {
       'enableVibration': enableVibration,
       'playSound': playSound,
       'showWhen': showWhen,
+      'isSticky': isSticky,
       'visibility': visibility.rawValue,
       'iconData': iconData?.toJson(),
     };

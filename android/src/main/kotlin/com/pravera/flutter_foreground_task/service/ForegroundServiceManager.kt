@@ -84,6 +84,7 @@ class ForegroundServiceManager {
 		val enableVibration = call.argument<Boolean>(ForegroundServicePrefsKey.ENABLE_VIBRATION) ?: false
 		val playSound = call.argument<Boolean>(ForegroundServicePrefsKey.PLAY_SOUND) ?: false
 		val showWhen = call.argument<Boolean>(ForegroundServicePrefsKey.SHOW_WHEN) ?: false
+		val isSticky = call.argument<Boolean>(ForegroundServicePrefsKey.IS_STICKY) ?: true
 		val visibility = call.argument<Int>(ForegroundServicePrefsKey.VISIBILITY) ?: 1
 
 		val iconData = call.argument<HashMap<String, String>>("iconData")
@@ -106,6 +107,7 @@ class ForegroundServiceManager {
 			putBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
 			putBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
 			putBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
+			putBoolean(ForegroundServicePrefsKey.IS_STICKY, isSticky)
 			putInt(ForegroundServicePrefsKey.VISIBILITY, visibility)
 			putString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
 			putString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
