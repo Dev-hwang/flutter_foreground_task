@@ -121,7 +121,7 @@ func registerPlugins(registry: FlutterPluginRegistry) {
 
 ## How to use
 
-This plugin has two ways to start a foreground task. There are two ways to start the foreground task manually and to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
+This plugin has two ways to start a foreground task. There is a way to manually start a foreground task and a way to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
 
 #### :hatched_chick: Start manually
 
