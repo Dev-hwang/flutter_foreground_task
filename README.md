@@ -436,6 +436,7 @@ Notification options for Android platform.
 | `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
 | `playSound` | Whether to play sound when creating notifications. The default is `false`. |
 | `showWhen` | Whether to show the timestamp when the notification was created in the content view. The default is `false`. |
+| `isSticky` | Whether or not the system will restart the service if the service is killed. The default is `true`. |
 | `visibility` | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
 | `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
 
@@ -529,9 +530,7 @@ Minimize the app to the background.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() {
-  FlutterForegroundTask.minimizeApp();
-}
+void function() => FlutterForegroundTask.minimizeApp();
 ```
 
 ### :lollipop: wakeUpScreen
@@ -541,9 +540,7 @@ Wake up the screen of a device that is turned off.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() {
-  FlutterForegroundTask.wakeUpScreen();
-}
+void function() => FlutterForegroundTask.wakeUpScreen();
 ```
 
 ### :lollipop: isIgnoringBatteryOptimizations
@@ -553,9 +550,7 @@ Returns whether the app has been excluded from battery optimization.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() async {
-  var isIgnoring = await FlutterForegroundTask.isIgnoringBatteryOptimizations;
-}
+Future<bool> function() => FlutterForegroundTask.isIgnoringBatteryOptimizations;
 ```
 
 ### :lollipop: openIgnoreBatteryOptimizationSettings
@@ -565,9 +560,7 @@ Open the settings page where you can set ignore battery optimization.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() async {
-  var isIgnoring = await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
-}
+Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
 ```
 
 ## Support
