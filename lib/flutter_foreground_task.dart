@@ -56,9 +56,11 @@ class FlutterForegroundTask {
   }) async {
     _androidNotificationOptions = androidNotificationOptions;
     _iosNotificationOptions = iosNotificationOptions ??
-        _iosNotificationOptions ?? const IOSNotificationOptions();
+        _iosNotificationOptions ??
+        const IOSNotificationOptions();
     _foregroundTaskOptions = foregroundTaskOptions ??
-        _foregroundTaskOptions ?? const ForegroundTaskOptions();
+        _foregroundTaskOptions ??
+        const ForegroundTaskOptions();
     _printDevLog = printDevLog ?? _printDevLog;
   }
 
@@ -87,8 +89,8 @@ class FlutterForegroundTask {
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
     if (callback != null) {
-      options.addAll(
-          _foregroundTaskOptions?.toJson() ?? Map<String, dynamic>());
+      options
+          .addAll(_foregroundTaskOptions?.toJson() ?? Map<String, dynamic>());
       options['callbackHandle'] =
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
@@ -196,14 +198,16 @@ class FlutterForegroundTask {
     // This function only works on Android.
     if (!Platform.isAndroid) return true;
 
-    return await _methodChannel.invokeMethod('openIgnoreBatteryOptimizationSettings');
+    return await _methodChannel
+        .invokeMethod('openIgnoreBatteryOptimizationSettings');
   }
 
   /// Set up the task handler and start the foreground task.
   /// It must always be called from a top-level function, otherwise foreground task will not work.
   static void setTaskHandler(TaskHandler handler) {
     // Create a method channel to communicate with the platform.
-    const _backgroundChannel = MethodChannel('flutter_foreground_task/background');
+    const _backgroundChannel =
+        MethodChannel('flutter_foreground_task/background');
 
     // Binding the framework to the flutter engine.
     WidgetsFlutterBinding.ensureInitialized();
