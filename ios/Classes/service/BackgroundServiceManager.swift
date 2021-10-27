@@ -9,31 +9,40 @@ import Flutter
 import Foundation
 
 class BackgroundServiceManager: NSObject {
-  func start(call: FlutterMethodCall) {
+  func start(call: FlutterMethodCall) -> Bool {
     if #available(iOS 10.0, *) {
       saveOptions(call: call)
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.START)
     } else {
       // Fallback on earlier versions
+      return false
     }
+    
+    return true
   }
   
-  func update(call: FlutterMethodCall) {
+  func update(call: FlutterMethodCall) -> Bool {
     if #available(iOS 10.0, *) {
       updateOptions(call: call)
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.UPDATE)
     } else {
       // Fallback on earlier versions
+      return false
     }
+    
+    return true
   }
   
-  func stop() {
+  func stop() -> Bool {
     if #available(iOS 10.0, *) {
       clearOptions()
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.STOP)
     } else {
       // Fallback on earlier versions
+      return false
     }
+    
+    return true
   }
   
   func isRunningService() -> Bool {

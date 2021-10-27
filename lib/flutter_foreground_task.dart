@@ -89,26 +89,29 @@ class FlutterForegroundTask {
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
     if (callback != null) {
-      options
-          .addAll(_foregroundTaskOptions?.toJson() ?? Map<String, dynamic>());
+      options.addAll(_foregroundTaskOptions!.toJson());
       options['callbackHandle'] =
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    _methodChannel.invokeMethod('startForegroundService', options);
-    _printMessage('FlutterForegroundTask started.');
+    final bool result =
+        await _methodChannel.invokeMethod('startForegroundService', options);
+    if (result) {
+      _printMessage('FlutterForegroundTask started');
+      return receivePort;
+    }
 
-    return receivePort;
+    return null;
   }
 
   /// Update the foreground service.
-  static Future<void> updateService({
+  static Future<bool> updateService({
     String? notificationTitle,
     String? notificationText,
     Function? callback,
   }) async {
     // If the service is not running, the update function is not executed.
-    if (!await isRunningService) return;
+    if (!await isRunningService) return false;
 
     final options = Map<String, dynamic>();
     options['notificationContentTitle'] = notificationTitle;
@@ -118,19 +121,31 @@ class FlutterForegroundTask {
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    _methodChannel.invokeMethod('updateForegroundService', options);
-    _printMessage('FlutterForegroundTask updated.');
+    final bool result =
+        await _methodChannel.invokeMethod('updateForegroundService', options);
+    if (result) {
+      _printMessage('FlutterForegroundTask updated');
+      return true;
+    }
+
+    return false;
   }
 
   /// Stop the foreground service.
-  static Future<void> stopService() async {
+  static Future<bool> stopService() async {
     // If the service is not running, the stop function is not executed.
-    if (!await isRunningService) return;
+    if (!await isRunningService) return false;
 
     _removePort();
 
-    _methodChannel.invokeMethod('stopForegroundService');
-    _printMessage('FlutterForegroundTask stopped.');
+    final bool result =
+        await _methodChannel.invokeMethod('stopForegroundService');
+    if (result) {
+      _printMessage('FlutterForegroundTask stopped');
+      return true;
+    }
+
+    return false;
   }
 
   /// Returns whether the foreground service is running.

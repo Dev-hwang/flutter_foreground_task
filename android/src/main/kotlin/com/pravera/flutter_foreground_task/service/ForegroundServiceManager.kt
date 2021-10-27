@@ -18,15 +18,21 @@ class ForegroundServiceManager {
 	 * @param context context
 	 * @param call Method call on the method channel. This includes notification options.
 	 */
-	fun start(context: Context, call: MethodCall) {
-		val intent = Intent(context, ForegroundService::class.java)
-		intent.action = ForegroundServiceAction.START
-		saveOptions(context, call)
+	fun start(context: Context, call: MethodCall): Boolean {
+		try {
+			val intent = Intent(context, ForegroundService::class.java)
+			intent.action = ForegroundServiceAction.START
+			saveOptions(context, call)
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-			context.startForegroundService(intent)
-		else
-			context.startService(intent)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+				context.startForegroundService(intent)
+			else
+				context.startService(intent)
+		} catch (e: Exception) {
+			return false
+		}
+
+		return true
 	}
 
 	/**
@@ -35,15 +41,21 @@ class ForegroundServiceManager {
 	 * @param context context
 	 * @param call Method call on the method channel. This includes notification options.
 	 */
-	fun update(context: Context, call: MethodCall) {
-		val intent = Intent(context, ForegroundService::class.java)
-		intent.action = ForegroundServiceAction.UPDATE
-		updateOptions(context, call)
+	fun update(context: Context, call: MethodCall): Boolean {
+		try {
+			val intent = Intent(context, ForegroundService::class.java)
+			intent.action = ForegroundServiceAction.UPDATE
+			updateOptions(context, call)
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-			context.startForegroundService(intent)
-		else
-			context.startService(intent)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+				context.startForegroundService(intent)
+			else
+				context.startService(intent)
+		} catch (e: Exception) {
+			return false
+		}
+
+		return true
 	}
 
 	/**
@@ -51,18 +63,24 @@ class ForegroundServiceManager {
 	 *
 	 * @param context context
 	 */
-	fun stop(context: Context) {
+	fun stop(context: Context): Boolean {
 		// If the service is not running, the stop function is not executed.
-		if (!ForegroundService.isRunningService) return
+		if (!ForegroundService.isRunningService) return false
 
-		val intent = Intent(context, ForegroundService::class.java)
-		intent.action = ForegroundServiceAction.STOP
-		clearOptions(context)
+		try {
+			val intent = Intent(context, ForegroundService::class.java)
+			intent.action = ForegroundServiceAction.STOP
+			clearOptions(context)
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-			context.startForegroundService(intent)
-		else
-			context.startService(intent)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+				context.startForegroundService(intent)
+			else
+				context.startService(intent)
+		} catch (e: Exception) {
+			return false
+		}
+
+		return true
 	}
 
 	/**
