@@ -31,6 +31,8 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     switch call.method {
       case "startForegroundService":
         result(backgroundServiceManager?.start(call: call) ?? false)
+      case "restartForegroundService":
+        result(backgroundServiceManager?.restart(call: call) ?? false)
       case "updateForegroundService":
         result(backgroundServiceManager?.update(call: call) ?? false)
       case "stopForegroundService":

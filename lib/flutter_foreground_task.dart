@@ -104,6 +104,27 @@ class FlutterForegroundTask {
     return null;
   }
 
+  /// Restart the foreground service.
+  /// The option value uses the option value of the currently running service as it is.
+  static Future<ReceivePort?> restartService() async {
+    if (!await isRunningService)
+      throw ForegroundTaskException('There are no service started or running.');
+
+    final receivePort = _registerPort();
+    if (receivePort == null)
+      throw ForegroundTaskException(
+          'Failed to register SendPort to communicate with background isolate.');
+
+    final bool result =
+        await _methodChannel.invokeMethod('restartForegroundService');
+    if (result) {
+      _printMessage('FlutterForegroundTask restarted');
+      return receivePort;
+    }
+
+    return null;
+  }
+
   /// Update the foreground service.
   static Future<bool> updateService({
     String? notificationTitle,

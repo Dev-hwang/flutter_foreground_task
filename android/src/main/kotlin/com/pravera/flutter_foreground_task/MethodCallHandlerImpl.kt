@@ -37,6 +37,8 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 		when (reqMethod) {
 			"startForegroundService" ->
 				result.success(provider.getForegroundServiceManager().start(context, call))
+			"restartForegroundService" ->
+				result.success(provider.getForegroundServiceManager().restart(context, call))
 			"updateForegroundService" ->
 				result.success(provider.getForegroundServiceManager().update(context, call))
 			"stopForegroundService" ->

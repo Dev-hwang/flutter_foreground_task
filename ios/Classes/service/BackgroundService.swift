@@ -51,6 +51,13 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
           executeDartCallback(callbackHandle: callbackHandle)
         }
         break
+      case .RESTART:
+        sendNotification()
+        isRunningService = true
+        if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE_ON_RESTART) as? Int64 {
+          executeDartCallback(callbackHandle: callbackHandle)
+        }
+        break
       case .UPDATE:
         sendNotification()
         isRunningService = true

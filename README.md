@@ -233,11 +233,15 @@ class _ExampleAppState extends State<ExampleApp> {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
-    _receivePort = FlutterForegroundTask.startService(
-      notificationTitle: 'Foreground Service is running',
-      notificationText: 'Tap to return to the app',
-      callback: startCallback,
-    );
+    if (await FlutterForegroundTask.isRunningService) {
+      _receivePort = await FlutterForegroundTask.restartService();
+    } else {
+      _receivePort = await FlutterForegroundTask.startService(
+        notificationTitle: 'Foreground Service is running',
+        notificationText: 'Tap to return to the app',
+        callback: startCallback,
+      );
+    }
 
     _receivePort?.listen((message) {
       if (message is DateTime)

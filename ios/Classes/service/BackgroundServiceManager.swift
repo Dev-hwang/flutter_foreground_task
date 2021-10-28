@@ -21,6 +21,17 @@ class BackgroundServiceManager: NSObject {
     return true
   }
   
+  func restart(call: FlutterMethodCall) -> Bool {
+    if #available(iOS 10.0, *) {
+      BackgroundService.sharedInstance.run(action: BackgroundServiceAction.RESTART)
+    } else {
+      // Fallback on earlier versions
+      return false
+    }
+    
+    return true
+  }
+  
   func update(call: FlutterMethodCall) -> Bool {
     if #available(iOS 10.0, *) {
       updateOptions(call: call)
@@ -70,8 +81,10 @@ class BackgroundServiceManager: NSObject {
     prefs.set(playSound, forKey: PLAY_SOUND)
     prefs.set(taskInterval, forKey: TASK_INTERVAL)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
+    prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
     if callbackHandle != nil {
       prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
+      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE_ON_RESTART)
     }
   }
   
@@ -92,6 +105,7 @@ class BackgroundServiceManager: NSObject {
     prefs.removeObject(forKey: CALLBACK_HANDLE)
     if callbackHandle != nil {
       prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
+      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE_ON_RESTART)
     }
   }
   

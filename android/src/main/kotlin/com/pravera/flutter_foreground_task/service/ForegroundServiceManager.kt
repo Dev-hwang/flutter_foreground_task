@@ -36,6 +36,28 @@ class ForegroundServiceManager {
 	}
 
 	/**
+	 * Restart the foreground service.
+	 *
+	 * @param context context
+	 * @param call Method call on the method channel. This includes notification options.
+	 */
+	fun restart(context: Context, call: MethodCall): Boolean {
+		try {
+			val intent = Intent(context, ForegroundService::class.java)
+			intent.action = ForegroundServiceAction.RESTART
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+				context.startForegroundService(intent)
+			else
+				context.startService(intent)
+		} catch (e: Exception) {
+			return false
+		}
+
+		return true
+	}
+
+	/**
 	 * Update the foreground service.
 	 *
 	 * @param context context
