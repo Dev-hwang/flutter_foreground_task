@@ -1,3 +1,14 @@
+## 3.2.0
+
+* Add `restartService` function. You can now restart the service to get the new `ReceivePort`.
+* Improve service-related function code. A return value has been added to check if the function was properly requested.
+
+## 3.1.0
+
+* Upgrade shared_preferences: ^2.0.8
+* Add `required keyword` to parameters of saveData func.
+* Add `isSticky` notification option for Android.
+
 ## 3.0.0
 
 * [**BREAKING**] The way you start the foreground service and register tasks has changed. Check [readme](https://pub.dev/packages/flutter_foreground_task#how-to-use) for more information.

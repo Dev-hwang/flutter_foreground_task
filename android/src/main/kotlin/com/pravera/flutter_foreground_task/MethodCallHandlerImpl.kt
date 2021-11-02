@@ -15,12 +15,10 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 
 /** MethodCallHandlerImpl */
-class MethodCallHandlerImpl(
-		private val context: Context,
-		private val serviceProvider: ServiceProvider):
-		MethodChannel.MethodCallHandler,
-		FlutterForegroundTaskPluginChannel,
-		PluginRegistry.ActivityResultListener {
+class MethodCallHandlerImpl(private val context: Context, private val provider: ServiceProvider) :
+	MethodChannel.MethodCallHandler,
+	FlutterForegroundTaskPluginChannel,
+	PluginRegistry.ActivityResultListener {
 	private lateinit var channel: MethodChannel
 
 	private var activity: Activity? = null
@@ -38,13 +36,15 @@ class MethodCallHandlerImpl(
 
 		when (reqMethod) {
 			"startForegroundService" ->
-				serviceProvider.getForegroundServiceManager().start(context, call)
+				result.success(provider.getForegroundServiceManager().start(context, call))
+			"restartForegroundService" ->
+				result.success(provider.getForegroundServiceManager().restart(context, call))
 			"updateForegroundService" ->
-				serviceProvider.getForegroundServiceManager().update(context, call)
+				result.success(provider.getForegroundServiceManager().update(context, call))
 			"stopForegroundService" ->
-				serviceProvider.getForegroundServiceManager().stop(context)
+				result.success(provider.getForegroundServiceManager().stop(context))
 			"isRunningService" ->
-				result.success(serviceProvider.getForegroundServiceManager().isRunningService())
+				result.success(provider.getForegroundServiceManager().isRunningService())
 			"minimizeApp" -> ForegroundServiceUtils.minimizeApp(activity)
 			"wakeUpScreen" -> ForegroundServiceUtils.wakeUpScreen(context)
 			"isIgnoringBatteryOptimizations" ->

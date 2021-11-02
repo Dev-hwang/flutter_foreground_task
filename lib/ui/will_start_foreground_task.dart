@@ -11,7 +11,7 @@ class WillStartForegroundTask extends StatefulWidget {
   final AndroidNotificationOptions androidNotificationOptions;
 
   /// Options for setting up notifications on the iOS platform.
-  final IOSNotificationOptions iosNotificationOptions;
+  final IOSNotificationOptions? iosNotificationOptions;
 
   /// Options for setting the foreground task.
   final ForegroundTaskOptions? foregroundTaskOptions;
@@ -39,7 +39,7 @@ class WillStartForegroundTask extends StatefulWidget {
     Key? key,
     required this.onWillStart,
     required this.androidNotificationOptions,
-    required this.iosNotificationOptions,
+    this.iosNotificationOptions,
     this.foregroundTaskOptions,
     this.printDevLog,
     required this.notificationTitle,

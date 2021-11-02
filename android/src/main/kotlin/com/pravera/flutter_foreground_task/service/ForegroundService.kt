@@ -49,6 +49,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var enableVibration: Boolean = false
 	private var playSound: Boolean = false
 	private var showWhen: Boolean = false
+	private var isSticky: Boolean = true
 	private var visibility: Int = 1
 	private var iconResType: String? = null
 	private var iconResPrefix: String? = null
@@ -88,6 +89,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		enableVibration = sharedPreferences.getBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
 		playSound = sharedPreferences.getBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
 		showWhen = sharedPreferences.getBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
+		isSticky = sharedPreferences.getBoolean(ForegroundServicePrefsKey.IS_STICKY, isSticky)
 		visibility = sharedPreferences.getInt(ForegroundServicePrefsKey.VISIBILITY, visibility)
 		iconResType = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
 		iconResPrefix = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
@@ -103,7 +105,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 					executeDartCallback(callback)
 				}
 
-				return START_STICKY
+				if (isSticky) return START_STICKY
 			}
 			ForegroundServiceAction.REBOOT,
 			ForegroundServiceAction.RESTART -> {
@@ -113,7 +115,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 					executeDartCallback(callback)
 				}
 
-				return START_STICKY
+				if (isSticky) return START_STICKY
 			}
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
@@ -129,7 +131,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		super.onDestroy()
 		destroyForegroundTask()
 
-		if (serviceAction != null && serviceAction != ForegroundServiceAction.STOP) {
+		if (serviceAction != null && isSticky &&  && serviceAction != ForegroundServiceAction.STOP) {
 			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
 			setRestartAlarm()
 		}

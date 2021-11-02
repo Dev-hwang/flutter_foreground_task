@@ -9,6 +9,7 @@ import Foundation
 
 enum BackgroundServiceAction {
   case START
+  case RESTART
   case UPDATE
   case STOP
 }

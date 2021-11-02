@@ -16,7 +16,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^3.0.0
+  flutter_foreground_task: ^3.2.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -121,7 +121,7 @@ func registerPlugins(registry: FlutterPluginRegistry) {
 
 ## How to use
 
-This plugin has two ways to start a foreground task. There are two ways to start the foreground task manually and to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
+This plugin has two ways to start a foreground task. There is a way to manually start a foreground task and a way to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
 
 #### :hatched_chick: Start manually
 
@@ -231,13 +231,17 @@ class _ExampleAppState extends State<ExampleApp> {
 
   void _startForegroundTask() async {
     // You can save data using the saveData function.
-    await FlutterForegroundTask.saveData('customData', 'hello');
+    await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
-    _receivePort = FlutterForegroundTask.startService(
-      notificationTitle: 'Foreground Service is running',
-      notificationText: 'Tap to return to the app',
-      callback: startCallback,
-    );
+    if (await FlutterForegroundTask.isRunningService) {
+      _receivePort = await FlutterForegroundTask.restartService();
+    } else {
+      _receivePort = await FlutterForegroundTask.startService(
+        notificationTitle: 'Foreground Service is running',
+        notificationText: 'Tap to return to the app',
+        callback: startCallback,
+      );
+    }
 
     _receivePort?.listen((message) {
       if (message is DateTime)
@@ -258,7 +262,7 @@ As you can see in the code above, you can manage data with the following functio
 ```dart
 void function() async {
   await FlutterForegroundTask.getData(key: String);
-  await FlutterForegroundTask.saveData(String, Object);
+  await FlutterForegroundTask.saveData(key: String, value: Object);
   await FlutterForegroundTask.removeData(key: String);
   await FlutterForegroundTask.clearAllData();
 }
@@ -436,6 +440,7 @@ Notification options for Android platform.
 | `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
 | `playSound` | Whether to play sound when creating notifications. The default is `false`. |
 | `showWhen` | Whether to show the timestamp when the notification was created in the content view. The default is `false`. |
+| `isSticky` | Whether or not the system will restart the service if the service is killed. The default is `true`. |
 | `visibility` | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
 | `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
 
@@ -529,9 +534,7 @@ Minimize the app to the background.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() {
-  FlutterForegroundTask.minimizeApp();
-}
+void function() => FlutterForegroundTask.minimizeApp();
 ```
 
 ### :lollipop: wakeUpScreen
@@ -541,9 +544,7 @@ Wake up the screen of a device that is turned off.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() {
-  FlutterForegroundTask.wakeUpScreen();
-}
+void function() => FlutterForegroundTask.wakeUpScreen();
 ```
 
 ### :lollipop: isIgnoringBatteryOptimizations
@@ -553,9 +554,7 @@ Returns whether the app has been excluded from battery optimization.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() async {
-  var isIgnoring = await FlutterForegroundTask.isIgnoringBatteryOptimizations;
-}
+Future<bool> function() => FlutterForegroundTask.isIgnoringBatteryOptimizations;
 ```
 
 ### :lollipop: openIgnoreBatteryOptimizationSettings
@@ -565,9 +564,7 @@ Open the settings page where you can set ignore battery optimization.
 ```dart
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void function() async {
-  var isIgnoring = await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
-}
+Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
 ```
 
 ## Support
