@@ -128,7 +128,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	override fun onDestroy() {
 		super.onDestroy()
 		destroyForegroundTask()
-		if (serviceAction != ForegroundServiceAction.STOP) {
+
+		if (serviceAction != null && serviceAction != ForegroundServiceAction.STOP) {
 			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
 			setRestartAlarm()
 		}
@@ -200,17 +201,17 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		currFlutterEngine = FlutterEngine(this)
 
 		flutterLoader = FlutterInjector.instance().flutterLoader()
-		flutterLoader!!.startInitialization(this)
-		flutterLoader!!.ensureInitializationComplete(this, null)
+		flutterLoader?.startInitialization(this)
+		flutterLoader?.ensureInitializationComplete(this, null)
 
-		val messenger = currFlutterEngine!!.dartExecutor.binaryMessenger
+		val messenger = currFlutterEngine?.dartExecutor.binaryMessenger
 		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
-		backgroundChannel!!.setMethodCallHandler(this)
+		backgroundChannel?.setMethodCallHandler(this)
 
 		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-		val appBundlePath = flutterLoader!!.findAppBundlePath()
+		val appBundlePath = flutterLoader?.findAppBundlePath()
 		val dartCallback = DartExecutor.DartCallback(assets, appBundlePath, callbackInfo)
-		currFlutterEngine!!.dartExecutor.executeDartCallback(dartCallback)
+		currFlutterEngine?.dartExecutor.executeDartCallback(dartCallback)
 	}
 
 	private fun startForegroundTask() {
