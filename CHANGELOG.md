@@ -1,3 +1,7 @@
+## 3.2.1
+
+* [iOS] Fixed an issue where all data stored in `UserDefaults.standard` was removed when the stopService function was called.
+
 ## 3.2.0
 
 * Add `restartService` function. You can now restart the service to get the new `ReceivePort`.
