@@ -111,8 +111,12 @@ class BackgroundServiceManager: NSObject {
   
   private func clearOptions() {
     let prefs = UserDefaults.standard
-    for key in prefs.dictionaryRepresentation().keys {
-      prefs.removeObject(forKey: key.description)
-    }
+    prefs.removeObject(forKey: NOTIFICATION_CONTENT_TITLE)
+    prefs.removeObject(forKey: NOTIFICATION_CONTENT_TEXT)
+    prefs.removeObject(forKey: SHOW_NOTIFICATION)
+    prefs.removeObject(forKey: PLAY_SOUND)
+    prefs.removeObject(forKey: TASK_INTERVAL)
+    prefs.removeObject(forKey: CALLBACK_HANDLE)
+    prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
   }
 }
