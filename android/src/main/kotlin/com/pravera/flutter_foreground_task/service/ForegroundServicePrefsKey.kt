@@ -7,6 +7,9 @@ package com.pravera.flutter_foreground_task.service
  * @version 1.0
  */
 object ForegroundServicePrefsKey {
+    const val SERVICE_STATUS_PREFS_NAME = "com.pravera.flutter_foreground_task.SERVICE_STATUS"
+    const val SERVICE_ACTION = "serviceAction"
+
     const val PREFS_NAME = "com.pravera.flutter_foreground_task.PREFERENCES"
     const val NOTIFICATION_CHANNEL_ID = "notificationChannelId"
     const val NOTIFICATION_CHANNEL_NAME = "notificationChannelName"

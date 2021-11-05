@@ -12,6 +12,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as PrefsKey
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -35,8 +36,10 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			private set
 	}
 
-	private lateinit var sharedPreferences: SharedPreferences
-	private lateinit var serviceAction: String
+	private lateinit var sPrefs: SharedPreferences
+	private lateinit var oPrefs: SharedPreferences
+
+	private var serviceAction: String = ForegroundServiceAction.STOP
 	private var serviceId: Int = 1000
 
 	private var notificationChannelId: String = ""
@@ -64,54 +67,44 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	override fun onCreate() {
 		super.onCreate()
-		sharedPreferences = applicationContext.getSharedPreferences(
-				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE)
+		getDataFromPreferences()
+
+		when (serviceAction) {
+			ForegroundServiceAction.START -> {
+				startForegroundService()
+				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE)) {
+					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE, 0L)
+					executeDartCallback(callback)
+				}
+			}
+			ForegroundServiceAction.REBOOT -> {
+				startForegroundService()
+				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE_ON_BOOT)) {
+					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
+					executeDartCallback(callback)
+				}
+			}
+		}
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		super.onStartCommand(intent, flags, startId)
-		serviceAction = intent?.action ?: ForegroundServiceAction.RESTART
-
-		notificationChannelId = sharedPreferences.getString(
-				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
-		notificationChannelName = sharedPreferences.getString(
-				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName) ?: ""
-		notificationChannelDesc = sharedPreferences.getString(
-				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_DESC, notificationChannelDesc)
-		notificationChannelImportance = sharedPreferences.getInt(
-				ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, notificationChannelImportance)
-		notificationPriority = sharedPreferences.getInt(
-				ForegroundServicePrefsKey.NOTIFICATION_PRIORITY, notificationPriority)
-		notificationContentTitle = sharedPreferences.getString(
-				ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle) ?: ""
-		notificationContentText = sharedPreferences.getString(
-				ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText) ?: ""
-		enableVibration = sharedPreferences.getBoolean(ForegroundServicePrefsKey.ENABLE_VIBRATION, enableVibration)
-		playSound = sharedPreferences.getBoolean(ForegroundServicePrefsKey.PLAY_SOUND, playSound)
-		showWhen = sharedPreferences.getBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
-		isSticky = sharedPreferences.getBoolean(ForegroundServicePrefsKey.IS_STICKY, isSticky)
-		visibility = sharedPreferences.getInt(ForegroundServicePrefsKey.VISIBILITY, visibility)
-		iconResType = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
-		iconResPrefix = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
-		iconName = sharedPreferences.getString(ForegroundServicePrefsKey.ICON_NAME, iconName)
-		taskInterval = sharedPreferences.getLong(ForegroundServicePrefsKey.TASK_INTERVAL, taskInterval)
+		getDataFromPreferences()
 
 		when (serviceAction) {
-			ForegroundServiceAction.START,
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
-				if (sharedPreferences.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE)) {
-					val callback = sharedPreferences.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE, 0L)
+				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE)) {
+					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE, 0L)
 					executeDartCallback(callback)
 				}
 
 				if (isSticky) return START_STICKY
 			}
-			ForegroundServiceAction.REBOOT,
 			ForegroundServiceAction.RESTART -> {
 				startForegroundService()
-				if (sharedPreferences.contains(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT)) {
-					val callback = sharedPreferences.getLong(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
+				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE_ON_BOOT)) {
+					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
 					executeDartCallback(callback)
 				}
 
@@ -134,6 +127,33 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
 			setRestartAlarm()
 		}
+	}
+
+	private fun getDataFromPreferences() {
+		if (!::sPrefs.isInitialized)
+			sPrefs = applicationContext.getSharedPreferences(PrefsKey.SERVICE_STATUS_PREFS_NAME, Context.MODE_PRIVATE)
+		if (!::oPrefs.isInitialized)
+			oPrefs = applicationContext.getSharedPreferences(PrefsKey.PREFS_NAME, Context.MODE_PRIVATE)
+
+		serviceAction = sPrefs.getString(PrefsKey.SERVICE_ACTION, serviceAction) ?: ForegroundServiceAction.STOP
+//		serviceId = 1000;
+
+		notificationChannelId = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
+		notificationChannelName = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName) ?: ""
+		notificationChannelDesc = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_DESC, notificationChannelDesc)
+		notificationChannelImportance = oPrefs.getInt(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, notificationChannelImportance)
+		notificationPriority = oPrefs.getInt(PrefsKey.NOTIFICATION_PRIORITY, notificationPriority)
+		notificationContentTitle = oPrefs.getString(PrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle) ?: ""
+		notificationContentText = oPrefs.getString(PrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText) ?: ""
+		enableVibration = oPrefs.getBoolean(PrefsKey.ENABLE_VIBRATION, enableVibration)
+		playSound = oPrefs.getBoolean(PrefsKey.PLAY_SOUND, playSound)
+		showWhen = oPrefs.getBoolean(PrefsKey.SHOW_WHEN, showWhen)
+		isSticky = oPrefs.getBoolean(PrefsKey.IS_STICKY, isSticky)
+		visibility = oPrefs.getInt(PrefsKey.VISIBILITY, visibility)
+		iconResType = oPrefs.getString(PrefsKey.ICON_RES_TYPE, iconResType)
+		iconResPrefix = oPrefs.getString(PrefsKey.ICON_RES_PREFIX, iconResPrefix)
+		iconName = oPrefs.getString(PrefsKey.ICON_NAME, iconName)
+		taskInterval = oPrefs.getLong(PrefsKey.TASK_INTERVAL, taskInterval)
 	}
 
 	@SuppressLint("WrongConstant")

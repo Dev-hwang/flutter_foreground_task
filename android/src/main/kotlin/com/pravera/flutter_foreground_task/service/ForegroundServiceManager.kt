@@ -21,7 +21,7 @@ class ForegroundServiceManager {
 	fun start(context: Context, call: MethodCall): Boolean {
 		try {
 			val intent = Intent(context, ForegroundService::class.java)
-			intent.action = ForegroundServiceAction.START
+			saveServiceAction(context, ForegroundServiceAction.START)
 			saveOptions(context, call)
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -44,7 +44,7 @@ class ForegroundServiceManager {
 	fun restart(context: Context, call: MethodCall): Boolean {
 		try {
 			val intent = Intent(context, ForegroundService::class.java)
-			intent.action = ForegroundServiceAction.RESTART
+			saveServiceAction(context, ForegroundServiceAction.RESTART)
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
 				context.startForegroundService(intent)
@@ -66,7 +66,7 @@ class ForegroundServiceManager {
 	fun update(context: Context, call: MethodCall): Boolean {
 		try {
 			val intent = Intent(context, ForegroundService::class.java)
-			intent.action = ForegroundServiceAction.UPDATE
+			saveServiceAction(context, ForegroundServiceAction.UPDATE)
 			updateOptions(context, call)
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -91,7 +91,7 @@ class ForegroundServiceManager {
 
 		try {
 			val intent = Intent(context, ForegroundService::class.java)
-			intent.action = ForegroundServiceAction.STOP
+			saveServiceAction(context, ForegroundServiceAction.STOP)
 			clearOptions(context)
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -110,9 +110,19 @@ class ForegroundServiceManager {
 	 */
 	fun isRunningService(): Boolean = ForegroundService.isRunningService
 
+	private fun saveServiceAction(context: Context, action: String) {
+		val prefs = context.getSharedPreferences(
+			ForegroundServicePrefsKey.SERVICE_STATUS_PREFS_NAME, Context.MODE_PRIVATE) ?: return
+
+		with (prefs.edit()) {
+			putString(ForegroundServicePrefsKey.SERVICE_ACTION, action)
+			commit()
+		}
+	}
+
 	private fun saveOptions(context: Context, call: MethodCall) {
 		val prefs = context.getSharedPreferences(
-				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
+			ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
 
 		val notificationChannelId = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_ID) ?: ""
 		val notificationChannelName = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CHANNEL_NAME) ?: ""
@@ -166,7 +176,7 @@ class ForegroundServiceManager {
 
 	private fun updateOptions(context: Context, call: MethodCall) {
 		val prefs = context.getSharedPreferences(
-				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
+			ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
 
 		val notificationContentTitle = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE)
 				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, "")
@@ -188,7 +198,7 @@ class ForegroundServiceManager {
 
 	private fun clearOptions(context: Context) {
 		val prefs = context.getSharedPreferences(
-				ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
+			ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
 
 		with (prefs.edit()) {
 			clear()

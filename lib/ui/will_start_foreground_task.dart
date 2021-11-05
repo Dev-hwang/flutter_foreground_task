@@ -64,12 +64,14 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   }
 
   void _startForegroundTask() async {
-    if (await FlutterForegroundTask.isRunningService) return;
-
-    FlutterForegroundTask.startService(
-        notificationTitle: widget.notificationTitle,
-        notificationText: widget.notificationText,
-        callback: widget.callback);
+    if (await FlutterForegroundTask.isRunningService) {
+      FlutterForegroundTask.restartService();
+    } else {
+      FlutterForegroundTask.startService(
+          notificationTitle: widget.notificationTitle,
+          notificationText: widget.notificationText,
+          callback: widget.callback);
+    }
   }
 
   void _stopForegroundTask() {
