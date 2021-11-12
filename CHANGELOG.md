@@ -1,10 +1,16 @@
+## 3.2.3
+
+* [**Bug**] Fixed an issue where IllegalArgumentException was thrown when starting the service on Android version 11 and higher.
+* Bump Android minSdkVersion to 23.
+* Bump Android compileSdkVersion to 31.
+
 ## 3.2.2
 
-* [Bug] Fixed an issue where RemoteServiceException occurred intermittently.
+* [**Bug**] Fixed an issue where RemoteServiceException occurred intermittently.
 
 ## 3.2.1
 
-* [iOS] Fixed an issue where all data stored in `UserDefaults.standard` was removed when the stopService function was called.
+* [**iOS**] Fixed an issue where all data stored in `UserDefaults.standard` was removed when the stopService function was called.
 
 ## 3.2.0
 
