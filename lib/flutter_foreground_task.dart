@@ -238,6 +238,15 @@ class FlutterForegroundTask {
         .invokeMethod('openIgnoreBatteryOptimizationSettings');
   }
 
+  /// Request to ignore battery optimization.
+  static Future<bool> requestIgnoreBatteryOptimization() async {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return true;
+
+    return await _methodChannel
+        .invokeMethod('requestIgnoreBatteryOptimization');
+  }
+
   /// Set up the task handler and start the foreground task.
   /// It must always be called from a top-level function, otherwise foreground task will not work.
   static void setTaskHandler(TaskHandler handler) {

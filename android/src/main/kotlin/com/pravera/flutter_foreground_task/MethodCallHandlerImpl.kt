@@ -22,12 +22,14 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 	private lateinit var channel: MethodChannel
 
 	private var activity: Activity? = null
-	private var methodCallResult: MethodChannel.Result? = null
+	private var methodCallResult1: MethodChannel.Result? = null
+	private var methodCallResult2: MethodChannel.Result? = null
 
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 		val reqMethod = call.method
 		if (reqMethod.contains("minimizeApp") ||
-				reqMethod.contains("openIgnoreBatteryOptimizationSettings")) {
+				reqMethod.contains("openIgnoreBatteryOptimizationSettings") ||
+				reqMethod.contains("requestIgnoreBatteryOptimization")) {
 			if (activity == null) {
 				ErrorHandleUtils.handleMethodCallError(result, ErrorCodes.ACTIVITY_NOT_ATTACHED)
 				return
@@ -50,8 +52,12 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 			"isIgnoringBatteryOptimizations" ->
 				result.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
 			"openIgnoreBatteryOptimizationSettings" -> {
-				methodCallResult = result
+				methodCallResult1 = result
 				ForegroundServiceUtils.openIgnoreBatteryOptimizationSettings(activity, 246)
+			}
+			"requestIgnoreBatteryOptimization" -> {
+				methodCallResult2 = result
+				ForegroundServiceUtils.requestIgnoreBatteryOptimization(activity, 247)
 			}
 			else -> result.notImplemented()
 		}
@@ -59,7 +65,9 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
 		if (requestCode == 246)
-			methodCallResult?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
+			methodCallResult1?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
+		else if (requestCode == 247)
+			methodCallResult2?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
 
 		return true
 	}

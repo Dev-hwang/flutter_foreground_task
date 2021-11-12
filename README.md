@@ -567,6 +567,16 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
 ```
 
+### :lollipop: requestIgnoreBatteryOptimization
+
+Request to ignore battery optimization. This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+Future<bool> function() => FlutterForegroundTask.requestIgnoreBatteryOptimization();
+```
+
 ## Support
 
 If you find any bugs or issues while using the plugin, please register an issues on [GitHub](https://github.com/Dev-hwang/flutter_foreground_task/issues). You can also contact us at <hwj930513@naver.com>.
