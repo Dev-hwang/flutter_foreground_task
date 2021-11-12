@@ -206,7 +206,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 
 		val intent = Intent(this, RestartReceiver::class.java)
-		val sender = PendingIntent.getBroadcast(this, 0, intent, 0)
+		val sender = PendingIntent.getBroadcast(
+			this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
 		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 		alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
@@ -315,7 +316,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	private fun getPendingIntent(pm: PackageManager): PendingIntent {
 		val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
-		return PendingIntent.getActivity(this, 0, launchIntent, 0)
+		return PendingIntent.getActivity(
+			this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
 	}
 
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
