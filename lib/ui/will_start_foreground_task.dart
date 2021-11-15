@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
@@ -5,7 +6,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 /// This widget must be declared above the [Scaffold] widget.
 class WillStartForegroundTask extends StatefulWidget {
   /// Called to ask if you want to start the foreground service.
-  final ValueGetter<bool> onWillStart;
+  final AsyncValueGetter<bool> onWillStart;
 
   /// Options for setting up notifications on the Android platform.
   final AndroidNotificationOptions androidNotificationOptions;
@@ -79,7 +80,7 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   }
 
   Future<bool> _onWillPop() async {
-    if (widget.onWillStart()) {
+    if (await widget.onWillStart()) {
       FlutterForegroundTask.minimizeApp();
       return false;
     }
@@ -101,8 +102,8 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.onWillStart()) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (await widget.onWillStart()) {
       switch (state) {
         case AppLifecycleState.resumed:
           _stopForegroundTask();
