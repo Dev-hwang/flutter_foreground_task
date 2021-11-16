@@ -1,3 +1,8 @@
+## 3.3.0
+
+* Add `requestIgnoreBatteryOptimization` function.
+* Change onWillStart type from `ValueGetter` to `AsyncValueGetter`.
+
 ## 3.2.3
 
 * [**Bug**] Fixed an issue where IllegalArgumentException was thrown when starting the service on Android version 11 and higher.
