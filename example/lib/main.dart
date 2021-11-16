@@ -3,7 +3,7 @@ import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void main() => runApp(ExampleApp());
+void main() => runApp(const ExampleApp());
 
 // The callback function should always be a top-level function.
 void startCallback() {
@@ -69,6 +69,8 @@ class SecondTaskHandler implements TaskHandler {
 }
 
 class ExampleApp extends StatefulWidget {
+  const ExampleApp({Key? key}) : super(key: key);
+
   @override
   _ExampleAppState createState() => _ExampleAppState();
 }
@@ -76,9 +78,9 @@ class ExampleApp extends StatefulWidget {
 class _ExampleAppState extends State<ExampleApp> {
   ReceivePort? _receivePort;
 
-  void _initForegroundTask() {
-    FlutterForegroundTask.init(
-      androidNotificationOptions: AndroidNotificationOptions(
+  Future<void> _initForegroundTask() async {
+    await FlutterForegroundTask.init(
+      androidNotificationOptions: const AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
@@ -90,11 +92,11 @@ class _ExampleAppState extends State<ExampleApp> {
           name: 'launcher',
         ),
       ),
-      iosNotificationOptions: IOSNotificationOptions(
+      iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
         playSound: false,
       ),
-      foregroundTaskOptions: ForegroundTaskOptions(
+      foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         autoRunOnBoot: true,
       ),
@@ -102,30 +104,39 @@ class _ExampleAppState extends State<ExampleApp> {
     );
   }
 
-  void _startForegroundTask() async {
+  Future<bool> _startForegroundTask() async {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
+    ReceivePort? receivePort;
     if (await FlutterForegroundTask.isRunningService) {
-      _receivePort = await FlutterForegroundTask.restartService();
+      receivePort = await FlutterForegroundTask.restartService();
     } else {
-      _receivePort = await FlutterForegroundTask.startService(
+      receivePort = await FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         callback: startCallback,
       );
     }
 
-    _receivePort?.listen((message) {
-      if (message is DateTime)
-        print('receive timestamp: $message');
-      else if (message is int)
-        print('receive updateCount: $message');
-    });
+    if (receivePort != null) {
+      _receivePort = receivePort;
+      _receivePort?.listen((message) {
+        if (message is DateTime) {
+          print('receive timestamp: $message');
+        } else if (message is int) {
+          print('receive updateCount: $message');
+        }
+      });
+
+      return true;
+    }
+
+    return false;
   }
   
-  void _stopForegroundTask() {
-    FlutterForegroundTask.stopService();
+  Future<bool> _stopForegroundTask() async {
+    return await FlutterForegroundTask.stopService();
   }
 
   @override
@@ -158,21 +169,21 @@ class _ExampleAppState extends State<ExampleApp> {
   }
 
   Widget _buildContentView() {
-    final buttonBuilder = (String text, {VoidCallback? onPressed}) {
-      return ElevatedButton(
-        child: Text(text),
-        onPressed: onPressed,
-      );
-    };
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          buttonBuilder('start', onPressed: _startForegroundTask),
-          buttonBuilder('stop', onPressed: _stopForegroundTask),
+          _buildTestButton('start', onPressed: _startForegroundTask),
+          _buildTestButton('stop', onPressed: _stopForegroundTask),
         ],
       ),
+    );
+  }
+
+  Widget _buildTestButton(String text, {VoidCallback? onPressed}) {
+    return ElevatedButton(
+      child: Text(text),
+      onPressed: onPressed,
     );
   }
 }

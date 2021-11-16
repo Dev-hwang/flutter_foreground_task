@@ -132,9 +132,9 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 * `printDevLog`: Whether to show the developer log. If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin. It does not work in release mode. The default is `false`.
 
 ```dart
-void _initForegroundTask() {
-  FlutterForegroundTask.init(
-    androidNotificationOptions: AndroidNotificationOptions(
+Future<void> _initForegroundTask() async {
+  await FlutterForegroundTask.init(
+    androidNotificationOptions: const AndroidNotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
       channelDescription: 'This notification appears when the foreground service is running.',
@@ -146,11 +146,11 @@ void _initForegroundTask() {
         name: 'launcher',
       ),
     ),
-    iosNotificationOptions: IOSNotificationOptions(
+    iosNotificationOptions: const IOSNotificationOptions(
       showNotification: true,
       playSound: false,
     ),
-    foregroundTaskOptions: ForegroundTaskOptions(
+    foregroundTaskOptions: const ForegroundTaskOptions(
       interval: 5000,
       autoRunOnBoot: true,
     ),
@@ -220,6 +220,8 @@ class FirstTaskHandler implements TaskHandler {
 }
 
 class ExampleApp extends StatefulWidget {
+  const ExampleApp({Key? key}) : super(key: key);
+
   @override
   _ExampleAppState createState() => _ExampleAppState();
 }
@@ -229,24 +231,33 @@ class _ExampleAppState extends State<ExampleApp> {
 
   // ...
 
-  void _startForegroundTask() async {
+  Future<bool> _startForegroundTask() async {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
+    ReceivePort? receivePort;
     if (await FlutterForegroundTask.isRunningService) {
-      _receivePort = await FlutterForegroundTask.restartService();
+      receivePort = await FlutterForegroundTask.restartService();
     } else {
-      _receivePort = await FlutterForegroundTask.startService(
+      receivePort = await FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         callback: startCallback,
       );
     }
 
-    _receivePort?.listen((message) {
-      if (message is DateTime)
-        print('receive timestamp: $message');
-    });
+    if (receivePort != null) {
+      _receivePort = receivePort;
+      _receivePort?.listen((message) {
+        if (message is DateTime) {
+          print('receive timestamp: $message');
+        }
+      });
+
+      return true;
+    }
+
+    return false;
   }
 
   @override
@@ -370,8 +381,8 @@ class SecondTaskHandler implements TaskHandler {
 5. If you no longer use the foreground service, call `FlutterForegroundTask.stopService()`.
 
 ```dart
-void _stopForegroundTask() {
-  FlutterForegroundTask.stopService();
+Future<bool> _stopForegroundTask() async {
+  return await FlutterForegroundTask.stopService();
 }
 ```
 
@@ -384,11 +395,11 @@ Widget build(BuildContext context) {
     // A widget to start the foreground service when the app is minimized or closed.
     // This widget must be declared above the [Scaffold] widget.
     home: WillStartForegroundTask(
-      onWillStart: () {
+      onWillStart: () async {
         // Return whether to start the foreground service.
         return true;
       },
-      androidNotificationOptions: AndroidNotificationOptions(
+      androidNotificationOptions: const AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
@@ -400,11 +411,11 @@ Widget build(BuildContext context) {
           name: 'launcher',
         ),
       ),
-      iosNotificationOptions: IOSNotificationOptions(
+      iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
         playSound: false,
       ),
-      foregroundTaskOptions: ForegroundTaskOptions(
+      foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         autoRunOnBoot: false,
       ),

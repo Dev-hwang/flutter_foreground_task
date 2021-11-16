@@ -29,8 +29,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
+  flutter_lints: ^1.0.0
 
 # The following section is specific to Flutter.
 flutter:
