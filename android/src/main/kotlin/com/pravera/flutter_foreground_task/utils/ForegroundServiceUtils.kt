@@ -36,7 +36,7 @@ class ForegroundServiceUtils {
 					.or(PowerManager.ACQUIRE_CAUSES_WAKEUP)
 					.or(PowerManager.ON_AFTER_RELEASE)
 
-			val newWakeLock = powerManager.newWakeLock(serviceFlag, "SystemUtils:WAKELOCK")
+			val newWakeLock = powerManager.newWakeLock(serviceFlag, "ForegroundServiceUtils:WakeLock")
 			newWakeLock.acquire(1000)
 			newWakeLock.release()
 		}
