@@ -1,3 +1,10 @@
+## 3.4.0
+
+* Add wakeLock to keep the CPU active in the background.
+  - Need to add `android.permission.WAKE_LOCK` permission to `AndroidManifest.xml` file.
+* Add wifiLock to keep the Wi-Fi radio awake in the background. 
+  - Enable or disable can be set with `allowWifiLock` of `ForegroundTaskOptions` class.
+
 ## 3.3.0
 
 * Add `requestIgnoreBatteryOptimization` function.
