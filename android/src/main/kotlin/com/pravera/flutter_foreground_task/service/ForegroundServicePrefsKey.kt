@@ -28,6 +28,7 @@ object ForegroundServicePrefsKey {
     const val ICON_NAME = "name"
     const val TASK_INTERVAL = "interval"
     const val AUTO_RUN_ON_BOOT = "autoRunOnBoot"
+    const val ALLOW_WIFI_LOCK = "allowWifiLock"
     const val CALLBACK_HANDLE = "callbackHandle"
     const val CALLBACK_HANDLE_ON_BOOT = "callbackHandleOnBoot"
 }

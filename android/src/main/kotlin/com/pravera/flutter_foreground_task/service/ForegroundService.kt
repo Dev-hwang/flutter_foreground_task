@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -55,8 +56,10 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var iconResPrefix: String? = null
 	private var iconName: String? = null
 	private var taskInterval: Long = 5000L
+	private var allowWifiLock: Boolean = false
 
 	private var wakeLock: PowerManager.WakeLock? = null
+	private var wifiLock: WifiManager.WifiLock? = null
 
 	private var flutterLoader: FlutterLoader? = null
 	private var prevFlutterEngine: FlutterEngine? = null
@@ -153,6 +156,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		iconResPrefix = oPrefs.getString(PrefsKey.ICON_RES_PREFIX, iconResPrefix)
 		iconName = oPrefs.getString(PrefsKey.ICON_NAME, iconName)
 		taskInterval = oPrefs.getLong(PrefsKey.TASK_INTERVAL, taskInterval)
+		allowWifiLock = oPrefs.getBoolean(PrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
 	}
 
 	@SuppressLint("WrongConstant", "WakelockTimeout")
@@ -197,12 +201,27 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			}
 		}
 
+		if (allowWifiLock && (wifiLock == null || wifiLock?.isHeld == false)) {
+			with(applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager) {
+				wifiLock = createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ForegroundService:WifiLock").apply {
+					setReferenceCounted(false)
+					acquire()
+				}
+			}
+		}
+
 		startForeground(serviceId, notificationBuilder.build())
 		isRunningService = true
 	}
 
 	private fun stopForegroundService() {
 		wakeLock?.let {
+			if (it.isHeld) {
+				it.release()
+			}
+		}
+
+		wifiLock?.let {
 			if (it.isHeld) {
 				it.release()
 			}

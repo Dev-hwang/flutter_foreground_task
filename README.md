@@ -154,6 +154,7 @@ Future<void> _initForegroundTask() async {
     foregroundTaskOptions: const ForegroundTaskOptions(
       interval: 5000,
       autoRunOnBoot: true,
+      allowWifiLock: true,
     ),
     printDevLog: true,
   );
@@ -419,6 +420,7 @@ Widget build(BuildContext context) {
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         autoRunOnBoot: false,
+        allowWifiLock: false,
       ),
       printDevLog: true,
       notificationTitle: 'Foreground Service is running',
@@ -501,6 +503,7 @@ Data class with foreground task options.
 |---|---|
 | `interval` | The task call interval in milliseconds. The default is `5000`. |
 | `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`. |
+| `allowWifiLock` | Allows an application to keep the Wi-Fi radio awake. The default is `false`. |
 
 ### :chicken: NotificationChannelImportance
 

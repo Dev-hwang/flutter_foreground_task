@@ -99,6 +99,7 @@ class _ExampleAppState extends State<ExampleApp> {
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         autoRunOnBoot: true,
+        allowWifiLock: true,
       ),
       printDevLog: true,
     );

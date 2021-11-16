@@ -144,6 +144,7 @@ class ForegroundServiceManager {
 
 		val taskInterval = call.argument<Int>(ForegroundServicePrefsKey.TASK_INTERVAL) ?: 5000
 		val autoRunOnBoot = call.argument<Boolean>(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT) ?: false
+		val allowWifiLock = call.argument<Boolean>(ForegroundServicePrefsKey.ALLOW_WIFI_LOCK) ?: false
 		val callbackHandle = "${call.argument<Any>(ForegroundServicePrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
 
 		with (prefs.edit()) {
@@ -164,6 +165,7 @@ class ForegroundServiceManager {
 			putString(ForegroundServicePrefsKey.ICON_NAME, iconName)
 			putLong(ForegroundServicePrefsKey.TASK_INTERVAL, "$taskInterval".toLong())
 			putBoolean(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT, autoRunOnBoot)
+			putBoolean(ForegroundServicePrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
 			remove(ForegroundServicePrefsKey.CALLBACK_HANDLE)
 			remove(ForegroundServicePrefsKey.CALLBACK_HANDLE_ON_BOOT)
 			if (callbackHandle != null) {
