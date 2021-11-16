@@ -25,19 +25,20 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 Since this plugin is based on a foreground service, we need to add the following permission to the `AndroidManifest.xml` file. Open the `AndroidManifest.xml` file and specify it between the `<manifest>` and `<application>` tags.
 
-```xml
+```
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
 ```
 
 And we need to add this permission to automatically resume foreground service at boot time.
 
-```xml
+```
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 ```
 
 And specify the service inside the `<application>` tag as follows.
 
-```xml
+```
 <service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
 ```
 

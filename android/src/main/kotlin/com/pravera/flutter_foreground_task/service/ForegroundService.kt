@@ -6,10 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as PrefsKey
@@ -58,6 +55,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var iconResPrefix: String? = null
 	private var iconName: String? = null
 	private var taskInterval: Long = 5000L
+
+	private var wakeLock: PowerManager.WakeLock? = null
 
 	private var flutterLoader: FlutterLoader? = null
 	private var prevFlutterEngine: FlutterEngine? = null
@@ -156,7 +155,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		taskInterval = oPrefs.getLong(PrefsKey.TASK_INTERVAL, taskInterval)
 	}
 
-	@SuppressLint("WrongConstant")
+	@SuppressLint("WrongConstant", "WakelockTimeout")
 	private fun startForegroundService() {
 		val pm = applicationContext.packageManager
 		val iconResId = if (iconResType.isNullOrEmpty()
@@ -189,11 +188,26 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			nm.createNotificationChannel(channel)
 		}
 
+		if (wakeLock == null || wakeLock?.isHeld == false) {
+			with(applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager) {
+				wakeLock = newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ForegroundService:WakeLock").apply {
+					setReferenceCounted(false)
+					acquire()
+				}
+			}
+		}
+
 		startForeground(serviceId, notificationBuilder.build())
 		isRunningService = true
 	}
 
 	private fun stopForegroundService() {
+		wakeLock?.let {
+			if (it.isHeld) {
+				it.release()
+			}
+		}
+
 		stopForeground(true)
 		stopSelf()
 		isRunningService = false
