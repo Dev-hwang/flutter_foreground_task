@@ -124,6 +124,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	override fun onDestroy() {
 		super.onDestroy()
+		releaseLockMode()
 		destroyForegroundTask()
 		if (isSticky && serviceAction != ForegroundServiceAction.STOP) {
 			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
@@ -159,7 +160,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		allowWifiLock = oPrefs.getBoolean(PrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
 	}
 
-	@SuppressLint("WrongConstant", "WakelockTimeout")
+	@SuppressLint("WrongConstant")
 	private fun startForegroundService() {
 		val pm = applicationContext.packageManager
 		val iconResId = if (iconResType.isNullOrEmpty()
@@ -192,9 +193,24 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			nm.createNotificationChannel(channel)
 		}
 
+		acquireLockMode()
+
+		startForeground(serviceId, notificationBuilder.build())
+		isRunningService = true
+	}
+
+	private fun stopForegroundService() {
+		releaseLockMode()
+		stopForeground(true)
+		stopSelf()
+		isRunningService = false
+	}
+
+	@SuppressLint("WakelockTimeout")
+	private fun acquireLockMode() {
 		if (wakeLock == null || wakeLock?.isHeld == false) {
-			with(applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager) {
-				wakeLock = newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ForegroundService:WakeLock").apply {
+			wakeLock = (applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+				newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ForegroundService:WakeLock").apply {
 					setReferenceCounted(false)
 					acquire()
 				}
@@ -202,19 +218,16 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 
 		if (allowWifiLock && (wifiLock == null || wifiLock?.isHeld == false)) {
-			with(applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager) {
-				wifiLock = createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ForegroundService:WifiLock").apply {
+			wifiLock = (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
+				createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ForegroundService:WifiLock").apply {
 					setReferenceCounted(false)
 					acquire()
 				}
 			}
 		}
-
-		startForeground(serviceId, notificationBuilder.build())
-		isRunningService = true
 	}
 
-	private fun stopForegroundService() {
+	private fun releaseLockMode() {
 		wakeLock?.let {
 			if (it.isHeld) {
 				it.release()
@@ -226,10 +239,6 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 				it.release()
 			}
 		}
-
-		stopForeground(true)
-		stopSelf()
-		isRunningService = false
 	}
 
 	private fun setRestartAlarm() {
