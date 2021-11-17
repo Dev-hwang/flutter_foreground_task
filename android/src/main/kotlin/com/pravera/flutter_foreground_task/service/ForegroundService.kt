@@ -162,6 +162,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	@SuppressLint("WrongConstant")
 	private fun startForegroundService() {
+		// Get the icon and PendingIntent to put in the notification.
 		val pm = applicationContext.packageManager
 		val iconResId = if (iconResType.isNullOrEmpty()
 				|| iconResPrefix.isNullOrEmpty()
@@ -171,31 +172,47 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			getDrawableResourceId(iconResType!!, iconResPrefix!!, iconName!!)
 		val pendingIntent = getPendingIntent(pm)
 
-		val notificationBuilder = NotificationCompat.Builder(this, notificationChannelId)
-		notificationBuilder.setOngoing(true)
-		notificationBuilder.setShowWhen(showWhen)
-		notificationBuilder.setSmallIcon(iconResId)
-		notificationBuilder.setContentIntent(pendingIntent)
-		notificationBuilder.setContentTitle(notificationContentTitle)
-		notificationBuilder.setContentText(notificationContentText)
-		notificationBuilder.setVisibility(visibility)
-		if (!enableVibration) notificationBuilder.setVibrate(longArrayOf(0L))
-		if (!playSound) notificationBuilder.setSound(null)
-		notificationBuilder.priority = notificationPriority
-
+		// Create a notification and start the foreground service.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			val channel = NotificationChannel(
-					notificationChannelId, notificationChannelName, notificationChannelImportance)
+				notificationChannelId,
+				notificationChannelName,
+				notificationChannelImportance
+			)
 			channel.description = notificationChannelDesc
 			channel.enableVibration(enableVibration)
-			if (!playSound) channel.setSound(null, null)
+			if (!playSound) { channel.setSound(null, null) }
 			val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 			nm.createNotificationChannel(channel)
+
+			val builder = Notification.Builder(this, notificationChannelId)
+			builder.setOngoing(true)
+			builder.setShowWhen(showWhen)
+			builder.setSmallIcon(iconResId)
+			builder.setContentIntent(pendingIntent)
+			builder.setContentTitle(notificationContentTitle)
+			builder.setContentText(notificationContentText)
+			builder.setVisibility(visibility)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+				builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+			}
+			startForeground(serviceId, builder.build())
+		} else {
+			val builder = NotificationCompat.Builder(this, notificationChannelId)
+			builder.setOngoing(true)
+			builder.setShowWhen(showWhen)
+			builder.setSmallIcon(iconResId)
+			builder.setContentIntent(pendingIntent)
+			builder.setContentTitle(notificationContentTitle)
+			builder.setContentText(notificationContentText)
+			builder.setVisibility(visibility)
+			if (!enableVibration) { builder.setVibrate(longArrayOf(0L)) }
+			if (!playSound) { builder.setSound(null) }
+			builder.priority = notificationPriority
+			startForeground(serviceId, builder.build())
 		}
 
 		acquireLockMode()
-
-		startForeground(serviceId, notificationBuilder.build())
 		isRunningService = true
 	}
 
