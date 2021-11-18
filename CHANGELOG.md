@@ -1,3 +1,8 @@
+## 3.4.1
+
+* [**Bug**] Fixed an issue where lockMode(wakeLock, wifiLock) was not properly released when the service was forcibly shutdown.
+* [**Bug**] Fixed an issue where foreground service notification UX was delayed on Android version 12.
+
 ## 3.4.0
 
 * Add wakeLock to keep the CPU active in the background.
