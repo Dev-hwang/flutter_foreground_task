@@ -118,7 +118,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		return START_NOT_STICKY
 	}
 
-	override fun onBind(p0: Intent?): IBinder? {
+	override fun onBind(intent: Intent?): IBinder? {
 		return null
 	}
 
@@ -132,6 +132,13 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
+	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+		when (call.method) {
+			"initialize" -> startForegroundTask()
+			else -> result.notImplemented()
+		}
+	}
+
 	private fun getDataFromPreferences() {
 		if (!::sPrefs.isInitialized)
 			sPrefs = applicationContext.getSharedPreferences(PrefsKey.SERVICE_STATUS_PREFS_NAME, Context.MODE_PRIVATE)
@@ -139,7 +146,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			oPrefs = applicationContext.getSharedPreferences(PrefsKey.PREFS_NAME, Context.MODE_PRIVATE)
 
 		serviceAction = sPrefs.getString(PrefsKey.SERVICE_ACTION, serviceAction) ?: ForegroundServiceAction.STOP
-//		serviceId = 1000;
+		serviceId = 1000
 
 		notificationChannelId = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
 		notificationChannelName = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName) ?: ""
@@ -282,17 +289,17 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		currFlutterEngine = FlutterEngine(this)
 
 		flutterLoader = FlutterInjector.instance().flutterLoader()
-		flutterLoader!!.startInitialization(this)
-		flutterLoader!!.ensureInitializationComplete(this, null)
+		flutterLoader?.startInitialization(this)
+		flutterLoader?.ensureInitializationComplete(this, null)
 
-		val messenger = currFlutterEngine!!.dartExecutor.binaryMessenger
+		val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
 		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
-		backgroundChannel!!.setMethodCallHandler(this)
+		backgroundChannel?.setMethodCallHandler(this)
 
+		val bundlePath = flutterLoader?.findAppBundlePath() ?: return
 		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-		val appBundlePath = flutterLoader!!.findAppBundlePath()
-		val dartCallback = DartExecutor.DartCallback(assets, appBundlePath, callbackInfo)
-		currFlutterEngine!!.dartExecutor.executeDartCallback(dartCallback)
+		val dartCallback = DartExecutor.DartCallback(assets, bundlePath, callbackInfo)
+		currFlutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
 	}
 
 	private fun startForegroundTask() {
@@ -377,12 +384,5 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
 		return PendingIntent.getActivity(
 			this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
-	}
-
-	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-		when (call.method) {
-			"initialize" -> startForegroundTask()
-			else -> result.notImplemented()
-		}
 	}
 }

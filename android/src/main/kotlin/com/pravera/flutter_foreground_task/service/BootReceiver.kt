@@ -19,7 +19,7 @@ class BootReceiver: BroadcastReceiver() {
                 ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
             if (!oPrefs.getBoolean(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT, false)) return
 
-            // 서비스 호출을 위한 인텐츠를 만들고 실행할 액션을 저장한다.
+            // Create an intent for calling the service and store the action to be executed.
             val nIntent = Intent(context, ForegroundService::class.java)
             val sPrefs = context.getSharedPreferences(
                 ForegroundServicePrefsKey.SERVICE_STATUS_PREFS_NAME, Context.MODE_PRIVATE)
