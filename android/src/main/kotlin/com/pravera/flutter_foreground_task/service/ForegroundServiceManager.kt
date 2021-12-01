@@ -142,7 +142,7 @@ class ForegroundServiceManager {
 		val iconResPrefix: String? = iconData?.get(ForegroundServicePrefsKey.ICON_RES_PREFIX)
 		val iconName: String? = iconData?.get(ForegroundServicePrefsKey.ICON_NAME)
 
-		val taskInterval = call.argument<Int>(ForegroundServicePrefsKey.TASK_INTERVAL) ?: 5000
+		val taskInterval = "${call.argument<Any>(ForegroundServicePrefsKey.TASK_INTERVAL)}".toLongOrNull() ?: 5000L
 		val autoRunOnBoot = call.argument<Boolean>(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT) ?: false
 		val allowWifiLock = call.argument<Boolean>(ForegroundServicePrefsKey.ALLOW_WIFI_LOCK) ?: false
 		val callbackHandle = "${call.argument<Any>(ForegroundServicePrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
@@ -163,7 +163,7 @@ class ForegroundServiceManager {
 			putString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
 			putString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
 			putString(ForegroundServicePrefsKey.ICON_NAME, iconName)
-			putLong(ForegroundServicePrefsKey.TASK_INTERVAL, "$taskInterval".toLong())
+			putLong(ForegroundServicePrefsKey.TASK_INTERVAL, taskInterval)
 			putBoolean(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT, autoRunOnBoot)
 			putBoolean(ForegroundServicePrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
 			remove(ForegroundServicePrefsKey.CALLBACK_HANDLE)
@@ -181,9 +181,11 @@ class ForegroundServiceManager {
 			ForegroundServicePrefsKey.PREFS_NAME, Context.MODE_PRIVATE) ?: return
 
 		val notificationContentTitle = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE)
-				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, "")
+				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TITLE, null)
+				?: ""
 		val notificationContentText = call.argument<String>(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT)
-				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, "")
+				?: prefs.getString(ForegroundServicePrefsKey.NOTIFICATION_CONTENT_TEXT, null)
+				?: ""
 		val callbackHandle = "${call.argument<Any>(ForegroundServicePrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
 
 		with (prefs.edit()) {

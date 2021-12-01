@@ -10,6 +10,9 @@ import android.net.wifi.WifiManager
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
+import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
+import com.pravera.flutter_foreground_task.models.NotificationOptions
 import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as PrefsKey
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
@@ -37,31 +40,14 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private lateinit var sPrefs: SharedPreferences
 	private lateinit var oPrefs: SharedPreferences
 
-	private var serviceAction: String = ForegroundServiceAction.STOP
-	private var serviceId: Int = 1000
-
-	private var notificationChannelId: String = ""
-	private var notificationChannelName: String = ""
-	private var notificationChannelDesc: String? = null
-	private var notificationChannelImportance: Int = 3
-	private var notificationPriority: Int = 0
-	private var notificationContentTitle: String = ""
-	private var notificationContentText: String = ""
-	private var enableVibration: Boolean = false
-	private var playSound: Boolean = false
-	private var showWhen: Boolean = false
-	private var isSticky: Boolean = true
-	private var visibility: Int = 1
-	private var iconResType: String? = null
-	private var iconResPrefix: String? = null
-	private var iconName: String? = null
-	private var taskInterval: Long = 5000L
-	private var allowWifiLock: Boolean = false
+	private lateinit var foregroundServiceStatus: ForegroundServiceStatus
+	private lateinit var foregroundTaskOptions: ForegroundTaskOptions
+	private lateinit var notificationOptions: NotificationOptions
 
 	private var wakeLock: PowerManager.WakeLock? = null
 	private var wifiLock: WifiManager.WifiLock? = null
 
-	private var flutterLoader: FlutterLoader? = null
+	private var currFlutterLoader: FlutterLoader? = null
 	private var prevFlutterEngine: FlutterEngine? = null
 	private var currFlutterEngine: FlutterEngine? = null
 	private var backgroundChannel: MethodChannel? = null
@@ -69,9 +55,10 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	override fun onCreate() {
 		super.onCreate()
-		getDataFromPreferences()
+		initSharedPreferences()
+		fetchDataFromPreferences()
 
-		when (serviceAction) {
+		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.START -> {
 				startForegroundService()
 				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE)) {
@@ -91,9 +78,9 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		super.onStartCommand(intent, flags, startId)
-		getDataFromPreferences()
+		fetchDataFromPreferences()
 
-		when (serviceAction) {
+		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
 				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE)) {
@@ -101,7 +88,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 					executeDartCallback(callback)
 				}
 
-				if (isSticky) return START_STICKY
+				if (notificationOptions.isSticky) return START_STICKY
 			}
 			ForegroundServiceAction.RESTART -> {
 				startForegroundService()
@@ -110,7 +97,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 					executeDartCallback(callback)
 				}
 
-				if (isSticky) return START_STICKY
+				if (notificationOptions.isSticky) return START_STICKY
 			}
 			ForegroundServiceAction.STOP -> stopForegroundService()
 		}
@@ -126,7 +113,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		super.onDestroy()
 		releaseLockMode()
 		destroyForegroundTask()
-		if (isSticky && serviceAction != ForegroundServiceAction.STOP) {
+		if (notificationOptions.isSticky && foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
 			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
 			setRestartAlarm()
 		}
@@ -139,84 +126,76 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	private fun getDataFromPreferences() {
+	private fun initSharedPreferences() {
 		if (!::sPrefs.isInitialized)
-			sPrefs = applicationContext.getSharedPreferences(PrefsKey.SERVICE_STATUS_PREFS_NAME, Context.MODE_PRIVATE)
+			sPrefs = applicationContext.getSharedPreferences(
+				PrefsKey.SERVICE_STATUS_PREFS_NAME, Context.MODE_PRIVATE)
+
 		if (!::oPrefs.isInitialized)
 			oPrefs = applicationContext.getSharedPreferences(PrefsKey.PREFS_NAME, Context.MODE_PRIVATE)
+	}
 
-		serviceAction = sPrefs.getString(PrefsKey.SERVICE_ACTION, serviceAction) ?: ForegroundServiceAction.STOP
-		serviceId = 1000
-
-		notificationChannelId = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, notificationChannelId) ?: ""
-		notificationChannelName = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, notificationChannelName) ?: ""
-		notificationChannelDesc = oPrefs.getString(PrefsKey.NOTIFICATION_CHANNEL_DESC, notificationChannelDesc)
-		notificationChannelImportance = oPrefs.getInt(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, notificationChannelImportance)
-		notificationPriority = oPrefs.getInt(PrefsKey.NOTIFICATION_PRIORITY, notificationPriority)
-		notificationContentTitle = oPrefs.getString(PrefsKey.NOTIFICATION_CONTENT_TITLE, notificationContentTitle) ?: ""
-		notificationContentText = oPrefs.getString(PrefsKey.NOTIFICATION_CONTENT_TEXT, notificationContentText) ?: ""
-		enableVibration = oPrefs.getBoolean(PrefsKey.ENABLE_VIBRATION, enableVibration)
-		playSound = oPrefs.getBoolean(PrefsKey.PLAY_SOUND, playSound)
-		showWhen = oPrefs.getBoolean(PrefsKey.SHOW_WHEN, showWhen)
-		isSticky = oPrefs.getBoolean(PrefsKey.IS_STICKY, isSticky)
-		visibility = oPrefs.getInt(PrefsKey.VISIBILITY, visibility)
-		iconResType = oPrefs.getString(PrefsKey.ICON_RES_TYPE, iconResType)
-		iconResPrefix = oPrefs.getString(PrefsKey.ICON_RES_PREFIX, iconResPrefix)
-		iconName = oPrefs.getString(PrefsKey.ICON_NAME, iconName)
-		taskInterval = oPrefs.getLong(PrefsKey.TASK_INTERVAL, taskInterval)
-		allowWifiLock = oPrefs.getBoolean(PrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
+	private fun fetchDataFromPreferences() {
+		foregroundServiceStatus = ForegroundServiceStatus.getDataFromPreferences(sPrefs)
+		foregroundTaskOptions = ForegroundTaskOptions.getDataFromPreferences(oPrefs)
+		notificationOptions = NotificationOptions.getDataFromPreferences(oPrefs)
 	}
 
 	@SuppressLint("WrongConstant")
 	private fun startForegroundService() {
 		// Get the icon and PendingIntent to put in the notification.
 		val pm = applicationContext.packageManager
+		val iconResType = notificationOptions.iconResType
+		val iconResPrefix = notificationOptions.iconResPrefix
+		val iconName = notificationOptions.iconName
 		val iconResId = if (iconResType.isNullOrEmpty()
 				|| iconResPrefix.isNullOrEmpty()
 				|| iconName.isNullOrEmpty())
 			getAppIconResourceId(pm)
 		else
-			getDrawableResourceId(iconResType!!, iconResPrefix!!, iconName!!)
+			getDrawableResourceId(iconResType, iconResPrefix, iconName)
 		val pendingIntent = getPendingIntent(pm)
 
 		// Create a notification and start the foreground service.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			val channel = NotificationChannel(
-				notificationChannelId,
-				notificationChannelName,
-				notificationChannelImportance
+				notificationOptions.channelId,
+				notificationOptions.channelName,
+				notificationOptions.channelImportance
 			)
-			channel.description = notificationChannelDesc
-			channel.enableVibration(enableVibration)
-			if (!playSound) { channel.setSound(null, null) }
+			channel.description = notificationOptions.channelDescription
+			channel.enableVibration(notificationOptions.enableVibration)
+			if (!notificationOptions.playSound) {
+				channel.setSound(null, null)
+			}
 			val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 			nm.createNotificationChannel(channel)
 
-			val builder = Notification.Builder(this, notificationChannelId)
+			val builder = Notification.Builder(this, notificationOptions.channelId)
 			builder.setOngoing(true)
-			builder.setShowWhen(showWhen)
+			builder.setShowWhen(notificationOptions.showWhen)
 			builder.setSmallIcon(iconResId)
 			builder.setContentIntent(pendingIntent)
-			builder.setContentTitle(notificationContentTitle)
-			builder.setContentText(notificationContentText)
-			builder.setVisibility(visibility)
+			builder.setContentTitle(notificationOptions.contentTitle)
+			builder.setContentText(notificationOptions.contentText)
+			builder.setVisibility(notificationOptions.visibility)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 				builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
 			}
-			startForeground(serviceId, builder.build())
+			startForeground(notificationOptions.serviceId, builder.build())
 		} else {
-			val builder = NotificationCompat.Builder(this, notificationChannelId)
+			val builder = NotificationCompat.Builder(this, notificationOptions.channelId)
 			builder.setOngoing(true)
-			builder.setShowWhen(showWhen)
+			builder.setShowWhen(notificationOptions.showWhen)
 			builder.setSmallIcon(iconResId)
 			builder.setContentIntent(pendingIntent)
-			builder.setContentTitle(notificationContentTitle)
-			builder.setContentText(notificationContentText)
-			builder.setVisibility(visibility)
-			if (!enableVibration) { builder.setVibrate(longArrayOf(0L)) }
-			if (!playSound) { builder.setSound(null) }
-			builder.priority = notificationPriority
-			startForeground(serviceId, builder.build())
+			builder.setContentTitle(notificationOptions.contentTitle)
+			builder.setContentText(notificationOptions.contentText)
+			builder.setVisibility(notificationOptions.visibility)
+			if (!notificationOptions.enableVibration) { builder.setVibrate(longArrayOf(0L)) }
+			if (!notificationOptions.playSound) { builder.setSound(null) }
+			builder.priority = notificationOptions.priority
+			startForeground(notificationOptions.serviceId, builder.build())
 		}
 
 		acquireLockMode()
@@ -241,7 +220,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			}
 		}
 
-		if (allowWifiLock && (wifiLock == null || wifiLock?.isHeld == false)) {
+		if (foregroundTaskOptions.allowWifiLock && (wifiLock == null || wifiLock?.isHeld == false)) {
 			wifiLock = (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
 				createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ForegroundService:WifiLock").apply {
 					setReferenceCounted(false)
@@ -288,15 +267,15 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 		currFlutterEngine = FlutterEngine(this)
 
-		flutterLoader = FlutterInjector.instance().flutterLoader()
-		flutterLoader?.startInitialization(this)
-		flutterLoader?.ensureInitializationComplete(this, null)
+		currFlutterLoader = FlutterInjector.instance().flutterLoader()
+		currFlutterLoader?.startInitialization(this)
+		currFlutterLoader?.ensureInitializationComplete(this, null)
 
 		val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
 		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
 		backgroundChannel?.setMethodCallHandler(this)
 
-		val bundlePath = flutterLoader?.findAppBundlePath() ?: return
+		val bundlePath = currFlutterLoader?.findAppBundlePath() ?: return
 		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
 		val dartCallback = DartExecutor.DartCallback(assets, bundlePath, callbackInfo)
 		currFlutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
@@ -318,7 +297,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 							}
 						}
 
-						delay(taskInterval)
+						delay(foregroundTaskOptions.interval)
 					}
 				}
 			}
@@ -336,7 +315,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	private fun destroyForegroundTask() {
 		stopForegroundTask()
-		flutterLoader = null
+		currFlutterLoader = null
 		prevFlutterEngine = currFlutterEngine
 		currFlutterEngine = null
 		backgroundChannel?.invokeMethod("destroy", null, object : MethodChannel.Result {
