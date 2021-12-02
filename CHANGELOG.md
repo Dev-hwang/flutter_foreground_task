@@ -1,3 +1,8 @@
+## 3.5.0
+
+* Upgrade shared_preferences: ^2.0.9
+* Can now add action buttons to Android notification.
+
 ## 3.4.1
 
 * [**Bug**] Fixed an issue where lockMode(wakeLock, wifiLock) was not properly released when the service was forcibly shutdown.
