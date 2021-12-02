@@ -135,17 +135,21 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 ```dart
 Future<void> _initForegroundTask() async {
   await FlutterForegroundTask.init(
-    androidNotificationOptions: const AndroidNotificationOptions(
+    androidNotificationOptions: AndroidNotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
       channelDescription: 'This notification appears when the foreground service is running.',
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
-      iconData: NotificationIconData(
+      iconData: const NotificationIconData(
         resType: ResourceType.mipmap,
         resPrefix: ResourcePrefix.ic,
         name: 'launcher',
       ),
+      buttons: [
+        const NotificationButton(id: 'sendButton', text: 'Send'),
+        const NotificationButton(id: 'testButton', text: 'Test'),
+      ],
     ),
     iosNotificationOptions: const IOSNotificationOptions(
       showNotification: true,
@@ -200,7 +204,7 @@ void startCallback() {
   FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
 }
 
-class FirstTaskHandler implements TaskHandler {
+class FirstTaskHandler extends TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
     // You can use the getData function to get the data you saved.
@@ -218,6 +222,12 @@ class FirstTaskHandler implements TaskHandler {
   Future<void> onDestroy(DateTime timestamp) async {
     // You can use the clearAllData function to clear all the stored data.
     await FlutterForegroundTask.clearAllData();
+  }
+
+  @override
+  void onButtonPressed(String id) {
+    // Called when the notification button on the Android platform is pressed.
+    print('onButtonPressed >> $id');
   }
 }
 
@@ -284,7 +294,7 @@ void function() async {
 If the plugin you want to use provides a stream, use it like this:
 
 ```dart
-class FirstTaskHandler implements TaskHandler {
+class FirstTaskHandler extends TaskHandler {
   StreamSubscription<Position>? streamSubscription;
 
   @override
@@ -322,14 +332,12 @@ void startCallback() {
   FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
 }
 
-class FirstTaskHandler implements TaskHandler {
+class FirstTaskHandler extends TaskHandler {
   int updateCount = 0;
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the getData function to get the data you saved.
-    final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
-    print('customData: $customData');
+
   }
 
   @override
@@ -348,8 +356,7 @@ class FirstTaskHandler implements TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp) async {
-    // You can use the clearAllData function to clear all the stored data.
-    await FlutterForegroundTask.clearAllData();
+
   }
 }
 
@@ -357,7 +364,7 @@ void updateCallback() {
   FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
 }
 
-class SecondTaskHandler implements TaskHandler {
+class SecondTaskHandler extends TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
 
@@ -425,7 +432,7 @@ Widget build(BuildContext context) {
       printDevLog: true,
       notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
-      callback: callback,
+      callback: startCallback,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter Foreground Task'),
@@ -457,6 +464,7 @@ Notification options for Android platform.
 | `isSticky` | Whether or not the system will restart the service if the service is killed. The default is `true`. |
 | `visibility` | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
 | `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
+| `buttons` | A list of buttons to display in the notification. A maximum of 3 is allowed. |
 
 ### :chicken: NotificationIconData
 
@@ -485,6 +493,15 @@ The resource prefix of the notification icon.
 |---|---|
 | `ic` | A resources with the `ic_` prefix. |
 | `img` | A resources with the `img_` prefix. |
+
+### :chicken: NotificationButton
+
+The button to display in the notification.
+
+| Property | Description |
+|---|---|
+| `id` | The button identifier. |
+| `text` | The text to display on the button. |
 
 ### :chicken: IOSNotificationOptions
 

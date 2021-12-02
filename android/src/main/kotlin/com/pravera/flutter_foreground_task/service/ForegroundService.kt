@@ -2,9 +2,7 @@ package com.pravera.flutter_foreground_task.service
 
 import android.annotation.SuppressLint
 import android.app.*
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.content.pm.PackageManager
 import android.net.wifi.WifiManager
 import android.os.*
@@ -32,7 +30,9 @@ import java.util.*
  */
 class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	companion object {
-		const val TAG = "ForegroundService"
+		private const val TAG = "ForegroundService"
+
+		/** Returns whether the foreground service is running. */
 		var isRunningService = false 
 			private set
 	}
@@ -53,10 +53,22 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var backgroundChannel: MethodChannel? = null
 	private var backgroundJob: Job? = null
 
+	// A broadcast receiver that handles notification button actions.
+	private var buttonActionReceiver = object : BroadcastReceiver() {
+		override fun onReceive(context: Context?, intent: Intent?) {
+			try {
+				backgroundChannel?.invokeMethod(intent?.action.toString(), null)
+			} catch (e: Exception) {
+				Log.e(TAG, "invokeMethod", e)
+			}
+		}
+	}
+
 	override fun onCreate() {
 		super.onCreate()
 		initSharedPreferences()
 		fetchDataFromPreferences()
+		registerButtonActionReceiver()
 
 		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.START -> {
@@ -113,6 +125,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		super.onDestroy()
 		releaseLockMode()
 		destroyForegroundTask()
+		unregisterButtonActionReceiver()
 		if (notificationOptions.isSticky && foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
 			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
 			setRestartAlarm()
@@ -141,13 +154,25 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		notificationOptions = NotificationOptions.getDataFromPreferences(oPrefs)
 	}
 
+	private fun registerButtonActionReceiver() {
+		val intentFilter = IntentFilter()
+		for (button in notificationOptions.buttons) {
+			intentFilter.addAction(button.id)
+		}
+		registerReceiver(buttonActionReceiver, intentFilter)
+	}
+
+	private fun unregisterButtonActionReceiver() {
+		unregisterReceiver(buttonActionReceiver)
+	}
+
 	@SuppressLint("WrongConstant")
 	private fun startForegroundService() {
 		// Get the icon and PendingIntent to put in the notification.
 		val pm = applicationContext.packageManager
-		val iconResType = notificationOptions.iconResType
-		val iconResPrefix = notificationOptions.iconResPrefix
-		val iconName = notificationOptions.iconName
+		val iconResType = notificationOptions.iconData?.resType
+		val iconResPrefix = notificationOptions.iconData?.resPrefix
+		val iconName = notificationOptions.iconData?.name
 		val iconResId = if (iconResType.isNullOrEmpty()
 				|| iconResPrefix.isNullOrEmpty()
 				|| iconName.isNullOrEmpty())
@@ -179,6 +204,9 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			builder.setContentTitle(notificationOptions.contentTitle)
 			builder.setContentText(notificationOptions.contentText)
 			builder.setVisibility(notificationOptions.visibility)
+			for (action in buildButtonActions()) {
+				builder.addAction(action)
+			}
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 				builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
 			}
@@ -195,6 +223,9 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			if (!notificationOptions.enableVibration) { builder.setVibrate(longArrayOf(0L)) }
 			if (!notificationOptions.playSound) { builder.setSound(null) }
 			builder.priority = notificationOptions.priority
+			for (action in buildButtonCompatActions()) {
+				builder.addAction(action)
+			}
 			startForeground(notificationOptions.serviceId, builder.build())
 		}
 
@@ -363,5 +394,31 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
 		return PendingIntent.getActivity(
 			this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+	}
+
+	private fun buildButtonActions(): List<Notification.Action> {
+		val result = mutableListOf<Notification.Action>()
+		for (button in notificationOptions.buttons) {
+			val bIntent = Intent(button.id)
+			val bPendingIntent = PendingIntent.getBroadcast(
+				this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
+			val bAction = Notification.Action.Builder(null, button.text, bPendingIntent).build()
+			result.add(bAction)
+		}
+
+		return result
+	}
+
+	private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
+		val result = mutableListOf<NotificationCompat.Action>()
+		for (button in notificationOptions.buttons) {
+			val bIntent = Intent(button.id)
+			val bPendingIntent = PendingIntent.getBroadcast(
+				this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
+			val bAction = NotificationCompat.Action.Builder(0, button.text, bPendingIntent).build()
+			result.add(bAction)
+		}
+
+		return result
 	}
 }

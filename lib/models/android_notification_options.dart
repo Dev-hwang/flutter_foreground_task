@@ -1,3 +1,4 @@
+import 'package:flutter_foreground_task/models/notification_button.dart';
 import 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 import 'package:flutter_foreground_task/models/notification_priority.dart';
@@ -18,7 +19,8 @@ class AndroidNotificationOptions {
     this.isSticky = true,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
     this.iconData,
-  });
+    this.buttons,
+  })  : assert((buttons?.length ?? 0) < 4);
 
   /// Unique ID of the notification channel.
   final String channelId;
@@ -64,6 +66,10 @@ class AndroidNotificationOptions {
   /// If the value is null, the app launcher icon is used.
   final NotificationIconData? iconData;
 
+  /// A list of buttons to display in the notification.
+  /// A maximum of 3 is allowed.
+  final List<NotificationButton>? buttons;
+
   /// Returns the data fields of [AndroidNotificationOptions] in JSON format.
   Map<String, dynamic> toJson() {
     return {
@@ -78,6 +84,7 @@ class AndroidNotificationOptions {
       'isSticky': isSticky,
       'visibility': visibility.rawValue,
       'iconData': iconData?.toJson(),
+      'buttons': buttons?.map((e) => e.toJson()).toList(),
     };
   }
 }

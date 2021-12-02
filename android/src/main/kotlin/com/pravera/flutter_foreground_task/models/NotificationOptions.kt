@@ -1,6 +1,8 @@
 package com.pravera.flutter_foreground_task.models
 
 import android.content.SharedPreferences
+import org.json.JSONArray
+import org.json.JSONObject
 import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as PrefsKey
 
 data class NotificationOptions(
@@ -17,9 +19,8 @@ data class NotificationOptions(
     val showWhen: Boolean,
     val isSticky: Boolean,
     val visibility: Int,
-    val iconResType: String?,
-    val iconResPrefix: String?,
-    val iconName: String?
+    val iconData: NotificationIconData?,
+    val buttons: List<NotificationButton>
 ) {
     companion object {
         fun getDataFromPreferences(prefs: SharedPreferences): NotificationOptions {
@@ -36,9 +37,32 @@ data class NotificationOptions(
             val showWhen = prefs.getBoolean(PrefsKey.SHOW_WHEN, false)
             val isSticky = prefs.getBoolean(PrefsKey.IS_STICKY, true)
             val visibility = prefs.getInt(PrefsKey.VISIBILITY, 1)
-            val iconResType = prefs.getString(PrefsKey.ICON_RES_TYPE, null)
-            val iconResPrefix = prefs.getString(PrefsKey.ICON_RES_PREFIX, null)
-            val iconName = prefs.getString(PrefsKey.ICON_NAME, null)
+
+            val iconDataJson = prefs.getString(PrefsKey.ICON_DATA, null)
+            var iconData: NotificationIconData? = null
+            if (iconDataJson != null) {
+                val iconDataJsonObj = JSONObject(iconDataJson)
+                iconData = NotificationIconData(
+                    resType = iconDataJsonObj.getString("resType") ?: "",
+                    resPrefix = iconDataJsonObj.getString("resPrefix") ?: "",
+                    name = iconDataJsonObj.getString("name") ?: ""
+                )
+            }
+
+            val buttonsJson = prefs.getString(PrefsKey.BUTTONS, null)
+            val buttons: MutableList<NotificationButton> = mutableListOf()
+            if (buttonsJson != null) {
+                val buttonsJsonArr = JSONArray(buttonsJson)
+                for (i in 0 until buttonsJsonArr.length()) {
+                    val buttonJsonObj = buttonsJsonArr.getJSONObject(i)
+                    buttons.add(
+                        NotificationButton(
+                            id = buttonJsonObj.getString("id") ?: "",
+                            text = buttonJsonObj.getString("text") ?: ""
+                        )
+                    )
+                }
+            }
 
             return NotificationOptions(
                 serviceId = serviceId,
@@ -54,9 +78,8 @@ data class NotificationOptions(
                 showWhen = showWhen,
                 isSticky = isSticky,
                 visibility = visibility,
-                iconResType = iconResType,
-                iconResPrefix = iconResPrefix,
-                iconName = iconName
+                iconData = iconData,
+                buttons = buttons
             )
         }
     }

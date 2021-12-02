@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import io.flutter.plugin.common.MethodCall
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * A class that provides foreground service control and management functions.
@@ -105,9 +107,7 @@ class ForegroundServiceManager {
 		return true
 	}
 
-	/**
-	 * Returns whether the foreground service is running.
-	 */
+	/** Returns whether the foreground service is running. */
 	fun isRunningService(): Boolean = ForegroundService.isRunningService
 
 	private fun saveServiceAction(context: Context, action: String) {
@@ -137,10 +137,17 @@ class ForegroundServiceManager {
 		val isSticky = call.argument<Boolean>(ForegroundServicePrefsKey.IS_STICKY) ?: true
 		val visibility = call.argument<Int>(ForegroundServicePrefsKey.VISIBILITY) ?: 1
 
-		val iconData = call.argument<HashMap<String, String>>("iconData")
-		val iconResType: String? = iconData?.get(ForegroundServicePrefsKey.ICON_RES_TYPE)
-		val iconResPrefix: String? = iconData?.get(ForegroundServicePrefsKey.ICON_RES_PREFIX)
-		val iconName: String? = iconData?.get(ForegroundServicePrefsKey.ICON_NAME)
+		val iconData = call.argument<Map<String, String>>(ForegroundServicePrefsKey.ICON_DATA)
+		var iconDataJson: String? = null
+		if (iconData != null) {
+			iconDataJson = JSONObject(iconData).toString()
+		}
+
+		val buttons = call.argument<List<Map<String, String>>>(ForegroundServicePrefsKey.BUTTONS)
+		var buttonsJson: String? = null
+		if (buttons != null) {
+			buttonsJson = JSONArray(buttons).toString()
+		}
 
 		val taskInterval = "${call.argument<Any>(ForegroundServicePrefsKey.TASK_INTERVAL)}".toLongOrNull() ?: 5000L
 		val autoRunOnBoot = call.argument<Boolean>(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT) ?: false
@@ -160,9 +167,8 @@ class ForegroundServiceManager {
 			putBoolean(ForegroundServicePrefsKey.SHOW_WHEN, showWhen)
 			putBoolean(ForegroundServicePrefsKey.IS_STICKY, isSticky)
 			putInt(ForegroundServicePrefsKey.VISIBILITY, visibility)
-			putString(ForegroundServicePrefsKey.ICON_RES_TYPE, iconResType)
-			putString(ForegroundServicePrefsKey.ICON_RES_PREFIX, iconResPrefix)
-			putString(ForegroundServicePrefsKey.ICON_NAME, iconName)
+			putString(ForegroundServicePrefsKey.ICON_DATA, iconDataJson)
+			putString(ForegroundServicePrefsKey.BUTTONS, buttonsJson)
 			putLong(ForegroundServicePrefsKey.TASK_INTERVAL, taskInterval)
 			putBoolean(ForegroundServicePrefsKey.AUTO_RUN_ON_BOOT, autoRunOnBoot)
 			putBoolean(ForegroundServicePrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)

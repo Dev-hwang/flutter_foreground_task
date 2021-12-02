@@ -11,7 +11,7 @@ void startCallback() {
   FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
 }
 
-class FirstTaskHandler implements TaskHandler {
+class FirstTaskHandler extends TaskHandler {
   int updateCount = 0;
 
   @override
@@ -40,13 +40,19 @@ class FirstTaskHandler implements TaskHandler {
     // You can use the clearAllData function to clear all the stored data.
     await FlutterForegroundTask.clearAllData();
   }
+
+  @override
+  void onButtonPressed(String id) {
+    // Called when the notification button on the Android platform is pressed.
+    print('onButtonPressed >> $id');
+  }
 }
 
 void updateCallback() {
   FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
 }
 
-class SecondTaskHandler implements TaskHandler {
+class SecondTaskHandler extends TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
 
@@ -80,17 +86,21 @@ class _ExampleAppState extends State<ExampleApp> {
 
   Future<void> _initForegroundTask() async {
     await FlutterForegroundTask.init(
-      androidNotificationOptions: const AndroidNotificationOptions(
+      androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
-        iconData: NotificationIconData(
+        iconData: const NotificationIconData(
           resType: ResourceType.mipmap,
           resPrefix: ResourcePrefix.ic,
           name: 'launcher',
         ),
+        buttons: [
+          const NotificationButton(id: 'sendButton', text: 'Send'),
+          const NotificationButton(id: 'testButton', text: 'Test'),
+        ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,

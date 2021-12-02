@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
 export 'package:flutter_foreground_task/models/ios_notification_options.dart';
+export 'package:flutter_foreground_task/models/notification_button.dart';
 export 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 export 'package:flutter_foreground_task/models/notification_icon_data.dart';
 export 'package:flutter_foreground_task/models/android_notification_options.dart';
@@ -36,6 +37,9 @@ abstract class TaskHandler {
 
   /// Called when the task is destroyed.
   Future<void> onDestroy(DateTime timestamp);
+
+  /// Called when the notification button on the Android platform is pressed.
+  void onButtonPressed(String id) {}
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -260,13 +264,17 @@ class FlutterForegroundTask {
     // Set the method call handler for the background channel.
     _backgroundChannel.setMethodCallHandler((call) async {
       final timestamp = DateTime.now();
-      switch (call.method) {
+      final method = call.method;
+
+      switch (method) {
         case 'start':
           return await handler.onStart(timestamp, _lookupPort());
         case 'event':
           return await handler.onEvent(timestamp, _lookupPort());
         case 'destroy':
           return await handler.onDestroy(timestamp);
+        default:
+          handler.onButtonPressed(method);
       }
     });
 
