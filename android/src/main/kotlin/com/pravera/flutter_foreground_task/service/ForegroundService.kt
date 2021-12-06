@@ -21,6 +21,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
 import java.util.*
+import kotlin.system.exitProcess
 
 /**
  * Service class for implementing foreground service.
@@ -126,9 +127,13 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		releaseLockMode()
 		destroyForegroundTask()
 		unregisterButtonActionReceiver()
-		if (notificationOptions.isSticky && foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
-			Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
-			setRestartAlarm()
+		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
+			if (notificationOptions.isSticky) {
+				Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
+				setRestartAlarm()
+			} else {
+				exitProcess(0)
+			}
 		}
 	}
 
