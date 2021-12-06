@@ -1,3 +1,8 @@
+## 3.5.1
+
+* Add process exit code to prevent memory leak.
+* Fix dart formatting issues.
+
 ## 3.5.0
 
 * Upgrade shared_preferences: ^2.0.9
