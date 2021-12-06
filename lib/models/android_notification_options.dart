@@ -20,7 +20,7 @@ class AndroidNotificationOptions {
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
     this.iconData,
     this.buttons,
-  })  : assert((buttons?.length ?? 0) < 4);
+  }) : assert((buttons?.length ?? 0) < 4);
 
   /// Unique ID of the notification channel.
   final String channelId;

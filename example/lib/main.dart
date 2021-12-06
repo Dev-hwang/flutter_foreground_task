@@ -17,7 +17,8 @@ class FirstTaskHandler extends TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
     // You can use the getData function to get the data you saved.
-    final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
+    final customData =
+        await FlutterForegroundTask.getData<String>(key: 'customData');
     print('customData: $customData');
   }
 
@@ -89,7 +90,8 @@ class _ExampleAppState extends State<ExampleApp> {
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
-        channelDescription: 'This notification appears when the foreground service is running.',
+        channelDescription:
+            'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         iconData: const NotificationIconData(
@@ -145,7 +147,7 @@ class _ExampleAppState extends State<ExampleApp> {
 
     return false;
   }
-  
+
   Future<bool> _stopForegroundTask() async {
     return await FlutterForegroundTask.stopService();
   }
