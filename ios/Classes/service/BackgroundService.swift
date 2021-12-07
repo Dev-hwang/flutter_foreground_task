@@ -9,6 +9,10 @@ import Flutter
 import Foundation
 import UserNotifications
 
+let NOTIFICATION_ID: String = "flutter_foreground_task/backgroundNotification"
+let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
+let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
+
 @available(iOS 10.0, *)
 class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
   static let sharedInstance = BackgroundService()
@@ -102,14 +106,14 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
         notificationContent.sound = UNNotificationSound.default
       }
       
-      let request = UNNotificationRequest(identifier: "BackgroundNotification", content: notificationContent, trigger: nil)
+      let request = UNNotificationRequest(identifier: NOTIFICATION_ID, content: notificationContent, trigger: nil)
       userNotificationCenter.add(request, withCompletionHandler: nil)
     }
   }
   
   private func removeAllNotification() {
-    userNotificationCenter.removeAllPendingNotificationRequests()
-    userNotificationCenter.removeAllDeliveredNotifications()
+    userNotificationCenter.removePendingNotificationRequests(withIdentifiers: [NOTIFICATION_ID])
+    userNotificationCenter.removeDeliveredNotifications(withIdentifiers: [NOTIFICATION_ID])
   }
   
   private func executeDartCallback(callbackHandle: Int64) {
@@ -118,7 +122,7 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
       // The backgroundChannel cannot be registered unless the registerPlugins function is called.
       if (SwiftFlutterForegroundTaskPlugin.registerPlugins == nil) { return }
       
-      self.flutterEngine = FlutterEngine(name: "BackgroundIsolate", project: nil, allowHeadlessExecution: true)
+      self.flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
       
       let callbackInfo = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
       let entrypoint = callbackInfo?.callbackName
@@ -128,7 +132,7 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
       SwiftFlutterForegroundTaskPlugin.registerPlugins!(self.flutterEngine!)
       
       let backgroundMessenger = self.flutterEngine!.binaryMessenger
-      self.backgroundChannel = FlutterMethodChannel(name: "flutter_foreground_task/background", binaryMessenger: backgroundMessenger)
+      self.backgroundChannel = FlutterMethodChannel(name: BG_CHANNEL_NAME, binaryMessenger: backgroundMessenger)
       self.backgroundChannel?.setMethodCallHandler(self.onMethodCall)
     }
   }
