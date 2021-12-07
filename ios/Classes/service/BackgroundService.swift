@@ -14,7 +14,7 @@ let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
 let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 
 @available(iOS 10.0, *)
-class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
+class BackgroundService: NSObject {
   static let sharedInstance = BackgroundService()
   
   var isRunningService: Bool = false
@@ -35,7 +35,7 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
   override init() {
     userNotificationCenter = UNUserNotificationCenter.current()
     super.init()
-    userNotificationCenter.delegate = self
+    // userNotificationCenter.delegate = self
   }
   
   func run(action: BackgroundServiceAction) {
@@ -181,12 +181,18 @@ class BackgroundService: NSObject, UNUserNotificationCenterDelegate {
   func userNotificationCenter(_ center: UNUserNotificationCenter,
                               didReceive response: UNNotificationResponse,
                               withCompletionHandler completionHandler: @escaping () -> Void) {
+    // If it is not a notification requested by this plugin, the processing below is ignored.
+    if response.notification.request.identifier != NOTIFICATION_ID { return }
+    
     completionHandler()
   }
   
   func userNotificationCenter(_ center: UNUserNotificationCenter,
                               willPresent notification: UNNotification,
                               withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    // If it is not a notification requested by this plugin, the processing below is ignored.
+    if notification.request.identifier != NOTIFICATION_ID { return }
+    
     if playSound {
       completionHandler([.alert, .sound])
     } else {

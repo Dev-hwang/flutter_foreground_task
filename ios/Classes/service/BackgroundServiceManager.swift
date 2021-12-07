@@ -119,4 +119,20 @@ class BackgroundServiceManager: NSObject {
     prefs.removeObject(forKey: CALLBACK_HANDLE)
     prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
   }
+  
+  @available(iOS 10.0, *)
+  func userNotificationCenter(_ center: UNUserNotificationCenter,
+                              didReceive response: UNNotificationResponse,
+                              withCompletionHandler completionHandler: @escaping () -> Void) {
+    BackgroundService.sharedInstance
+      .userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+  }
+  
+  @available(iOS 10.0, *)
+  func userNotificationCenter(_ center: UNUserNotificationCenter,
+                              willPresent notification: UNNotification,
+                              withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    BackgroundService.sharedInstance
+      .userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler)
+  }
 }

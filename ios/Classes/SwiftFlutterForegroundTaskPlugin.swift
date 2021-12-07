@@ -45,4 +45,18 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
         result(FlutterMethodNotImplemented)
     }
   }
+  
+  @available(iOS 10.0, *)
+  public func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                     didReceive response: UNNotificationResponse,
+                                     withCompletionHandler completionHandler: @escaping () -> Void) {
+    backgroundServiceManager?.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+  }
+  
+  @available(iOS 10.0, *)
+  public func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                     willPresent notification: UNNotification,
+                                     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    backgroundServiceManager?.userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler)
+  }
 }

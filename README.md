@@ -77,6 +77,9 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
 
   // here, Without this code the task will not work.
   [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins];
+  if (@available(iOS 10.0, *)) {
+    [UNUserNotificationCenter currentNotificationCenter].delegate = (id<UNUserNotificationCenterDelegate>) self;
+  }
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -109,6 +112,9 @@ import Flutter
 
     // here, Without this code the task will not work.
     SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+    }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -408,7 +414,7 @@ Widget build(BuildContext context) {
         // Return whether to start the foreground service.
         return true;
       },
-      androidNotificationOptions: const AndroidNotificationOptions(
+      androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
