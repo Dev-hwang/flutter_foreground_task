@@ -1,3 +1,7 @@
+## 3.5.3
+
+* Upgrade shared_preferences: ^2.0.11
+
 ## 3.5.2
 
 * [**iOS**] Fixed an issue where notifications not related to the service were removed.

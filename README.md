@@ -16,7 +16,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^3.5.2
+  flutter_foreground_task: ^3.5.3
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -565,7 +565,7 @@ The level of detail displayed in notifications on the lock screen.
 
 ## Utility methods
 
-### :lollipop: minimizeApp (both)
+### :lollipop: minimizeApp (Both)
 
 Minimize the app to the background.
 
@@ -575,7 +575,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 void function() => FlutterForegroundTask.minimizeApp();
 ```
 
-### :lollipop: wakeUpScreen (android)
+### :lollipop: wakeUpScreen (Android)
 
 Wake up the screen of a device that is turned off.
 
@@ -585,7 +585,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 void function() => FlutterForegroundTask.wakeUpScreen();
 ```
 
-### :lollipop: isIgnoringBatteryOptimizations (android)
+### :lollipop: isIgnoringBatteryOptimizations (Android)
 
 Returns whether the app has been excluded from battery optimization.
 
@@ -595,7 +595,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 Future<bool> function() => FlutterForegroundTask.isIgnoringBatteryOptimizations;
 ```
 
-### :lollipop: openIgnoreBatteryOptimizationSettings (android)
+### :lollipop: openIgnoreBatteryOptimizationSettings (Android)
 
 Open the settings page where you can set ignore battery optimization.
 
@@ -605,7 +605,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
 ```
 
-### :lollipop: requestIgnoreBatteryOptimization (android)
+### :lollipop: requestIgnoreBatteryOptimization (Android)
 
 Request to ignore battery optimization. This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
 
