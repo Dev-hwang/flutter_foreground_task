@@ -74,22 +74,25 @@ class FlutterForegroundTask {
     required String notificationText,
     Function? callback,
   }) async {
-    if (await isRunningService)
-      throw ForegroundTaskException(
+    if (await isRunningService) {
+      throw const ForegroundTaskException(
           'Already started. Please call this function after calling the stop function.');
+    }
 
-    if (_foregroundTaskOptions == null)
-      throw ForegroundTaskException(
+    if (_foregroundTaskOptions == null) {
+      throw const ForegroundTaskException(
           'Not initialized. Please call this function after calling the init function.');
+    }
 
     final receivePort = _registerPort();
-    if (receivePort == null)
-      throw ForegroundTaskException(
+    if (receivePort == null) {
+      throw const ForegroundTaskException(
           'Failed to register SendPort to communicate with background isolate.');
+    }
 
     final options = Platform.isAndroid
-        ? _androidNotificationOptions?.toJson() ?? Map<String, dynamic>()
-        : _iosNotificationOptions?.toJson() ?? Map<String, dynamic>();
+        ? _androidNotificationOptions?.toJson() ?? <String, dynamic>{}
+        : _iosNotificationOptions?.toJson() ?? <String, dynamic>{};
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
     if (callback != null) {
@@ -111,13 +114,16 @@ class FlutterForegroundTask {
   /// Restart the foreground service.
   /// The option value uses the option value of the currently running service as it is.
   static Future<ReceivePort?> restartService() async {
-    if (!await isRunningService)
-      throw ForegroundTaskException('There are no service started or running.');
+    if (!await isRunningService) {
+      throw const ForegroundTaskException(
+          'There are no service started or running.');
+    }
 
     final receivePort = _registerPort();
-    if (receivePort == null)
-      throw ForegroundTaskException(
+    if (receivePort == null) {
+      throw const ForegroundTaskException(
           'Failed to register SendPort to communicate with background isolate.');
+    }
 
     final bool result =
         await _methodChannel.invokeMethod('restartForegroundService');
@@ -138,7 +144,7 @@ class FlutterForegroundTask {
     // If the service is not running, the update function is not executed.
     if (!await isRunningService) return false;
 
-    final options = Map<String, dynamic>();
+    final options = <String, dynamic>{};
     options['notificationContentTitle'] = notificationTitle;
     options['notificationContentText'] = notificationText;
     if (callback != null) {
@@ -190,16 +196,17 @@ class FlutterForegroundTask {
       {required String key, required Object value}) async {
     final prefs = await SharedPreferences.getInstance();
 
-    if (value is int)
+    if (value is int) {
       return prefs.setInt(key, value);
-    else if (value is double)
+    } else if (value is double) {
       return prefs.setDouble(key, value);
-    else if (value is String)
+    } else if (value is String) {
       return prefs.setString(key, value);
-    else if (value is bool)
+    } else if (value is bool) {
       return prefs.setBool(key, value);
-    else
+    } else {
       return false;
+    }
   }
 
   /// Remove data with [key].
@@ -286,8 +293,9 @@ class FlutterForegroundTask {
     if (_removePort()) {
       final receivePort = ReceivePort();
       final sendPort = receivePort.sendPort;
-      if (IsolateNameServer.registerPortWithName(sendPort, _kPortName))
+      if (IsolateNameServer.registerPortWithName(sendPort, _kPortName)) {
         return receivePort;
+      }
     }
 
     return null;
@@ -298,8 +306,9 @@ class FlutterForegroundTask {
   }
 
   static bool _removePort() {
-    if (_lookupPort() != null)
+    if (_lookupPort() != null) {
       return IsolateNameServer.removePortNameMapping(_kPortName);
+    }
 
     return true;
   }
