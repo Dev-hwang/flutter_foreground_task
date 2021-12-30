@@ -18,7 +18,8 @@ class WithForegroundTask extends StatefulWidget {
 
 class _WithForegroundTaskState extends State<WithForegroundTask> {
   Future<bool> _onWillPop() async {
-    if (await FlutterForegroundTask.isRunningService) {
+    if (!Navigator.canPop(context) &&
+        await FlutterForegroundTask.isRunningService) {
       FlutterForegroundTask.minimizeApp();
       return false;
     }
