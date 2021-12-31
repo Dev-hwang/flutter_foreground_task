@@ -1,3 +1,7 @@
+## 3.5.4
+
+* [[#42](https://github.com/Dev-hwang/flutter_foreground_task/issues/42)] Only minimize app on pop when there is no route to pop.
+
 ## 3.5.3
 
 * Upgrade shared_preferences: ^2.0.11
