@@ -287,8 +287,11 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 
 		val intent = Intent(this, RestartReceiver::class.java)
-		val sender = PendingIntent.getBroadcast(
-			this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+		val sender = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+		} else {
+			PendingIntent.getBroadcast(this, 0, intent, 0)
+		}
 
 		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 		alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
@@ -397,17 +400,27 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	private fun getPendingIntent(pm: PackageManager): PendingIntent {
 		val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
-		return PendingIntent.getActivity(
-			this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+		} else {
+			PendingIntent.getActivity(this, 0, launchIntent, 0)
+		}
 	}
 
 	private fun buildButtonActions(): List<Notification.Action> {
 		val result = mutableListOf<Notification.Action>()
 		for (button in notificationOptions.buttons) {
 			val bIntent = Intent(button.id)
-			val bPendingIntent = PendingIntent.getBroadcast(
-				this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			val bAction = Notification.Action.Builder(null, button.text, bPendingIntent).build()
+			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				PendingIntent.getBroadcast(this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
+			} else {
+				PendingIntent.getBroadcast(this, 0, bIntent, 0)
+			}
+			val bAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				Notification.Action.Builder(null, button.text, bPendingIntent).build()
+			} else {
+				Notification.Action.Builder(0, button.text, bPendingIntent).build()
+			}
 			result.add(bAction)
 		}
 
@@ -418,8 +431,11 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val result = mutableListOf<NotificationCompat.Action>()
 		for (button in notificationOptions.buttons) {
 			val bIntent = Intent(button.id)
-			val bPendingIntent = PendingIntent.getBroadcast(
-				this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
+			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				PendingIntent.getBroadcast(this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
+			} else {
+				PendingIntent.getBroadcast(this, 0, bIntent, 0)
+			}
 			val bAction = NotificationCompat.Action.Builder(0, button.text, bPendingIntent).build()
 			result.add(bAction)
 		}
