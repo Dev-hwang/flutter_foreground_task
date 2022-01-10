@@ -1,3 +1,7 @@
+## 3.5.5
+
+* Downgrade Android minSdkVersion to 21.
+
 ## 3.5.4
 
 * [[#42](https://github.com/Dev-hwang/flutter_foreground_task/issues/42)] Only minimize app on pop when there is no route to pop.
