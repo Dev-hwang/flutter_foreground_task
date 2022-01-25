@@ -280,8 +280,8 @@ class FlutterForegroundTask {
           return await handler.onEvent(timestamp, _lookupPort());
         case 'destroy':
           return await handler.onDestroy(timestamp);
-        default:
-          handler.onButtonPressed(method);
+        case 'onButtonPressed':
+          return handler.onButtonPressed(call.arguments.toString());
       }
     });
 

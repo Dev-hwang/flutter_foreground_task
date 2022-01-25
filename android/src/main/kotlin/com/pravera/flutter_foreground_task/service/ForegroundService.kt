@@ -33,6 +33,9 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	companion object {
 		private const val TAG = "ForegroundService"
 
+		private const val BUTTON_PRESSED_ACTION = "onButtonPressed"
+		private const val ACTION_DATA_NAME = "data"
+
 		/** Returns whether the foreground service is running. */
 		var isRunningService = false 
 			private set
@@ -54,11 +57,13 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private var backgroundChannel: MethodChannel? = null
 	private var backgroundJob: Job? = null
 
-	// A broadcast receiver that handles notification button actions.
-	private var buttonActionReceiver = object : BroadcastReceiver() {
+	// A broadcast receiver that handles intents that occur within the foreground service.
+	private var broadcastReceiver = object : BroadcastReceiver() {
 		override fun onReceive(context: Context?, intent: Intent?) {
 			try {
-				backgroundChannel?.invokeMethod(intent?.action.toString(), null)
+				val action = intent?.action ?: return
+				val data = intent.getStringExtra(ACTION_DATA_NAME)
+				backgroundChannel?.invokeMethod(action, data)
 			} catch (e: Exception) {
 				Log.e(TAG, "invokeMethod", e)
 			}
@@ -69,7 +74,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		super.onCreate()
 		initSharedPreferences()
 		fetchDataFromPreferences()
-		registerButtonActionReceiver()
+		registerBroadcastReceiver()
 
 		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.START -> {
@@ -126,7 +131,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		super.onDestroy()
 		releaseLockMode()
 		destroyForegroundTask()
-		unregisterButtonActionReceiver()
+		unregisterBroadcastReceiver()
 		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
 			if (notificationOptions.isSticky) {
 				Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
@@ -159,16 +164,15 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		notificationOptions = NotificationOptions.getDataFromPreferences(oPrefs)
 	}
 
-	private fun registerButtonActionReceiver() {
-		val intentFilter = IntentFilter()
-		for (button in notificationOptions.buttons) {
-			intentFilter.addAction(button.id)
+	private fun registerBroadcastReceiver() {
+		val intentFilter = IntentFilter().apply {
+			addAction(BUTTON_PRESSED_ACTION)
 		}
-		registerReceiver(buttonActionReceiver, intentFilter)
+		registerReceiver(broadcastReceiver, intentFilter)
 	}
 
-	private fun unregisterButtonActionReceiver() {
-		unregisterReceiver(buttonActionReceiver)
+	private fun unregisterBroadcastReceiver() {
+		unregisterReceiver(broadcastReceiver)
 	}
 
 	@SuppressLint("WrongConstant")
@@ -408,38 +412,44 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private fun buildButtonActions(): List<Notification.Action> {
-		val result = mutableListOf<Notification.Action>()
-		for (button in notificationOptions.buttons) {
-			val bIntent = Intent(button.id)
+		val actions = mutableListOf<Notification.Action>()
+		val buttons = notificationOptions.buttons
+		for (i in buttons.indices) {
+			val bIntent = Intent(BUTTON_PRESSED_ACTION).apply {
+				putExtra(ACTION_DATA_NAME, buttons[i].id)
+			}
 			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
+				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
 			} else {
-				PendingIntent.getBroadcast(this, 0, bIntent, 0)
+				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
 			}
 			val bAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				Notification.Action.Builder(null, button.text, bPendingIntent).build()
+				Notification.Action.Builder(null, buttons[i].text, bPendingIntent).build()
 			} else {
-				Notification.Action.Builder(0, button.text, bPendingIntent).build()
+				Notification.Action.Builder(0, buttons[i].text, bPendingIntent).build()
 			}
-			result.add(bAction)
+			actions.add(bAction)
 		}
 
-		return result
+		return actions
 	}
 
 	private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
-		val result = mutableListOf<NotificationCompat.Action>()
-		for (button in notificationOptions.buttons) {
-			val bIntent = Intent(button.id)
-			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, 0, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, 0, bIntent, 0)
+		val actions = mutableListOf<NotificationCompat.Action>()
+		val buttons = notificationOptions.buttons
+		for (i in buttons.indices) {
+			val bIntent = Intent(BUTTON_PRESSED_ACTION).apply {
+				putExtra(ACTION_DATA_NAME, buttons[i].id)
 			}
-			val bAction = NotificationCompat.Action.Builder(0, button.text, bPendingIntent).build()
-			result.add(bAction)
+			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
+			} else {
+				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
+			}
+			val bAction = NotificationCompat.Action.Builder(0, buttons[i].text, bPendingIntent).build()
+			actions.add(bAction)
 		}
 
-		return result
+		return actions
 	}
 }
