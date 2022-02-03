@@ -104,7 +104,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('startForegroundService', options);
     if (result) {
-      _printMessage('FlutterForegroundTask started');
+      _printMessage('FlutterForegroundTask has started.');
       return receivePort;
     }
 
@@ -128,7 +128,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('restartForegroundService');
     if (result) {
-      _printMessage('FlutterForegroundTask restarted');
+      _printMessage('FlutterForegroundTask has restarted.');
       return receivePort;
     }
 
@@ -155,7 +155,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('updateForegroundService', options);
     if (result) {
-      _printMessage('FlutterForegroundTask updated');
+      _printMessage('FlutterForegroundTask has updated.');
       return true;
     }
 
@@ -172,7 +172,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('stopForegroundService');
     if (result) {
-      _printMessage('FlutterForegroundTask stopped');
+      _printMessage('FlutterForegroundTask has stopped.');
       return true;
     }
 
@@ -180,8 +180,9 @@ class FlutterForegroundTask {
   }
 
   /// Returns whether the foreground service is running.
-  static Future<bool> get isRunningService async =>
-      await _methodChannel.invokeMethod('isRunningService');
+  static Future<bool> get isRunningService async {
+    return await _methodChannel.invokeMethod('isRunningService');
+  }
 
   /// Get the stored data with [key].
   static Future<T?> getData<T>({required String key}) async {
@@ -192,8 +193,10 @@ class FlutterForegroundTask {
   }
 
   /// Save data with [key].
-  static Future<bool> saveData(
-      {required String key, required Object value}) async {
+  static Future<bool> saveData({
+    required String key,
+    required Object value,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
 
     if (value is int) {
