@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// The resource type of the notification icon.
 enum ResourceType {
   /// A resources in the drawable folder.
@@ -25,6 +27,7 @@ class NotificationIconData {
     required this.resType,
     required this.resPrefix,
     required this.name,
+    this.color,
   });
 
   /// The resource type of the notification icon.
@@ -40,12 +43,16 @@ class NotificationIconData {
   /// Notification icon name without prefix.
   final String name;
 
+  /// Notification icon background color.
+  final Color? color;
+
   /// Returns the data fields of [NotificationIconData] in JSON format.
-  Map<String, String> toJson() {
+  Map<String, String?> toJson() {
     return {
       'resType': resType.toString().split('.').last,
       'resPrefix': resPrefix.toString().split('.').last,
       'name': name,
+      'color': color == null ? null : '${color!.red},${color!.green},${color!.blue}'
     };
   }
 }
