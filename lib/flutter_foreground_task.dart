@@ -26,7 +26,7 @@ export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
 const String _kPortName = 'flutter_foreground_task/isolateComPort';
-const String _kPrefsKeyPrefix = 'flutter_foreground_task:';
+const String _kPrefsKeyPrefix = 'com.pravera.flutter_foreground_task:';
 
 /// A class that implements a task handler.
 abstract class TaskHandler {
@@ -192,6 +192,24 @@ class FlutterForegroundTask {
     final value = prefs.get(prefsKey);
 
     return (value is T) ? value : null;
+  }
+
+  /// Get all stored data.
+  static Future<Map<String, Object>> getAllData() async {
+    final dataList = <String, Object>{};
+
+    final prefs = await SharedPreferences.getInstance();
+    for (final key in prefs.getKeys()) {
+      if (key.contains(_kPrefsKeyPrefix)) {
+        final value = prefs.get(key);
+        if (value != null) {
+          final originKey = key.replaceAll(_kPrefsKeyPrefix, '');
+          dataList[originKey] = value;
+        }
+      }
+    }
+
+    return dataList;
   }
 
   /// Save data with [key].

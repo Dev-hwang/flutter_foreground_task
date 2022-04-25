@@ -291,6 +291,7 @@ As you can see in the code above, you can manage data with the following functio
 ```dart
 void function() async {
   await FlutterForegroundTask.getData(key: String);
+  await FlutterForegroundTask.getAllData();
   await FlutterForegroundTask.saveData(key: String, value: Object);
   await FlutterForegroundTask.removeData(key: String);
   await FlutterForegroundTask.clearAllData();
