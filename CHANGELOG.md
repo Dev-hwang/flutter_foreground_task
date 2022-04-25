@@ -1,3 +1,12 @@
+## 3.6.0
+
+* Upgrade Flutter SDK minimum version to 2.8.1
+* Upgrade shared_preferences: ^2.0.13
+* Add `backgroundColor` option for AndroidNotificationOptions.
+* Add `getAllData` function.
+* Fixed the problem that data not related to the service is deleted when clearAllData() is called.
+* Fixed the problem that the notification button did not work when using a specific button id.
+
 ## 3.5.5
 
 * Downgrade Android minSdkVersion to 21.
