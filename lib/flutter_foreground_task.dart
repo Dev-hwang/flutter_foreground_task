@@ -26,6 +26,7 @@ export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
 const String _kPortName = 'flutter_foreground_task/isolateComPort';
+const String _kPrefsKeyPrefix = 'flutter_foreground_task:';
 
 /// A class that implements a task handler.
 abstract class TaskHandler {
@@ -187,7 +188,8 @@ class FlutterForegroundTask {
   /// Get the stored data with [key].
   static Future<T?> getData<T>({required String key}) async {
     final prefs = await SharedPreferences.getInstance();
-    final value = prefs.get(key);
+    final prefsKey = _kPrefsKeyPrefix + key;
+    final value = prefs.get(prefsKey);
 
     return (value is T) ? value : null;
   }
@@ -198,15 +200,16 @@ class FlutterForegroundTask {
     required Object value,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    final prefsKey = _kPrefsKeyPrefix + key;
 
     if (value is int) {
-      return prefs.setInt(key, value);
+      return prefs.setInt(prefsKey, value);
     } else if (value is double) {
-      return prefs.setDouble(key, value);
+      return prefs.setDouble(prefsKey, value);
     } else if (value is String) {
-      return prefs.setString(key, value);
+      return prefs.setString(prefsKey, value);
     } else if (value is bool) {
-      return prefs.setBool(key, value);
+      return prefs.setBool(prefsKey, value);
     } else {
       return false;
     }
@@ -215,13 +218,21 @@ class FlutterForegroundTask {
   /// Remove data with [key].
   static Future<bool> removeData({required String key}) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.remove(key);
+    final prefsKey = _kPrefsKeyPrefix + key;
+
+    return prefs.remove(prefsKey);
   }
 
   /// Clears all stored data.
   static Future<bool> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.clear();
+    for (final key in prefs.getKeys()) {
+      if (key.contains(_kPrefsKeyPrefix)) {
+        await prefs.remove(key);
+      }
+    }
+
+    return true;
   }
 
   /// Minimize the app to the background.
