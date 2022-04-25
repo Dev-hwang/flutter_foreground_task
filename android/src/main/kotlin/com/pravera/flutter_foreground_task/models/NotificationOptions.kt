@@ -46,7 +46,7 @@ data class NotificationOptions(
                     resType = iconDataJsonObj.getString("resType") ?: "",
                     resPrefix = iconDataJsonObj.getString("resPrefix") ?: "",
                     name = iconDataJsonObj.getString("name") ?: "",
-                    color = iconDataJsonObj.getString("color") ?: ""
+                    backgroundColorRgb = iconDataJsonObj.getString("backgroundColorRgb")
                 )
             }
 

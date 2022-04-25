@@ -98,6 +98,7 @@ class _ExampleAppState extends State<ExampleApp> {
           resType: ResourceType.mipmap,
           resPrefix: ResourcePrefix.ic,
           name: 'launcher',
+          backgroundColor: Colors.orange,
         ),
         buttons: [
           const NotificationButton(id: 'sendButton', text: 'Send'),

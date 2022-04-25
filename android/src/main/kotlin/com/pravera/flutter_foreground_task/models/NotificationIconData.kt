@@ -4,5 +4,5 @@ data class NotificationIconData(
     val resType: String,
     val resPrefix: String,
     val name: String,
-    val color: String?
+    val backgroundColorRgb: String?
 )

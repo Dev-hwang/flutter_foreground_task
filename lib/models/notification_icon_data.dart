@@ -27,7 +27,7 @@ class NotificationIconData {
     required this.resType,
     required this.resPrefix,
     required this.name,
-    this.color,
+    this.backgroundColor,
   });
 
   /// The resource type of the notification icon.
@@ -44,15 +44,21 @@ class NotificationIconData {
   final String name;
 
   /// Notification icon background color.
-  final Color? color;
+  final Color? backgroundColor;
 
   /// Returns the data fields of [NotificationIconData] in JSON format.
-  Map<String, String?> toJson() {
+  Map<String, dynamic> toJson() {
+    String? backgroundColorRgb;
+    if (backgroundColor != null) {
+      backgroundColorRgb =
+          '${backgroundColor!.red},${backgroundColor!.green},${backgroundColor!.blue}';
+    }
+
     return {
       'resType': resType.toString().split('.').last,
       'resPrefix': resPrefix.toString().split('.').last,
       'name': name,
-      'color': color == null ? null : '${color!.red},${color!.green},${color!.blue}'
+      'backgroundColorRgb': backgroundColorRgb,
     };
   }
 }

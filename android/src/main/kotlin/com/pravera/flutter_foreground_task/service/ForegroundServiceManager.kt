@@ -137,13 +137,13 @@ class ForegroundServiceManager {
 		val isSticky = call.argument<Boolean>(ForegroundServicePrefsKey.IS_STICKY) ?: true
 		val visibility = call.argument<Int>(ForegroundServicePrefsKey.VISIBILITY) ?: 1
 
-		val iconData = call.argument<Map<String, String>>(ForegroundServicePrefsKey.ICON_DATA)
+		val iconData = call.argument<Map<String, Any>>(ForegroundServicePrefsKey.ICON_DATA)
 		var iconDataJson: String? = null
 		if (iconData != null) {
 			iconDataJson = JSONObject(iconData).toString()
 		}
 
-		val buttons = call.argument<List<Map<String, String>>>(ForegroundServicePrefsKey.BUTTONS)
+		val buttons = call.argument<List<Map<String, Any>>>(ForegroundServicePrefsKey.BUTTONS)
 		var buttonsJson: String? = null
 		if (buttons != null) {
 			buttonsJson = JSONArray(buttons).toString()

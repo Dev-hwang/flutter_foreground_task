@@ -9,8 +9,6 @@ import android.net.wifi.WifiManager
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
-import com.pravera.flutter_foreground_task.R
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
 import com.pravera.flutter_foreground_task.models.NotificationOptions
@@ -185,7 +183,15 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val iconResType = notificationOptions.iconData?.resType
 		val iconResPrefix = notificationOptions.iconData?.resPrefix
 		val iconName = notificationOptions.iconData?.name
-		val iconColor = notificationOptions.iconData?.color
+		var iconBackgroundColor: Int? = null
+		val iconBackgroundColorRgb = notificationOptions.iconData?.backgroundColorRgb?.split(",")
+		if (iconBackgroundColorRgb != null && iconBackgroundColorRgb.size == 3) {
+			iconBackgroundColor = Color.rgb(
+				iconBackgroundColorRgb[0].toInt(),
+				iconBackgroundColorRgb[1].toInt(),
+				iconBackgroundColorRgb[2].toInt()
+			)
+		}
 		val iconResId = if (iconResType.isNullOrEmpty()
 				|| iconResPrefix.isNullOrEmpty()
 				|| iconName.isNullOrEmpty())
@@ -217,9 +223,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			builder.setContentTitle(notificationOptions.contentTitle)
 			builder.setContentText(notificationOptions.contentText)
 			builder.setVisibility(notificationOptions.visibility)
-			if(iconColor != null){
-				val rgb = iconColor.split(",")
-				builder.setColor(Color.rgb(rgb[0].toInt(), rgb[1].toInt(), rgb[2].toInt()))
+			if (iconBackgroundColor != null) {
+				builder.setColor(iconBackgroundColor)
 			}
 			for (action in buildButtonActions()) {
 				builder.addAction(action)
@@ -237,9 +242,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			builder.setContentTitle(notificationOptions.contentTitle)
 			builder.setContentText(notificationOptions.contentText)
 			builder.setVisibility(notificationOptions.visibility)
-			if(iconColor != null){
-				val rgb = iconColor.split(",")
-				builder.setColor(Color.rgb(rgb[0].toInt(), rgb[1].toInt(), rgb[2].toInt()))
+			if (iconBackgroundColor != null) {
+				builder.color = iconBackgroundColor
 			}
 			if (!notificationOptions.enableVibration) { builder.setVibrate(longArrayOf(0L)) }
 			if (!notificationOptions.playSound) { builder.setSound(null) }
