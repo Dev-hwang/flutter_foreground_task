@@ -35,6 +35,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		private const val TAG = "ForegroundService"
 
 		private const val BUTTON_PRESSED_ACTION = "onButtonPressed"
+		private const val NOTIFICATION_PRESSED_ACTION = "onNotificationPressed"
 		private const val ACTION_DATA_NAME = "data"
 
 		/** Returns whether the foreground service is running. */
@@ -168,6 +169,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	private fun registerBroadcastReceiver() {
 		val intentFilter = IntentFilter().apply {
 			addAction(BUTTON_PRESSED_ACTION)
+			addAction(NOTIFICATION_PRESSED_ACTION)
 		}
 		registerReceiver(broadcastReceiver, intentFilter)
 	}
@@ -198,7 +200,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			getAppIconResourceId(pm)
 		else
 			getDrawableResourceId(iconResType, iconResPrefix, iconName)
-		val pendingIntent = getPendingIntent(pm)
+		val pendingIntent = getPendingIntent()
 
 		// Create a notification and start the foreground service.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -418,12 +420,12 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	private fun getPendingIntent(pm: PackageManager): PendingIntent {
-		val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
+	private fun getPendingIntent(): PendingIntent {
+		val pressedIntent = Intent(NOTIFICATION_PRESSED_ACTION)
 		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+			PendingIntent.getBroadcast(this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
 		} else {
-			PendingIntent.getActivity(this, 0, launchIntent, 0)
+			PendingIntent.getBroadcast(this, 20000, pressedIntent, 0)
 		}
 	}
 

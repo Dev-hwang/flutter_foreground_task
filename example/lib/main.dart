@@ -47,6 +47,12 @@ class FirstTaskHandler extends TaskHandler {
     // Called when the notification button on the Android platform is pressed.
     print('onButtonPressed >> $id');
   }
+
+  @override
+  void onNotificationPressed() {
+    // Called when the notification itself on the Android platform is pressed.
+    print('onNotificationPressed');
+  }
 }
 
 void updateCallback() {
@@ -55,9 +61,7 @@ void updateCallback() {
 
 class SecondTaskHandler extends TaskHandler {
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-
-  }
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {}
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
@@ -70,9 +74,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
-
-  }
+  Future<void> onDestroy(DateTime timestamp) async {}
 }
 
 class ExampleApp extends StatefulWidget {

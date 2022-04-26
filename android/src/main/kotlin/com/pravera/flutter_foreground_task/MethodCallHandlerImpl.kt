@@ -48,6 +48,10 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 			"isRunningService" ->
 				result.success(provider.getForegroundServiceManager().isRunningService())
 			"minimizeApp" -> ForegroundServiceUtils.minimizeApp(activity)
+			"launchApp" -> {
+				val args = call.arguments<List<String?>>()
+				ForegroundServiceUtils.launchApp(context, args.getOrNull(0))
+			}
 			"wakeUpScreen" -> ForegroundServiceUtils.wakeUpScreen(context)
 			"isIgnoringBatteryOptimizations" ->
 				result.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
