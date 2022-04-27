@@ -12,11 +12,14 @@ void startCallback() {
 }
 
 class FirstTaskHandler extends TaskHandler {
-  int updateCount = 0;
+  SendPort? _sendPort;
+  int _eventCount = 0;
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the getData function to get the data you saved.
+    _sendPort = sendPort;
+
+    // You can use the getData function to get the stored data.
     final customData =
         await FlutterForegroundTask.getData<String>(key: 'customData');
     print('customData: $customData');
@@ -25,15 +28,15 @@ class FirstTaskHandler extends TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
-        notificationTitle: 'FirstTaskHandler',
-        notificationText: timestamp.toString(),
-        callback: updateCount >= 10 ? updateCallback : null);
+      notificationTitle: 'FirstTaskHandler',
+      notificationText: timestamp.toString(),
+      callback: _eventCount >= 10 ? updateCallback : null,
+    );
 
     // Send data to the main isolate.
-    sendPort?.send(timestamp);
-    sendPort?.send(updateCount);
+    sendPort?.send(_eventCount);
 
-    updateCount++;
+    _eventCount++;
   }
 
   @override
@@ -51,11 +54,18 @@ class FirstTaskHandler extends TaskHandler {
   @override
   void onNotificationPressed() {
     // Called when the notification itself on the Android platform is pressed.
-    print('onNotificationPressed');
+    FlutterForegroundTask.launchApp("/resume-route");
+
+    // Note that the app will only route to "/resume-route" when it is exited so
+    // it will usually be necessary to send a message through the send port to
+    // signal it to restore state when the app is already started
+    _sendPort?.send('onNotificationPressed');
   }
 }
 
+// The callback function should always be a top-level function.
 void updateCallback() {
+  // The setTaskHandler function must be called to handle the task in the background.
   FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
 }
 
@@ -66,8 +76,9 @@ class SecondTaskHandler extends TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
-        notificationTitle: 'SecondTaskHandler',
-        notificationText: timestamp.toString());
+      notificationTitle: 'SecondTaskHandler',
+      notificationText: timestamp.toString(),
+    );
 
     // Send data to the main isolate.
     sendPort?.send(timestamp);
@@ -77,14 +88,28 @@ class SecondTaskHandler extends TaskHandler {
   Future<void> onDestroy(DateTime timestamp) async {}
 }
 
-class ExampleApp extends StatefulWidget {
+class ExampleApp extends StatelessWidget {
   const ExampleApp({Key? key}) : super(key: key);
 
   @override
-  _ExampleAppState createState() => _ExampleAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: const ExamplePage(),
+      routes: {
+        '/resume-route': (context) => const ResumeRoutePage(),
+      },
+    );
+  }
 }
 
-class _ExampleAppState extends State<ExampleApp> {
+class ExamplePage extends StatefulWidget {
+  const ExamplePage({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _ExamplePageState();
+}
+
+class _ExamplePageState extends State<ExamplePage> {
   ReceivePort? _receivePort;
 
   Future<void> _initForegroundTask() async {
@@ -138,10 +163,12 @@ class _ExampleAppState extends State<ExampleApp> {
     if (receivePort != null) {
       _receivePort = receivePort;
       _receivePort?.listen((message) {
-        if (message is DateTime) {
-          print('receive timestamp: $message');
-        } else if (message is int) {
-          print('receive updateCount: $message');
+        if (message is int) {
+          print('eventCount: $message');
+        } else if (message is String) {
+          if (message == 'onNotificationPressed') {
+            print('onNotificationPressed :)');
+          }
         }
       });
 
@@ -169,37 +196,57 @@ class _ExampleAppState extends State<ExampleApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      // A widget that prevents the app from closing when the foreground service is running.
-      // This widget must be declared above the [Scaffold] widget.
-      home: WithForegroundTask(
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Flutter Foreground Task'),
-            centerTitle: true,
-          ),
-          body: _buildContentView(),
+    // A widget that prevents the app from closing when the foreground service is running.
+    // This widget must be declared above the [Scaffold] widget.
+    return WithForegroundTask(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Flutter Foreground Task'),
+          centerTitle: true,
         ),
+        body: _buildContentView(),
       ),
     );
   }
 
   Widget _buildContentView() {
+    buttonBuilder(String text, {VoidCallback? onPressed}) {
+      return ElevatedButton(
+        child: Text(text),
+        onPressed: onPressed,
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildTestButton('start', onPressed: _startForegroundTask),
-          _buildTestButton('stop', onPressed: _stopForegroundTask),
+          buttonBuilder('start', onPressed: _startForegroundTask),
+          buttonBuilder('stop', onPressed: _stopForegroundTask),
         ],
       ),
     );
   }
+}
 
-  Widget _buildTestButton(String text, {VoidCallback? onPressed}) {
-    return ElevatedButton(
-      child: Text(text),
-      onPressed: onPressed,
+class ResumeRoutePage extends StatelessWidget {
+  const ResumeRoutePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Resume Route'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Navigate back to first route when tapped.
+          },
+          child: const Text('Go back!'),
+        ),
+      ),
     );
   }
 }
