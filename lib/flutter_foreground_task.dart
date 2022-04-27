@@ -41,6 +41,11 @@ abstract class TaskHandler {
 
   /// Called when the notification button on the Android platform is pressed.
   void onButtonPressed(String id) {}
+
+  /// Called when the notification itself on the Android platform is pressed.
+  void onNotificationPressed() {
+    FlutterForegroundTask.launchApp();
+  }
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -256,6 +261,14 @@ class FlutterForegroundTask {
   /// Minimize the app to the background.
   static void minimizeApp() => _methodChannel.invokeMethod('minimizeApp');
 
+  /// Launch the app at `route` if it is not running otherwise open it
+  static void launchApp([String? route]) {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return;
+
+    _methodChannel.invokeMethod('launchApp', [route]);
+  }
+
   /// Wake up the screen of a device that is turned off.
   static void wakeUpScreen() {
     // This function only works on Android.
@@ -314,6 +327,8 @@ class FlutterForegroundTask {
           return await handler.onDestroy(timestamp);
         case 'onButtonPressed':
           return handler.onButtonPressed(call.arguments.toString());
+        case 'onNotificationPressed':
+          return handler.onNotificationPressed();
       }
     });
 

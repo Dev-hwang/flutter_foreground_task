@@ -235,6 +235,16 @@ class FirstTaskHandler extends TaskHandler {
     // Called when the notification button on the Android platform is pressed.
     print('onButtonPressed >> $id');
   }
+
+  @override
+  void onNotificationPressed() {
+    // Called when the notification itself on the Android platform is pressed.
+    FlutterForegroundTask.launchApp("/resume-route");
+    // Note that the app will only route to "/resume-route" when it is exited so
+    // it will usually be necessary to send a message through the send port to
+    // signal it to restore state when the app is already started
+    print('onNotificationPressed');
+  }
 }
 
 class ExampleApp extends StatefulWidget {
@@ -575,6 +585,19 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 void function() => FlutterForegroundTask.minimizeApp();
 ```
+
+### :lollipop: launchApp (Android)
+
+Launch the app if it is not running otherwise open the current activity.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+void function() => FlutterForegroundTask.launchApp();
+```
+
+It is also possible to pass a route to this function but the route will only
+be loaded if the app is not already running.
 
 ### :lollipop: wakeUpScreen (Android)
 

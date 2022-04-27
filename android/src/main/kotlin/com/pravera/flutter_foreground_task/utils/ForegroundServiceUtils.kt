@@ -26,6 +26,24 @@ class ForegroundServiceUtils {
 		}
 
 		/**
+		 * Launch the app at `route` if it is not running otherwise open it
+		 *
+		 * @param context context
+		 * @param route Open this route if the app is closed
+		 */
+		fun launchApp(context: Context, route: String?) {
+			val pm = context.packageManager
+			val launchIntent = pm.getLaunchIntentForPackage(context.packageName)
+			if (launchIntent != null) {
+				launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				if (route != null) {
+					launchIntent.putExtra("route", route)
+				}
+				context.startActivity(launchIntent)
+			}
+		}
+
+		/**
 		 * Wake up the screen of a device that is turned off.
 		 *
 		 * @param context context
