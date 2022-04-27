@@ -94,8 +94,9 @@ class ExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const ExamplePage(),
+      initialRoute: '/',
       routes: {
+        '/': (context) => const ExamplePage(),
         '/resume-route': (context) => const ResumeRoutePage(),
       },
     );
@@ -167,7 +168,7 @@ class _ExamplePageState extends State<ExamplePage> {
           print('eventCount: $message');
         } else if (message is String) {
           if (message == 'onNotificationPressed') {
-            print('onNotificationPressed :)');
+            Navigator.of(context).pushNamed('/resume-route');
           }
         }
       });
@@ -243,6 +244,7 @@ class ResumeRoutePage extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () {
             // Navigate back to first route when tapped.
+            Navigator.of(context).pop();
           },
           child: const Text('Go back!'),
         ),
