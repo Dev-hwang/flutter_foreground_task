@@ -182,17 +182,15 @@ void initState() {
 ```dart
 @override
 Widget build(BuildContext context) {
-  return MaterialApp(
-    // A widget that prevents the app from closing when the foreground service is running.
-    // This widget must be declared above the [Scaffold] widget.
-    home: WithForegroundTask(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter Foreground Task'),
-          centerTitle: true,
-        ),
-        body: buildContentView(),
+  // A widget that prevents the app from closing when the foreground service is running.
+  // This widget must be declared above the [Scaffold] widget.
+  return WithForegroundTask(
+    child: Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter Foreground Task'),
+        centerTitle: true,
       ),
+      body: buildContentView(),
     ),
   );
 }
@@ -211,10 +209,15 @@ void startCallback() {
 }
 
 class FirstTaskHandler extends TaskHandler {
+  SendPort? _sendPort;
+
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the getData function to get the data you saved.
-    final customData = await FlutterForegroundTask.getData<String>(key: 'customData');
+    _sendPort = sendPort;
+
+    // You can use the getData function to get the stored data.
+    final customData =
+        await FlutterForegroundTask.getData<String>(key: 'customData');
     print('customData: $customData');
   }
 
@@ -240,21 +243,37 @@ class FirstTaskHandler extends TaskHandler {
   void onNotificationPressed() {
     // Called when the notification itself on the Android platform is pressed.
     FlutterForegroundTask.launchApp("/resume-route");
+
     // Note that the app will only route to "/resume-route" when it is exited so
     // it will usually be necessary to send a message through the send port to
     // signal it to restore state when the app is already started
-    print('onNotificationPressed');
+    _sendPort?.send('onNotificationPressed');
   }
 }
 
-class ExampleApp extends StatefulWidget {
+class ExampleApp extends StatelessWidget {
   const ExampleApp({Key? key}) : super(key: key);
 
   @override
-  _ExampleAppState createState() => _ExampleAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const ExamplePage(),
+        '/resume-route': (context) => const ResumeRoutePage(),
+      },
+    );
+  }
 }
 
-class _ExampleAppState extends State<ExampleApp> {
+class ExamplePage extends StatefulWidget {
+  const ExamplePage({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _ExamplePageState();
+}
+
+class _ExamplePageState extends State<ExamplePage> {
   ReceivePort? _receivePort;
 
   // ...
@@ -278,7 +297,11 @@ class _ExampleAppState extends State<ExampleApp> {
       _receivePort = receivePort;
       _receivePort?.listen((message) {
         if (message is DateTime) {
-          print('receive timestamp: $message');
+          print('timestamp: $message');
+        } else if (message is String) {
+          if (message == 'onNotificationPressed') {
+            Navigator.of(context).pushNamed('/resume-route');
+          }
         }
       });
 
@@ -292,6 +315,29 @@ class _ExampleAppState extends State<ExampleApp> {
   void dispose() {
     _receivePort?.close();
     super.dispose();
+  }
+}
+
+class ResumeRoutePage extends StatelessWidget {
+  const ResumeRoutePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Resume Route'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Navigate back to first route when tapped.
+            Navigator.of(context).pop();
+          },
+          child: const Text('Go back!'),
+        ),
+      ),
+    );
   }
 }
 ```
@@ -312,16 +358,17 @@ If the plugin you want to use provides a stream, use it like this:
 
 ```dart
 class FirstTaskHandler extends TaskHandler {
-  StreamSubscription<Position>? streamSubscription;
+  StreamSubscription<Position>? _streamSubscription;
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
     final positionStream = Geolocator.getPositionStream();
-    streamSubscription = positionStream.listen((event) {
+    _streamSubscription = positionStream.listen((event) {
       // Update notification content.
       FlutterForegroundTask.updateService(
-          notificationTitle: 'Current Position',
-          notificationText: '${event.latitude}, ${event.longitude}');
+        notificationTitle: 'Current Position',
+        notificationText: '${event.latitude}, ${event.longitude}',
+      );
 
       // Send data to the main isolate.
       sendPort?.send(event);
@@ -335,7 +382,7 @@ class FirstTaskHandler extends TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp) async {
-    await streamSubscription?.cancel();
+    await _streamSubscription?.cancel();
   }
 }
 ```
@@ -350,7 +397,7 @@ void startCallback() {
 }
 
 class FirstTaskHandler extends TaskHandler {
-  int updateCount = 0;
+  int _eventCount = 0;
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
@@ -360,15 +407,15 @@ class FirstTaskHandler extends TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
-        notificationTitle: 'FirstTaskHandler',
-        notificationText: timestamp.toString(),
-        callback: updateCount >= 10 ? updateCallback : null);
+      notificationTitle: 'FirstTaskHandler',
+      notificationText: timestamp.toString(),
+      callback: _eventCount >= 10 ? updateCallback : null,
+    );
 
     // Send data to the main isolate.
-    sendPort?.send(timestamp);
-    sendPort?.send(updateCount);
+    sendPort?.send(_eventCount);
 
-    updateCount++;
+    _eventCount++;
   }
 
   @override
@@ -390,8 +437,9 @@ class SecondTaskHandler extends TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
-        notificationTitle: 'SecondTaskHandler',
-        notificationText: timestamp.toString());
+      notificationTitle: 'SecondTaskHandler',
+      notificationText: timestamp.toString(),
+    );
 
     // Send data to the main isolate.
     sendPort?.send(timestamp);
