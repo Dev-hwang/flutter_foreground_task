@@ -190,6 +190,13 @@ class FlutterForegroundTask {
     return await _methodChannel.invokeMethod('isRunningService');
   }
 
+  /// Get the [ReceivePort].
+  static Future<ReceivePort?> get receivePort async {
+    if (!await isRunningService) return null;
+
+    return _registerPort();
+  }
+
   /// Get the stored data with [key].
   static Future<T?> getData<T>({required String key}) async {
     final prefs = await SharedPreferences.getInstance();

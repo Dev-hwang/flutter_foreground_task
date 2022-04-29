@@ -161,6 +161,16 @@ class _ExamplePageState extends State<ExamplePage> {
       );
     }
 
+    return _registerReceivePort(receivePort);
+  }
+
+  Future<bool> _stopForegroundTask() async {
+    return await FlutterForegroundTask.stopService();
+  }
+
+  bool _registerReceivePort(ReceivePort? receivePort) {
+    _closeReceivePort();
+
     if (receivePort != null) {
       _receivePort = receivePort;
       _receivePort?.listen((message) {
@@ -181,19 +191,27 @@ class _ExamplePageState extends State<ExamplePage> {
     return false;
   }
 
-  Future<bool> _stopForegroundTask() async {
-    return await FlutterForegroundTask.stopService();
+  void _closeReceivePort() {
+    _receivePort?.close();
+    _receivePort = null;
   }
 
   @override
   void initState() {
     super.initState();
     _initForegroundTask();
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      // You can get the previous ReceivePort without restarting the service.
+      if (await FlutterForegroundTask.isRunningService) {
+        final newReceivePort = await FlutterForegroundTask.receivePort;
+        _registerReceivePort(newReceivePort);
+      }
+    });
   }
 
   @override
   void dispose() {
-    _receivePort?.close();
+    _closeReceivePort();
     super.dispose();
   }
 
