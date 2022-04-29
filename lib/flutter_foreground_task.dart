@@ -72,6 +72,7 @@ class FlutterForegroundTask {
         _foregroundTaskOptions ??
         const ForegroundTaskOptions();
     _printDevLog = printDevLog ?? _printDevLog;
+    _printMessage('FlutterForegroundTask has been initialized.');
   }
 
   /// Start the foreground service with notification.
@@ -110,7 +111,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('startForegroundService', options);
     if (result) {
-      _printMessage('FlutterForegroundTask has started.');
+      _printMessage('FlutterForegroundTask has been requested to start.');
       return receivePort;
     }
 
@@ -118,6 +119,7 @@ class FlutterForegroundTask {
   }
 
   /// Restart the foreground service.
+  ///
   /// The option value uses the option value of the currently running service as it is.
   static Future<ReceivePort?> restartService() async {
     if (!await isRunningService) {
@@ -134,7 +136,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('restartForegroundService');
     if (result) {
-      _printMessage('FlutterForegroundTask has restarted.');
+      _printMessage('FlutterForegroundTask has been requested to restart.');
       return receivePort;
     }
 
@@ -161,7 +163,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('updateForegroundService', options);
     if (result) {
-      _printMessage('FlutterForegroundTask has updated.');
+      _printMessage('FlutterForegroundTask has been requested to update.');
       return true;
     }
 
@@ -176,7 +178,7 @@ class FlutterForegroundTask {
     final bool result =
         await _methodChannel.invokeMethod('stopForegroundService');
     if (result) {
-      _printMessage('FlutterForegroundTask has stopped.');
+      _printMessage('FlutterForegroundTask has been requested to stop.');
       return true;
     }
 
@@ -302,6 +304,7 @@ class FlutterForegroundTask {
   }
 
   /// Set up the task handler and start the foreground task.
+  ///
   /// It must always be called from a top-level function, otherwise foreground task will not work.
   static void setTaskHandler(TaskHandler handler) {
     // Create a method channel to communicate with the platform.
