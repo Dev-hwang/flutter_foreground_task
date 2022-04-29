@@ -37,7 +37,7 @@ abstract class TaskHandler {
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort);
 
   /// Called when the task is destroyed.
-  Future<void> onDestroy(DateTime timestamp);
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort);
 
   /// Called when the notification button on the Android platform is pressed.
   void onButtonPressed(String id) {}
@@ -172,8 +172,6 @@ class FlutterForegroundTask {
   static Future<bool> stopService() async {
     // If the service is not running, the stop function is not executed.
     if (!await isRunningService) return false;
-
-    _removePort();
 
     final bool result =
         await _methodChannel.invokeMethod('stopForegroundService');
@@ -324,7 +322,9 @@ class FlutterForegroundTask {
         case 'event':
           return await handler.onEvent(timestamp, _lookupPort());
         case 'destroy':
-          return await handler.onDestroy(timestamp);
+          await handler.onDestroy(timestamp, _lookupPort());
+          _removePort();
+          break;
         case 'onButtonPressed':
           return handler.onButtonPressed(call.arguments.toString());
         case 'onNotificationPressed':

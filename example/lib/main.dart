@@ -40,7 +40,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
     // You can use the clearAllData function to clear all the stored data.
     await FlutterForegroundTask.clearAllData();
   }
@@ -85,7 +85,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {}
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {}
 }
 
 class ExampleApp extends StatelessWidget {
@@ -170,6 +170,8 @@ class _ExamplePageState extends State<ExamplePage> {
           if (message == 'onNotificationPressed') {
             Navigator.of(context).pushNamed('/resume-route');
           }
+        } else if (message is DateTime) {
+          print('timestamp: ${message.toString()}');
         }
       });
 

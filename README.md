@@ -228,7 +228,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
     // You can use the clearAllData function to clear all the stored data.
     await FlutterForegroundTask.clearAllData();
   }
@@ -381,7 +381,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
     await _streamSubscription?.cancel();
   }
 }
@@ -419,7 +419,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
 
   }
 }
@@ -446,7 +446,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
 
   }
 }
