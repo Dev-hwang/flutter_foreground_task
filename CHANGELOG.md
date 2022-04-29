@@ -1,3 +1,11 @@
+## 3.7.0
+
+* Add notification press handler for Android platform.
+* Add sendPort parameter to onDestroy function of TaskHandler.
+* Add receivePort getter function.
+* Clarify the meaning of the dev message.
+* Example updates.
+
 ## 3.6.0
 
 * Upgrade Flutter SDK minimum version to 2.8.1
