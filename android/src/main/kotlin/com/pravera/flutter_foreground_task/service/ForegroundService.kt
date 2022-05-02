@@ -422,17 +422,21 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private fun getPendingIntent(pm: PackageManager): PendingIntent {
-		return if (ForegroundServiceUtils.canDrawOverlays(applicationContext)) {
+		val canDrawOverlays = ForegroundServiceUtils.canDrawOverlays(applicationContext)
+
+		return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || canDrawOverlays) {
 			val pressedIntent = Intent(NOTIFICATION_PRESSED_ACTION)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
+				PendingIntent.getBroadcast(
+					this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
 			} else {
 				PendingIntent.getBroadcast(this, 20000, pressedIntent, 0)
 			}
 		} else {
 			val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getActivity(this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+				PendingIntent.getActivity(
+					this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE)
 			} else {
 				PendingIntent.getActivity(this, 20000, launchIntent, 0)
 			}
