@@ -24,12 +24,14 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 	private var activity: Activity? = null
 	private var methodCallResult1: MethodChannel.Result? = null
 	private var methodCallResult2: MethodChannel.Result? = null
+	private var methodCallResult3: MethodChannel.Result? = null
 
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 		val reqMethod = call.method
 		if (reqMethod.contains("minimizeApp") ||
 				reqMethod.contains("openIgnoreBatteryOptimizationSettings") ||
-				reqMethod.contains("requestIgnoreBatteryOptimization")) {
+				reqMethod.contains("requestIgnoreBatteryOptimization") ||
+				reqMethod.contains("openSystemAlertWindowSettings")) {
 			if (activity == null) {
 				ErrorHandleUtils.handleMethodCallError(result, ErrorCodes.ACTIVITY_NOT_ATTACHED)
 				return
@@ -63,15 +65,21 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 				methodCallResult2 = result
 				ForegroundServiceUtils.requestIgnoreBatteryOptimization(activity, 247)
 			}
+			"canDrawOverlays" -> result.success(ForegroundServiceUtils.canDrawOverlays(context))
+			"openSystemAlertWindowSettings" -> {
+				methodCallResult3 = result
+				ForegroundServiceUtils.openSystemAlertWindowSettings(activity, 248)
+			}
 			else -> result.notImplemented()
 		}
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-		if (requestCode == 246)
-			methodCallResult1?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
-		else if (requestCode == 247)
-			methodCallResult2?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
+		when (requestCode) {
+			246 -> methodCallResult1?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
+			247 -> methodCallResult2?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
+			248 -> methodCallResult3?.success(ForegroundServiceUtils.canDrawOverlays(context))
+		}
 
 		return true
 	}

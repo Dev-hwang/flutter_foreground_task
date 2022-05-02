@@ -35,7 +35,7 @@ class ForegroundServiceUtils {
 			val pm = context.packageManager
 			val launchIntent = pm.getLaunchIntentForPackage(context.packageName)
 			if (launchIntent != null) {
-				launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 				if (route != null) {
 					launchIntent.putExtra("route", route)
 				}
@@ -98,6 +98,35 @@ class ForegroundServiceUtils {
 				val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
 				intent.data = Uri.parse("package:" + activity?.packageName)
 				activity?.startActivityForResult(intent, requestCode)
+			}
+		}
+
+		/**
+		 * Returns whether the SYSTEM_ALERT_WINDOW permission has been granted.
+		 *
+		 * @param context context
+		 */
+		fun canDrawOverlays(context: Context): Boolean {
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+				return true
+			}
+
+			return Settings.canDrawOverlays(context)
+		}
+
+		/**
+		 * Open the settings page where you can allow/deny the SYSTEM_ALERT_WINDOW permission.
+		 *
+		 * @param activity activity
+		 * @param requestCode the intent action request code
+		 */
+		fun openSystemAlertWindowSettings(activity: Activity?, requestCode: Int) {
+			if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				if (!canDrawOverlays(activity.applicationContext)) {
+					val pkgUri = Uri.parse("package:" + activity.packageName)
+					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, pkgUri)
+					activity.startActivityForResult(intent, requestCode)
+				}
 			}
 		}
 	}

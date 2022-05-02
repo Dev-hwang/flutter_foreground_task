@@ -310,6 +310,22 @@ class FlutterForegroundTask {
         .invokeMethod('requestIgnoreBatteryOptimization');
   }
 
+  /// Returns whether the SYSTEM_ALERT_WINDOW permission has been granted.
+  static Future<bool> get canDrawOverlays async {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return true;
+
+    return await _methodChannel.invokeMethod('canDrawOverlays');
+  }
+
+  /// Open the settings page where you can allow/deny the SYSTEM_ALERT_WINDOW permission.
+  static Future<bool> openSystemAlertWindowSettings() async {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return true;
+
+    return await _methodChannel.invokeMethod('openSystemAlertWindowSettings');
+  }
+
   /// Set up the task handler and start the foreground task.
   ///
   /// It must always be called from a top-level function, otherwise foreground task will not work.
