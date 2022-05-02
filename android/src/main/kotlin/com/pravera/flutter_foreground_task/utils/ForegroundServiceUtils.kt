@@ -26,7 +26,7 @@ class ForegroundServiceUtils {
 		}
 
 		/**
-		 * Launch the app at `route` if it is not running otherwise open it
+		 * Launch the app at [route] if it is not running otherwise open it.
 		 *
 		 * @param context context
 		 * @param route Open this route if the app is closed
@@ -102,7 +102,7 @@ class ForegroundServiceUtils {
 		}
 
 		/**
-		 * Returns whether the SYSTEM_ALERT_WINDOW permission has been granted.
+		 * Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
 		 *
 		 * @param context context
 		 */
@@ -115,7 +115,7 @@ class ForegroundServiceUtils {
 		}
 
 		/**
-		 * Open the settings page where you can allow/deny the SYSTEM_ALERT_WINDOW permission.
+		 * Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
 		 *
 		 * @param activity activity
 		 * @param requestCode the intent action request code

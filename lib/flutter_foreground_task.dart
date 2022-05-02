@@ -43,6 +43,9 @@ abstract class TaskHandler {
   void onButtonPressed(String id) {}
 
   /// Called when the notification itself on the Android platform is pressed.
+  ///
+  /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+  /// this function to be called.
   void onNotificationPressed() {
     FlutterForegroundTask.launchApp();
   }
@@ -268,7 +271,7 @@ class FlutterForegroundTask {
   /// Minimize the app to the background.
   static void minimizeApp() => _methodChannel.invokeMethod('minimizeApp');
 
-  /// Launch the app at `route` if it is not running otherwise open it
+  /// Launch the app at [route] if it is not running otherwise open it.
   static void launchApp([String? route]) {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
@@ -310,7 +313,7 @@ class FlutterForegroundTask {
         .invokeMethod('requestIgnoreBatteryOptimization');
   }
 
-  /// Returns whether the SYSTEM_ALERT_WINDOW permission has been granted.
+  /// Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
   static Future<bool> get canDrawOverlays async {
     // This function only works on Android.
     if (!Platform.isAndroid) return true;
@@ -318,7 +321,7 @@ class FlutterForegroundTask {
     return await _methodChannel.invokeMethod('canDrawOverlays');
   }
 
-  /// Open the settings page where you can allow/deny the SYSTEM_ALERT_WINDOW permission.
+  /// Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
   static Future<bool> openSystemAlertWindowSettings() async {
     // This function only works on Android.
     if (!Platform.isAndroid) return true;

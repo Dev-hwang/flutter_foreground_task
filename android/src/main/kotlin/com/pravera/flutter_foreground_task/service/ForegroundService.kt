@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
 import com.pravera.flutter_foreground_task.models.NotificationOptions
+import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as PrefsKey
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
@@ -200,7 +201,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			getAppIconResourceId(pm)
 		else
 			getDrawableResourceId(iconResType, iconResPrefix, iconName)
-		val pendingIntent = getPendingIntent()
+		val pendingIntent = getPendingIntent(pm)
 
 		// Create a notification and start the foreground service.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -420,12 +421,21 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	private fun getPendingIntent(): PendingIntent {
-		val pressedIntent = Intent(NOTIFICATION_PRESSED_ACTION)
-		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			PendingIntent.getBroadcast(this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
+	private fun getPendingIntent(pm: PackageManager): PendingIntent {
+		return if (ForegroundServiceUtils.canDrawOverlays(applicationContext)) {
+			val pressedIntent = Intent(NOTIFICATION_PRESSED_ACTION)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				PendingIntent.getBroadcast(this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
+			} else {
+				PendingIntent.getBroadcast(this, 20000, pressedIntent, 0)
+			}
 		} else {
-			PendingIntent.getBroadcast(this, 20000, pressedIntent, 0)
+			val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				PendingIntent.getActivity(this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+			} else {
+				PendingIntent.getActivity(this, 20000, launchIntent, 0)
+			}
 		}
 	}
 

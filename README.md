@@ -28,6 +28,7 @@ Since this plugin is based on a foreground service, we need to add the following
 ```
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <uses-permission android:name="android.permission.WAKE_LOCK" />
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 ```
 
 And we need to add this permission to automatically resume foreground service at boot time.
@@ -242,11 +243,14 @@ class FirstTaskHandler extends TaskHandler {
   @override
   void onNotificationPressed() {
     // Called when the notification itself on the Android platform is pressed.
-    FlutterForegroundTask.launchApp("/resume-route");
+    //
+    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+    // this function to be called.
 
     // Note that the app will only route to "/resume-route" when it is exited so
     // it will usually be necessary to send a message through the send port to
-    // signal it to restore state when the app is already started
+    // signal it to restore state when the app is already started.
+    FlutterForegroundTask.launchApp("/resume-route");
     _sendPort?.send('onNotificationPressed');
   }
 }
@@ -279,6 +283,23 @@ class _ExamplePageState extends State<ExamplePage> {
   // ...
 
   Future<bool> _startForegroundTask() async {
+    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+    // onNotificationPressed function to be called.
+    //
+    // When the notification is pressed while permission is denied,
+    // the onNotificationPressed function is not called and the app opens.
+    //
+    // If you do not use the onNotificationPressed or launchApp function,
+    // you do not need to write this code.
+    if (!await FlutterForegroundTask.canDrawOverlays) {
+      final isGranted =
+          await FlutterForegroundTask.openSystemAlertWindowSettings();
+      if (!isGranted) {
+        print('SYSTEM_ALERT_WINDOW permission denied!');
+        return false;
+      }
+    }
+
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
@@ -709,6 +730,26 @@ Request to ignore battery optimization. This function requires `android.permissi
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 Future<bool> function() => FlutterForegroundTask.requestIgnoreBatteryOptimization();
+```
+
+### :lollipop: canDrawOverlays (Android)
+
+Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+Future<bool> function() => FlutterForegroundTask.canDrawOverlays;
+```
+
+### :lollipop: openSystemAlertWindowSettings (Android)
+
+Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
+
+```dart
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+Future<bool> function() => FlutterForegroundTask.openSystemAlertWindowSettings();
 ```
 
 ## Support
