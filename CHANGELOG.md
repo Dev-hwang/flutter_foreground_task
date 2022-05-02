@@ -1,3 +1,10 @@
+## 3.7.1
+
+* Add SYSTEM_ALERT_WINDOW permission request function.
+* Provide a way to use notification press handler on Android 10+.
+  - https://developer.android.com/guide/components/activities/background-starts
+  - You can use the SYSTEM_ALERT_WINDOW permission to work around the above Restrictions.
+
 ## 3.7.0
 
 * Add notification press handler for Android platform.
