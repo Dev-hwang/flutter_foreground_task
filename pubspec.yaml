@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
 
   shared_preferences: ^2.0.13
+  shared_preferences_android: ^2.0.11
+  shared_preferences_ios: ^2.1.0
 
 dev_dependencies:
   flutter_test:

@@ -12,6 +12,8 @@ import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/android_notification_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_android/shared_preferences_android.dart';
+import 'package:shared_preferences_ios/shared_preferences_ios.dart';
 
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
@@ -339,6 +341,13 @@ class FlutterForegroundTask {
 
     // Binding the framework to the flutter engine.
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Initializing the Platform-specific SharedPreferences plugin.
+    if (Platform.isAndroid) {
+      SharedPreferencesAndroid.registerWith();
+    } else if (Platform.isIOS) {
+      SharedPreferencesIOS.registerWith();
+    }
 
     // Set the method call handler for the background channel.
     _backgroundChannel.setMethodCallHandler((call) async {
