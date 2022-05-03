@@ -13,7 +13,6 @@ import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
 import com.pravera.flutter_foreground_task.models.NotificationOptions
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
-import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as PrefsKey
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -25,27 +24,26 @@ import kotlinx.coroutines.*
 import java.util.*
 import kotlin.system.exitProcess
 
+private val TAG = ForegroundService::class.java.simpleName
+private const val ACTION_TASK_START = "start"
+private const val ACTION_TASK_EVENT = "event"
+private const val ACTION_TASK_DESTROY = "destroy"
+private const val ACTION_BUTTON_PRESSED = "onButtonPressed"
+private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
+private const val DATA_FIELD_NAME = "data"
+
 /**
- * Service class for implementing foreground service.
+ * A service class for implementing foreground service.
  *
  * @author Dev-hwang
  * @version 1.0
  */
 class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	companion object {
-		private const val TAG = "ForegroundService"
-
-		private const val BUTTON_PRESSED_ACTION = "onButtonPressed"
-		private const val NOTIFICATION_PRESSED_ACTION = "onNotificationPressed"
-		private const val ACTION_DATA_NAME = "data"
-
 		/** Returns whether the foreground service is running. */
 		var isRunningService = false 
 			private set
 	}
-
-	private lateinit var sPrefs: SharedPreferences
-	private lateinit var oPrefs: SharedPreferences
 
 	private lateinit var foregroundServiceStatus: ForegroundServiceStatus
 	private lateinit var foregroundTaskOptions: ForegroundTaskOptions
@@ -65,34 +63,27 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		override fun onReceive(context: Context?, intent: Intent?) {
 			try {
 				val action = intent?.action ?: return
-				val data = intent.getStringExtra(ACTION_DATA_NAME)
+				val data = intent.getStringExtra(DATA_FIELD_NAME)
 				backgroundChannel?.invokeMethod(action, data)
 			} catch (e: Exception) {
-				Log.e(TAG, "invokeMethod", e)
+				Log.e(TAG, "onReceive", e)
 			}
 		}
 	}
 
 	override fun onCreate() {
 		super.onCreate()
-		initSharedPreferences()
 		fetchDataFromPreferences()
 		registerBroadcastReceiver()
 
 		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.START -> {
 				startForegroundService()
-				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE)) {
-					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE, 0L)
-					executeDartCallback(callback)
-				}
+				executeDartCallback(foregroundTaskOptions.callbackHandle)
 			}
 			ForegroundServiceAction.REBOOT -> {
 				startForegroundService()
-				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE_ON_BOOT)) {
-					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
-					executeDartCallback(callback)
-				}
+				executeDartCallback(foregroundTaskOptions.callbackHandleOnBoot)
 			}
 		}
 	}
@@ -104,19 +95,13 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
-				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE)) {
-					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE, 0L)
-					executeDartCallback(callback)
-				}
+				executeDartCallback(foregroundTaskOptions.callbackHandle)
 
 				if (notificationOptions.isSticky) return START_STICKY
 			}
 			ForegroundServiceAction.RESTART -> {
 				startForegroundService()
-				if (oPrefs.contains(PrefsKey.CALLBACK_HANDLE_ON_BOOT)) {
-					val callback = oPrefs.getLong(PrefsKey.CALLBACK_HANDLE_ON_BOOT, 0L)
-					executeDartCallback(callback)
-				}
+				executeDartCallback(foregroundTaskOptions.callbackHandleOnBoot)
 
 				if (notificationOptions.isSticky) return START_STICKY
 			}
@@ -152,25 +137,16 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	private fun initSharedPreferences() {
-		if (!::sPrefs.isInitialized)
-			sPrefs = applicationContext.getSharedPreferences(
-				PrefsKey.SERVICE_STATUS_PREFS_NAME, Context.MODE_PRIVATE)
-
-		if (!::oPrefs.isInitialized)
-			oPrefs = applicationContext.getSharedPreferences(PrefsKey.PREFS_NAME, Context.MODE_PRIVATE)
-	}
-
 	private fun fetchDataFromPreferences() {
-		foregroundServiceStatus = ForegroundServiceStatus.getDataFromPreferences(sPrefs)
-		foregroundTaskOptions = ForegroundTaskOptions.getDataFromPreferences(oPrefs)
-		notificationOptions = NotificationOptions.getDataFromPreferences(oPrefs)
+		foregroundServiceStatus = ForegroundServiceStatus.getData(applicationContext)
+		foregroundTaskOptions = ForegroundTaskOptions.getData(applicationContext)
+		notificationOptions = NotificationOptions.getData(applicationContext)
 	}
 
 	private fun registerBroadcastReceiver() {
 		val intentFilter = IntentFilter().apply {
-			addAction(BUTTON_PRESSED_ACTION)
-			addAction(NOTIFICATION_PRESSED_ACTION)
+			addAction(ACTION_BUTTON_PRESSED)
+			addAction(ACTION_NOTIFICATION_PRESSED)
 		}
 		registerReceiver(broadcastReceiver, intentFilter)
 	}
@@ -320,10 +296,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
 	}
 
-	private fun executeDartCallback(callbackHandle: Long?) {
-		// If there is no callback handle, the code below will not be executed.
-		if (callbackHandle == null) return
-
+	private fun initBackgroundChannel() {
 		// If there is an already initialized foreground task, destroy it and perform initialization.
 		if (currFlutterEngine != null) destroyForegroundTask()
 
@@ -336,6 +309,13 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
 		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
 		backgroundChannel?.setMethodCallHandler(this)
+	}
+
+	private fun executeDartCallback(callbackHandle: Long?) {
+		// If there is no callback handle, the code below will not be executed.
+		if (callbackHandle == null) return
+
+		initBackgroundChannel()
 
 		val bundlePath = currFlutterLoader?.findAppBundlePath() ?: return
 		val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
@@ -344,16 +324,16 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private fun startForegroundTask() {
-		if (backgroundJob != null) stopForegroundTask()
+		stopForegroundTask()
 
-		backgroundChannel?.invokeMethod("start", null, object : MethodChannel.Result {
+		val callback = object : MethodChannel.Result {
 			override fun success(result: Any?) {
 				val handler = Handler(Looper.getMainLooper())
 				backgroundJob = GlobalScope.launch {
 					while (isActive) {
 						handler.post {
 							try {
-								backgroundChannel?.invokeMethod("event", null)
+								backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, null)
 							} catch (e: Exception) {
 								Log.e(TAG, "invokeMethod", e)
 							}
@@ -367,7 +347,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) { }
 
 			override fun notImplemented() { }
-		})
+		}
+		backgroundChannel?.invokeMethod(ACTION_TASK_START, null, callback)
 	}
 
 	private fun stopForegroundTask() {
@@ -377,10 +358,12 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	private fun destroyForegroundTask() {
 		stopForegroundTask()
+
 		currFlutterLoader = null
 		prevFlutterEngine = currFlutterEngine
 		currFlutterEngine = null
-		backgroundChannel?.invokeMethod("destroy", null, object : MethodChannel.Result {
+
+		val callback = object : MethodChannel.Result {
 			override fun success(result: Any?) {
 				prevFlutterEngine?.destroy()
 				prevFlutterEngine = null
@@ -395,25 +378,25 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 				prevFlutterEngine?.destroy()
 				prevFlutterEngine = null
 			}
-		})
+		}
+		backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null, callback)
 		backgroundChannel?.setMethodCallHandler(null)
 		backgroundChannel = null
 	}
 
 	private fun getDrawableResourceId(resType: String, resPrefix: String, name: String): Int {
-		val resName = if (resPrefix.contains("ic"))
+		val resName = if (resPrefix.contains("ic")) {
 			String.format("ic_%s", name)
-		else
+		} else {
 			String.format("img_%s", name)
+		}
 
-		return applicationContext.resources.getIdentifier(
-				resName, resType, applicationContext.packageName)
+		return applicationContext.resources.getIdentifier(resName, resType, applicationContext.packageName)
 	}
 
 	private fun getAppIconResourceId(pm: PackageManager): Int {
 		return try {
-			val appInfo = pm.getApplicationInfo(
-					applicationContext.packageName, PackageManager.GET_META_DATA)
+			val appInfo = pm.getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA)
 			appInfo.icon
 		} catch (e: PackageManager.NameNotFoundException) {
 			Log.e(TAG, "getAppIconResourceId", e)
@@ -425,7 +408,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val canDrawOverlays = ForegroundServiceUtils.canDrawOverlays(applicationContext)
 
 		return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || canDrawOverlays) {
-			val pressedIntent = Intent(NOTIFICATION_PRESSED_ACTION)
+			val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				PendingIntent.getBroadcast(
 					this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -447,8 +430,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val actions = mutableListOf<Notification.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
-			val bIntent = Intent(BUTTON_PRESSED_ACTION).apply {
-				putExtra(ACTION_DATA_NAME, buttons[i].id)
+			val bIntent = Intent(ACTION_BUTTON_PRESSED).apply {
+				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
 			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -470,8 +453,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val actions = mutableListOf<NotificationCompat.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
-			val bIntent = Intent(BUTTON_PRESSED_ACTION).apply {
-				putExtra(ACTION_DATA_NAME, buttons[i].id)
+			val bIntent = Intent(ACTION_BUTTON_PRESSED).apply {
+				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
 			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)

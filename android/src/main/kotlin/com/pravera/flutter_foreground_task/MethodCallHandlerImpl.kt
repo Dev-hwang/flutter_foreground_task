@@ -27,32 +27,37 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 	private var methodCallResult3: MethodChannel.Result? = null
 
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-		val reqMethod = call.method
-		if (reqMethod.contains("minimizeApp") ||
-				reqMethod.contains("openIgnoreBatteryOptimizationSettings") ||
-				reqMethod.contains("requestIgnoreBatteryOptimization") ||
-				reqMethod.contains("openSystemAlertWindowSettings")) {
+		val callMethod = call.method
+		val callArguments = call.arguments
+		if (callMethod.equals("minimizeApp") ||
+			callMethod.equals("openIgnoreBatteryOptimizationSettings") ||
+			callMethod.equals("requestIgnoreBatteryOptimization") ||
+			callMethod.equals("openSystemAlertWindowSettings")) {
 			if (activity == null) {
 				ErrorHandleUtils.handleMethodCallError(result, ErrorCodes.ACTIVITY_NOT_ATTACHED)
 				return
 			}
 		}
 
-		when (reqMethod) {
+		when (callMethod) {
 			"startForegroundService" ->
-				result.success(provider.getForegroundServiceManager().start(context, call))
+				result.success(provider.getForegroundServiceManager().start(context, callArguments))
 			"restartForegroundService" ->
-				result.success(provider.getForegroundServiceManager().restart(context, call))
+				result.success(provider.getForegroundServiceManager().restart(context, callArguments))
 			"updateForegroundService" ->
-				result.success(provider.getForegroundServiceManager().update(context, call))
+				result.success(provider.getForegroundServiceManager().update(context, callArguments))
 			"stopForegroundService" ->
 				result.success(provider.getForegroundServiceManager().stop(context))
 			"isRunningService" ->
 				result.success(provider.getForegroundServiceManager().isRunningService())
 			"minimizeApp" -> ForegroundServiceUtils.minimizeApp(activity)
 			"launchApp" -> {
-				val args = call.arguments<List<String?>>()
-				ForegroundServiceUtils.launchApp(context, args.getOrNull(0))
+				if (callArguments is List<*>) {
+					val route = callArguments.getOrNull(0)
+					if (route is String?) {
+						ForegroundServiceUtils.launchApp(context, route)
+					}
+				}
 			}
 			"wakeUpScreen" -> ForegroundServiceUtils.wakeUpScreen(context)
 			"isIgnoringBatteryOptimizations" ->
@@ -84,7 +89,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 		return true
 	}
 
-	override fun initChannel(messenger: BinaryMessenger) {
+	override fun init(messenger: BinaryMessenger) {
 		channel = MethodChannel(messenger, "flutter_foreground_task/method")
 		channel.setMethodCallHandler(this)
 	}
@@ -93,8 +98,9 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 		this.activity = activity
 	}
 
-	override fun disposeChannel() {
-		if (::channel.isInitialized)
+	override fun dispose() {
+		if (::channel.isInitialized) {
 			channel.setMethodCallHandler(null)
+		}
 	}
 }

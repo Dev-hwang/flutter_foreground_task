@@ -17,12 +17,13 @@ class FlutterForegroundTaskPlugin: FlutterPlugin, ActivityAware, ServiceProvider
     foregroundServiceManager = ForegroundServiceManager()
 
     methodCallHandler = MethodCallHandlerImpl(binding.applicationContext, this)
-    methodCallHandler.initChannel(binding.binaryMessenger)
+    methodCallHandler.init(binding.binaryMessenger)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    if (::methodCallHandler.isInitialized)
-      methodCallHandler.disposeChannel()
+    if (::methodCallHandler.isInitialized) {
+      methodCallHandler.dispose()
+    }
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
