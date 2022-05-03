@@ -25,9 +25,9 @@ import java.util.*
 import kotlin.system.exitProcess
 
 private val TAG = ForegroundService::class.java.simpleName
-private const val ACTION_TASK_START = "start"
-private const val ACTION_TASK_EVENT = "event"
-private const val ACTION_TASK_DESTROY = "destroy"
+private const val ACTION_TASK_START = "onStart"
+private const val ACTION_TASK_EVENT = "onEvent"
+private const val ACTION_TASK_DESTROY = "onDestroy"
 private const val ACTION_BUTTON_PRESSED = "onButtonPressed"
 private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
 private const val DATA_FIELD_NAME = "data"

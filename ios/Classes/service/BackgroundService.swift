@@ -140,10 +140,10 @@ class BackgroundService: NSObject {
   private func startBackgroundTask() {
     if backgroundTaskTimer != nil { stopBackgroundTask() }
     
-    backgroundChannel?.invokeMethod("start", arguments: nil) { _ in
+    backgroundChannel?.invokeMethod("onStart", arguments: nil) { _ in
       let timeInterval = TimeInterval(self.taskInterval / 1000)
       self.backgroundTaskTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
-        self.backgroundChannel?.invokeMethod("event", arguments: nil)
+        self.backgroundChannel?.invokeMethod("onEvent", arguments: nil)
       }
     }
   }
@@ -160,7 +160,7 @@ class BackgroundService: NSObject {
     if backgroundChannel == nil {
       onComplete(true)
     } else {
-      backgroundChannel?.invokeMethod("destroy", arguments: nil) { _ in
+      backgroundChannel?.invokeMethod("onDestroy", arguments: nil) { _ in
         self.flutterEngine?.destroyContext()
         self.flutterEngine = nil
         self.backgroundChannel = nil

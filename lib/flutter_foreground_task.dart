@@ -346,11 +346,11 @@ class FlutterForegroundTask {
       final method = call.method;
 
       switch (method) {
-        case 'start':
+        case 'onStart':
           return await handler.onStart(timestamp, _lookupPort());
-        case 'event':
+        case 'onEvent':
           return await handler.onEvent(timestamp, _lookupPort());
-        case 'destroy':
+        case 'onDestroy':
           await handler.onDestroy(timestamp, _lookupPort());
           _removePort();
           break;
