@@ -1,3 +1,7 @@
+## 3.7.2
+
+* [[#62](https://github.com/Dev-hwang/flutter_foreground_task/issues/62)] Fix issues with SharedPreferences.
+
 ## 3.7.1
 
 * Add SYSTEM_ALERT_WINDOW permission request function.
