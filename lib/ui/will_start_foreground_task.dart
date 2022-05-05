@@ -92,12 +92,12 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   void initState() {
     super.initState();
     _initForegroundTask();
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
