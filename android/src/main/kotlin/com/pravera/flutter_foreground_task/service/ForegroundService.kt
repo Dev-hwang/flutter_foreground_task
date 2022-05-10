@@ -22,7 +22,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
 import java.util.*
-import kotlin.system.exitProcess
 
 private val TAG = ForegroundService::class.java.simpleName
 private const val ACTION_TASK_START = "onStart"
@@ -96,19 +95,18 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
 				executeDartCallback(foregroundTaskOptions.callbackHandle)
-
-				if (notificationOptions.isSticky) return START_STICKY
 			}
 			ForegroundServiceAction.RESTART -> {
 				startForegroundService()
 				executeDartCallback(foregroundTaskOptions.callbackHandleOnBoot)
-
-				if (notificationOptions.isSticky) return START_STICKY
 			}
-			ForegroundServiceAction.STOP -> stopForegroundService()
+			ForegroundServiceAction.STOP -> {
+				stopForegroundService()
+				return START_NOT_STICKY
+			}
 		}
 
-		return START_NOT_STICKY
+		return if (notificationOptions.isSticky) START_STICKY else START_NOT_STICKY
 	}
 
 	override fun onBind(intent: Intent?): IBinder? {
@@ -121,11 +119,19 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		destroyForegroundTask()
 		unregisterBroadcastReceiver()
 		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
+			Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
 			if (notificationOptions.isSticky) {
-				Log.d(TAG, "The foreground service was terminated due to an unexpected problem. Set a restart alarm.")
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+					if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)) {
+						Log.i(TAG, "Turn off battery optimization to restart service in the background.")
+						return
+					}
+				}
+
 				setRestartAlarm()
 			} else {
-				exitProcess(0)
+				// exitProcess(0)
+				return
 			}
 		}
 	}

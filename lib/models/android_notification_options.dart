@@ -54,7 +54,7 @@ class AndroidNotificationOptions {
   /// The default is `false`.
   final bool showWhen;
 
-  /// Whether or not the system will restart the service if the service is killed.
+  /// Whether the system will restart the service if the service is killed.
   /// The default is `true`.
   final bool isSticky;
 

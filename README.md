@@ -571,7 +571,7 @@ Notification options for Android platform.
 | `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
 | `playSound` | Whether to play sound when creating notifications. The default is `false`. |
 | `showWhen` | Whether to show the timestamp when the notification was created in the content view. The default is `false`. |
-| `isSticky` | Whether or not the system will restart the service if the service is killed. The default is `true`. |
+| `isSticky` | Whether the system will restart the service if the service is killed. The default is `true`. |
 | `visibility` | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
 | `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
 | `buttons` | A list of buttons to display in the notification. A maximum of 3 is allowed. |
