@@ -118,7 +118,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		releaseLockMode()
 		destroyForegroundTask()
 		unregisterBroadcastReceiver()
-		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
+		if (!isSetStopWithTaskFlag() && foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
 			Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
 			if (notificationOptions.isSticky) {
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -300,6 +300,14 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 		alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
+	}
+
+	private fun isSetStopWithTaskFlag(): Boolean {
+		val pm = applicationContext.packageManager
+		val cName = ComponentName(this, this.javaClass)
+		val flags = pm.getServiceInfo(cName, PackageManager.GET_META_DATA).flags
+
+		return flags > 0
 	}
 
 	private fun initBackgroundChannel() {
