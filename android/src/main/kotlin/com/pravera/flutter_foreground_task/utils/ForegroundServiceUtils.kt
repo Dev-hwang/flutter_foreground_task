@@ -1,6 +1,8 @@
 package com.pravera.flutter_foreground_task.utils
 
 import android.app.Activity
+import android.app.ActivityManager
+import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -16,6 +18,27 @@ import android.provider.Settings
  */
 class ForegroundServiceUtils {
 	companion object {
+		/**
+		 * Returns whether the app is in the foreground.
+		 *
+		 * @param context context
+		 */
+		fun isAppOnForeground(context: Context): Boolean {
+			val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+			val processes: MutableList<RunningAppProcessInfo> = am.runningAppProcesses
+				?: return false
+
+			val packageName = context.packageName
+			for (process in processes) {
+				if (process.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+					&& process.processName.equals(packageName)) {
+					return true
+				}
+			}
+
+			return false
+		}
+
 		/**
 		 * Minimize the app to the background.
 		 *
@@ -94,10 +117,10 @@ class ForegroundServiceUtils {
 		 * @param requestCode the intent action request code.
 		 */
 		fun requestIgnoreBatteryOptimization(activity: Activity?, requestCode: Int) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-				intent.data = Uri.parse("package:" + activity?.packageName)
-				activity?.startActivityForResult(intent, requestCode)
+				intent.data = Uri.parse("package:" + activity.packageName)
+				activity.startActivityForResult(intent, requestCode)
 			}
 		}
 
@@ -123,8 +146,8 @@ class ForegroundServiceUtils {
 		fun openSystemAlertWindowSettings(activity: Activity?, requestCode: Int) {
 			if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				if (!canDrawOverlays(activity.applicationContext)) {
-					val pkgUri = Uri.parse("package:" + activity.packageName)
-					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, pkgUri)
+					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+					intent.data = Uri.parse("package:" + activity.packageName)
 					activity.startActivityForResult(intent, requestCode)
 				}
 			}
