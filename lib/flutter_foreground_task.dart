@@ -48,9 +48,7 @@ abstract class TaskHandler {
   ///
   /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
   /// this function to be called.
-  void onNotificationPressed() {
-    FlutterForegroundTask.launchApp();
-  }
+  void onNotificationPressed() => FlutterForegroundTask.launchApp();
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -352,21 +350,24 @@ class FlutterForegroundTask {
     // Set the method call handler for the background channel.
     _backgroundChannel.setMethodCallHandler((call) async {
       final timestamp = DateTime.now();
-      final method = call.method;
+      final sendPort = _lookupPort();
 
-      switch (method) {
+      switch (call.method) {
         case 'onStart':
-          return await handler.onStart(timestamp, _lookupPort());
+          await handler.onStart(timestamp, sendPort);
+          break;
         case 'onEvent':
-          return await handler.onEvent(timestamp, _lookupPort());
+          await handler.onEvent(timestamp, sendPort);
+          break;
         case 'onDestroy':
-          await handler.onDestroy(timestamp, _lookupPort());
+          await handler.onDestroy(timestamp, sendPort);
           _removePort();
           break;
         case 'onButtonPressed':
-          return handler.onButtonPressed(call.arguments.toString());
+          handler.onButtonPressed(call.arguments.toString());
+          break;
         case 'onNotificationPressed':
-          return handler.onNotificationPressed();
+          handler.onNotificationPressed();
       }
     });
 
