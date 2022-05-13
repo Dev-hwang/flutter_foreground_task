@@ -1,6 +1,6 @@
 ## 3.7.3
 
-* Add code to prevent ForegroundServiceStartNotAllowedException.
+* [[#61](https://github.com/Dev-hwang/flutter_foreground_task/issues/61)] Add code to prevent ForegroundServiceStartNotAllowedException.
 * [[#78](https://github.com/Dev-hwang/flutter_foreground_task/issues/78)] Fix compilation errors for Flutter 3.0.0
 
 ## 3.7.2
