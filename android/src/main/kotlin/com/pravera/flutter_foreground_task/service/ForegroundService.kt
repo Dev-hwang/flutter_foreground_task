@@ -342,10 +342,9 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 		val callback = object : MethodChannel.Result {
 			override fun success(result: Any?) {
-				val handler = Handler(Looper.getMainLooper())
-				backgroundJob = GlobalScope.launch {
-					while (isActive) {
-						handler.post {
+				backgroundJob = CoroutineScope(Dispatchers.Default).launch {
+					while (true) {
+						withContext(Dispatchers.Main) {
 							try {
 								backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, null)
 							} catch (e: Exception) {
