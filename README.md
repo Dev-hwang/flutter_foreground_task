@@ -403,15 +403,13 @@ If the plugin you want to use provides a stream, use it like this:
 
 ```dart
 class FirstTaskHandler extends TaskHandler {
-  StreamSubscription<Position>? _streamSubscription;
+  StreamSubscription<Location>? _streamSubscription;
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    final positionStream = Geolocator.getPositionStream();
-    _streamSubscription = positionStream.listen((event) {
-      // Update notification content.
+    _streamSubscription = FlLocation.getLocationStream().listen((event) {
       FlutterForegroundTask.updateService(
-        notificationTitle: 'Current Position',
+        notificationTitle: 'My Location',
         notificationText: '${event.latitude}, ${event.longitude}',
       );
 
