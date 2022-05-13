@@ -13,7 +13,7 @@ class WithForegroundTask extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _WithForegroundTaskState createState() => _WithForegroundTaskState();
+  State<StatefulWidget> createState() => _WithForegroundTaskState();
 }
 
 class _WithForegroundTaskState extends State<WithForegroundTask> {

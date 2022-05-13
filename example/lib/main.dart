@@ -8,10 +8,10 @@ void main() => runApp(const ExampleApp());
 // The callback function should always be a top-level function.
 void startCallback() {
   // The setTaskHandler function must be called to handle the task in the background.
-  FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
+  FlutterForegroundTask.setTaskHandler(MyTaskHandler());
 }
 
-class FirstTaskHandler extends TaskHandler {
+class MyTaskHandler extends TaskHandler {
   SendPort? _sendPort;
   int _eventCount = 0;
 
@@ -28,9 +28,8 @@ class FirstTaskHandler extends TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
-      notificationTitle: 'FirstTaskHandler',
-      notificationText: timestamp.toString(),
-      callback: _eventCount >= 10 ? updateCallback : null,
+      notificationTitle: 'MyTaskHandler',
+      notificationText: 'eventCount: $_eventCount'
     );
 
     // Send data to the main isolate.
@@ -64,31 +63,6 @@ class FirstTaskHandler extends TaskHandler {
     FlutterForegroundTask.launchApp("/resume-route");
     _sendPort?.send('onNotificationPressed');
   }
-}
-
-// The callback function should always be a top-level function.
-void updateCallback() {
-  // The setTaskHandler function must be called to handle the task in the background.
-  FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
-}
-
-class SecondTaskHandler extends TaskHandler {
-  @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {}
-
-  @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    FlutterForegroundTask.updateService(
-      notificationTitle: 'SecondTaskHandler',
-      notificationText: timestamp.toString(),
-    );
-
-    // Send data to the main isolate.
-    sendPort?.send(timestamp);
-  }
-
-  @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {}
 }
 
 class ExampleApp extends StatelessWidget {
@@ -216,11 +190,13 @@ class _ExamplePageState extends State<ExamplePage> {
     _receivePort = null;
   }
 
+  T? _ambiguate<T>(T? value) => value;
+
   @override
   void initState() {
     super.initState();
     _initForegroundTask();
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+    _ambiguate(WidgetsBinding.instance)?.addPostFrameCallback((_) async {
       // You can get the previous ReceivePort without restarting the service.
       if (await FlutterForegroundTask.isRunningService) {
         final newReceivePort = await FlutterForegroundTask.receivePort;

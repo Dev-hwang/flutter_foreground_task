@@ -50,33 +50,34 @@ class WillStartForegroundTask extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _WillStartForegroundTaskState createState() =>
-      _WillStartForegroundTaskState();
+  State<StatefulWidget> createState() => _WillStartForegroundTaskState();
 }
 
 class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     with WidgetsBindingObserver {
-  void _initForegroundTask() {
-    FlutterForegroundTask.init(
-        androidNotificationOptions: widget.androidNotificationOptions,
-        iosNotificationOptions: widget.iosNotificationOptions,
-        foregroundTaskOptions: widget.foregroundTaskOptions,
-        printDevLog: widget.printDevLog);
+  Future<void> _initForegroundTask() async {
+    await FlutterForegroundTask.init(
+      androidNotificationOptions: widget.androidNotificationOptions,
+      iosNotificationOptions: widget.iosNotificationOptions,
+      foregroundTaskOptions: widget.foregroundTaskOptions,
+      printDevLog: widget.printDevLog,
+    );
   }
 
-  void _startForegroundTask() async {
+  Future<void> _startForegroundTask() async {
     if (await FlutterForegroundTask.isRunningService) {
       FlutterForegroundTask.restartService();
     } else {
       FlutterForegroundTask.startService(
-          notificationTitle: widget.notificationTitle,
-          notificationText: widget.notificationText,
-          callback: widget.callback);
+        notificationTitle: widget.notificationTitle,
+        notificationText: widget.notificationText,
+        callback: widget.callback,
+      );
     }
   }
 
-  void _stopForegroundTask() {
-    FlutterForegroundTask.stopService();
+  Future<void> _stopForegroundTask() async {
+    await FlutterForegroundTask.stopService();
   }
 
   Future<bool> _onWillPop() async {
@@ -88,16 +89,18 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     return true;
   }
 
+  T? _ambiguate<T>(T? value) => value;
+
   @override
   void initState() {
     super.initState();
     _initForegroundTask();
-    WidgetsBinding.instance?.addObserver(this);
+    _ambiguate(WidgetsBinding.instance)?.addObserver(this);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
+    _ambiguate(WidgetsBinding.instance)?.removeObserver(this);
     super.dispose();
   }
 
