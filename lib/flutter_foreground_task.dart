@@ -279,6 +279,15 @@ class FlutterForegroundTask {
     _methodChannel.invokeMethod('launchApp', [route]);
   }
 
+  /// Toggles lockScreen visibility
+  static void setOnLockScreenVisibility(bool isVisible) {
+    // This function only works on Android.
+    if (!Platform.isAndroid) return;
+
+    _methodChannel
+        .invokeMethod('setOnLockScreenVisibility', {"isVisible": true});
+  }
+
   /// Wake up the screen of a device that is turned off.
   static void wakeUpScreen() {
     // This function only works on Android.

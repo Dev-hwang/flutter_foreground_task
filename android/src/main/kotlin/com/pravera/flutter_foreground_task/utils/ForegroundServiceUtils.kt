@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.view.WindowManager
 
 /**
  * Utilities that can be used while the foreground service is running.
@@ -66,6 +67,23 @@ class ForegroundServiceUtils {
 			}
 		}
 
+		/**
+		 * Toggle on lockscreen visibility
+		 *
+		 * @param isVisible context
+		 * @param activity activity
+		 */
+		fun setOnLockScreenVisibility(isVisible: Boolean, activity: Activity?) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+				activity?.setShowWhenLocked(isVisible)
+			} else {
+				if (isVisible) {
+					activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+				} else {
+					activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+				}
+			}
+		}
 		/**
 		 * Wake up the screen of a device that is turned off.
 		 *
