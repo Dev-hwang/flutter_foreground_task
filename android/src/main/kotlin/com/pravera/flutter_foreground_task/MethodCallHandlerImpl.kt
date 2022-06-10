@@ -59,6 +59,12 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 					}
 				}
 			}
+			"setOnLockScreenVisibility" -> {
+				val arguments: Map<String, Any> = call.arguments as Map<String, Any>
+				val isVisible = arguments["isVisible"] as Boolean
+				ForegroundServiceUtils.setOnLockScreenVisibility(isVisible, activity)
+
+			}
 			"wakeUpScreen" -> ForegroundServiceUtils.wakeUpScreen(context)
 			"isIgnoringBatteryOptimizations" ->
 				result.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
