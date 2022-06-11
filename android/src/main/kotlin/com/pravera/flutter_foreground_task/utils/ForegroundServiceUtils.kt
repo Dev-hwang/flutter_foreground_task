@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.WindowManager
-
 /**
  * Utilities that can be used while the foreground service is running.
  *
@@ -66,7 +65,14 @@ class ForegroundServiceUtils {
 				context.startActivity(launchIntent)
 			}
 		}
-
+		/**
+		 * Get current status of the activity
+		 *
+		 * @param activity activity
+		 */
+		fun isAppOnForeground(activity: Activity?): Boolean? {
+			return activity?.hasWindowFocus()
+		}
 		/**
 		 * Toggle on lockscreen visibility
 		 *
