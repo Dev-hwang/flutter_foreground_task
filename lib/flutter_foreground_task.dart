@@ -285,7 +285,7 @@ class FlutterForegroundTask {
     if (!Platform.isAndroid) return;
 
     _methodChannel
-        .invokeMethod('setOnLockScreenVisibility', {"isVisible": true});
+        .invokeMethod('setOnLockScreenVisibility', {"isVisible": isVisible});
   }
 
   /// Get current state of the activity
