@@ -72,7 +72,7 @@ class ForegroundServiceUtils {
 		 * @param isVisible context
 		 * @param activity activity
 		 */
-		fun setOnLockScreenVisibility(isVisible: Boolean, activity: Activity?) {
+		fun setOnLockScreenVisibility(activity: Activity?, isVisible: Boolean) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
 				activity?.setShowWhenLocked(isVisible)
 			} else {
@@ -83,6 +83,7 @@ class ForegroundServiceUtils {
 				}
 			}
 		}
+
 		/**
 		 * Wake up the screen of a device that is turned off.
 		 *
