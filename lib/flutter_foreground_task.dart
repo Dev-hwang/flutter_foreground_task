@@ -266,8 +266,8 @@ class FlutterForegroundTask {
         .invokeMethod('setOnLockScreenVisibility', {"isVisible": isVisible});
   }
 
-  /// Get current state of the activity
-  static Future<bool?> isAppOnForeground() async {
+  /// Returns whether the app is in the foreground.
+  static Future<bool> get isAppOnForeground async {
     // This function only works on Android.
     if (!Platform.isAndroid) return true;
 

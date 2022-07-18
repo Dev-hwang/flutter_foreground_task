@@ -65,14 +65,7 @@ class ForegroundServiceUtils {
 				context.startActivity(launchIntent)
 			}
 		}
-		/**
-		 * Get current status of the activity
-		 *
-		 * @param activity activity
-		 */
-		fun isAppOnForeground(activity: Activity?): Boolean? {
-			return activity?.hasWindowFocus()
-		}
+
 		/**
 		 * Toggle on lockscreen visibility
 		 *
