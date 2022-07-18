@@ -303,17 +303,22 @@ class _ExamplePageState extends State<ExamplePage> {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
-    ReceivePort? receivePort;
+    bool reqResult;
     if (await FlutterForegroundTask.isRunningService) {
-      receivePort = await FlutterForegroundTask.restartService();
+      reqResult = await FlutterForegroundTask.restartService();
     } else {
-      receivePort = await FlutterForegroundTask.startService(
+      reqResult = await FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         callback: startCallback,
       );
     }
 
+    ReceivePort? receivePort;
+    if (reqResult) {
+      receivePort = await FlutterForegroundTask.receivePort;
+    }
+ 
     return _registerReceivePort(receivePort);
   }
 

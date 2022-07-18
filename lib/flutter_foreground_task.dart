@@ -79,25 +79,19 @@ class FlutterForegroundTask {
   }
 
   /// Start the foreground service with notification.
-  static Future<ReceivePort?> startService({
+  static Future<bool> startService({
     required String notificationTitle,
     required String notificationText,
     Function? callback,
   }) async {
-    if (await isRunningService) {
-      throw const ForegroundTaskException(
-          'Already started. Please call this function after calling the stop function.');
-    }
-
     if (_foregroundTaskOptions == null) {
       throw const ForegroundTaskException(
           'Not initialized. Please call this function after calling the init function.');
     }
 
-    final receivePort = _registerPort();
-    if (receivePort == null) {
+    if (await isRunningService) {
       throw const ForegroundTaskException(
-          'Failed to register SendPort to communicate with background isolate.');
+          'Already started. Please call this function after calling the stop function.');
     }
 
     final options = Platform.isAndroid
@@ -111,39 +105,27 @@ class FlutterForegroundTask {
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    final bool result =
-        await _methodChannel.invokeMethod('startForegroundService', options);
-    if (result) {
+    if (await _methodChannel.invokeMethod('startForegroundService', options)) {
       _printMessage('FlutterForegroundTask has been requested to start.');
-      return receivePort;
+      return true;
     }
 
-    return null;
+    return false;
   }
 
   /// Restart the foreground service.
   ///
   /// The option value uses the option value of the currently running service as it is.
-  static Future<ReceivePort?> restartService() async {
-    if (!await isRunningService) {
-      throw const ForegroundTaskException(
-          'There are no service started or running.');
-    }
+  static Future<bool> restartService() async {
+    // If the service is not running, the restart function is not executed.
+    if (!await isRunningService) return false;
 
-    final receivePort = _registerPort();
-    if (receivePort == null) {
-      throw const ForegroundTaskException(
-          'Failed to register SendPort to communicate with background isolate.');
-    }
-
-    final bool result =
-        await _methodChannel.invokeMethod('restartForegroundService');
-    if (result) {
+    if (await _methodChannel.invokeMethod('restartForegroundService')) {
       _printMessage('FlutterForegroundTask has been requested to restart.');
-      return receivePort;
+      return true;
     }
 
-    return null;
+    return false;
   }
 
   /// Update the foreground service.
@@ -163,9 +145,7 @@ class FlutterForegroundTask {
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    final bool result =
-        await _methodChannel.invokeMethod('updateForegroundService', options);
-    if (result) {
+    if (await _methodChannel.invokeMethod('updateForegroundService', options)) {
       _printMessage('FlutterForegroundTask has been requested to update.');
       return true;
     }
@@ -178,9 +158,7 @@ class FlutterForegroundTask {
     // If the service is not running, the stop function is not executed.
     if (!await isRunningService) return false;
 
-    final bool result =
-        await _methodChannel.invokeMethod('stopForegroundService');
-    if (result) {
+    if (await _methodChannel.invokeMethod('stopForegroundService')) {
       _printMessage('FlutterForegroundTask has been requested to stop.');
       return true;
     }
