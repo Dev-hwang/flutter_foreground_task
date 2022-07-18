@@ -1,3 +1,17 @@
+## 3.8.0
+
+* Upgrade Coroutine library.
+* Upgrade shared_preferences plugin.
+* Separate the SendPort registration code from the foreground service related functions.
+  - Register a SendPort object only when the user needs a ReceivePort.
+  - Please see [this page](https://github.com/Dev-hwang/flutter_foreground_task/blob/1cfc23160eb352fbfa74f7dfbe34ff714a83fffc/example/lib/main.dart#L147) for a modified example.
+* [**FEAT**] Add `isAppOnForeground` function.
+  - Returns whether the app is in the foreground.
+  - This can be used when you want to perform some function when the app is in the foreground.
+* [**FEAT**] Add `setOnLockScreenVisibility` function. Thanks @Techno-Disaster
+  - Toggles lockScreen visibility.
+  - If set to true, launchApp can be run from the lockscreen.
+
 ## 3.7.3
 
 * [[#61](https://github.com/Dev-hwang/flutter_foreground_task/issues/61)] Add code to prevent ForegroundServiceStartNotAllowedException.
