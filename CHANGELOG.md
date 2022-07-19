@@ -1,3 +1,7 @@
+## 3.8.1
+
+* Fixed an issue where sendPort returned null when restartService called.
+
 ## 3.8.0
 
 * Upgrade Coroutine library.
