@@ -356,7 +356,7 @@ class FlutterForegroundTask {
           break;
         case 'onDestroy':
           await handler.onDestroy(timestamp, sendPort);
-          _removePort();
+          // _removePort();
           break;
         case 'onButtonPressed':
           handler.onButtonPressed(call.arguments.toString());
