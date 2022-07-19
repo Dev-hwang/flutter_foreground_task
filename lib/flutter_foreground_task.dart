@@ -268,9 +268,6 @@ class FlutterForegroundTask {
 
   /// Returns whether the app is in the foreground.
   static Future<bool> get isAppOnForeground async {
-    // This function only works on Android.
-    if (!Platform.isAndroid) return true;
-
     return await _methodChannel.invokeMethod('isAppOnForeground');
   }
 
