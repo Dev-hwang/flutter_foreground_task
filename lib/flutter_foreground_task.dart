@@ -49,7 +49,6 @@ abstract class TaskHandler {
   /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
   /// this function to be called.
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
-  void openApp() => FlutterForegroundTask.launchApp();
 }
 
 /// A class that implements foreground task and provides useful utilities.
