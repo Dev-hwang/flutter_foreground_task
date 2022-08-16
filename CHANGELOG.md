@@ -1,3 +1,7 @@
+## 3.8.2
+
+* Fixed a Bug with Shared Preferences won't provide updated data from main isolate while running on background. Thanks @h2210316651
+
 ## 3.8.1
 
 * Fixed an issue where sendPort returned null when restartService called.
