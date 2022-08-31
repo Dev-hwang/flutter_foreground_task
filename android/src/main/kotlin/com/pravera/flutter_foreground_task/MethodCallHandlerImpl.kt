@@ -52,11 +52,8 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 				result.success(provider.getForegroundServiceManager().isRunningService())
 			"minimizeApp" -> ForegroundServiceUtils.minimizeApp(activity)
 			"launchApp" -> {
-				if (callArguments is List<*>) {
-					val route = callArguments.getOrNull(0)
-					if (route is String?) {
-						ForegroundServiceUtils.launchApp(context, route)
-					}
+				if (callArguments is String?) {
+					ForegroundServiceUtils.launchApp(context, callArguments)
 				}
 			}
 			"isAppOnForeground" -> result.success(ForegroundServiceUtils.isAppOnForeground(context))

@@ -257,7 +257,7 @@ class FlutterForegroundTask {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
 
-    _methodChannel.invokeMethod('launchApp', [route]);
+    _methodChannel.invokeMethod('launchApp', route);
   }
 
   /// Toggles lockScreen visibility
