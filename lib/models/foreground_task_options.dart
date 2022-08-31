@@ -4,6 +4,7 @@ class ForegroundTaskOptions {
   const ForegroundTaskOptions({
     this.interval = 5000,
     this.autoRunOnBoot = false,
+    this.allowWakeLock = true,
     this.allowWifiLock = false,
   });
 
@@ -14,6 +15,10 @@ class ForegroundTaskOptions {
   /// Whether to automatically run foreground task on boot.
   /// The default is `false`.
   final bool autoRunOnBoot;
+
+  /// Whether to keep the CPU turned on.
+  /// The default is `true`.
+  final bool allowWakeLock;
 
   /// Allows an application to keep the Wi-Fi radio awake.
   /// The default is `false`.
@@ -26,6 +31,7 @@ class ForegroundTaskOptions {
     return {
       'interval': interval,
       'autoRunOnBoot': autoRunOnBoot,
+      'allowWakeLock': allowWakeLock,
       'allowWifiLock': allowWifiLock,
     };
   }

@@ -6,6 +6,7 @@ import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as 
 data class ForegroundTaskOptions(
     val interval: Long,
     val autoRunOnBoot: Boolean,
+    val allowWakeLock: Boolean,
     val allowWifiLock: Boolean,
     val callbackHandle: Long?,
     val callbackHandleOnBoot: Long?
@@ -17,6 +18,7 @@ data class ForegroundTaskOptions(
 
             val interval = prefs.getLong(PrefsKey.TASK_INTERVAL, 5000L)
             val autoRunOnBoot = prefs.getBoolean(PrefsKey.AUTO_RUN_ON_BOOT, false)
+            val allowWakeLock = prefs.getBoolean(PrefsKey.ALLOW_WAKE_LOCK, true)
             val allowWifiLock = prefs.getBoolean(PrefsKey.ALLOW_WIFI_LOCK, false)
             val callbackHandle = if (prefs.contains(PrefsKey.CALLBACK_HANDLE)) {
                 prefs.getLong(PrefsKey.CALLBACK_HANDLE, 0L)
@@ -32,6 +34,7 @@ data class ForegroundTaskOptions(
             return ForegroundTaskOptions(
                 interval = interval,
                 autoRunOnBoot = autoRunOnBoot,
+                allowWakeLock = allowWakeLock,
                 allowWifiLock = allowWifiLock,
                 callbackHandle = callbackHandle,
                 callbackHandleOnBoot = callbackHandleOnBoot
@@ -44,12 +47,14 @@ data class ForegroundTaskOptions(
 
             val interval = "${map?.get(PrefsKey.TASK_INTERVAL)}".toLongOrNull() ?: 5000L
             val autoRunOnBoot = map?.get(PrefsKey.AUTO_RUN_ON_BOOT) as? Boolean ?: false
+            val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean ?: true
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean ?: false
             val callbackHandle = "${map?.get(PrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
 
             with (prefs.edit()) {
                 putLong(PrefsKey.TASK_INTERVAL, interval)
                 putBoolean(PrefsKey.AUTO_RUN_ON_BOOT, autoRunOnBoot)
+                putBoolean(PrefsKey.ALLOW_WAKE_LOCK, allowWakeLock)
                 putBoolean(PrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
                 remove(PrefsKey.CALLBACK_HANDLE)
                 remove(PrefsKey.CALLBACK_HANDLE_ON_BOOT)

@@ -252,7 +252,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 
 	@SuppressLint("WakelockTimeout")
 	private fun acquireLockMode() {
-		if (wakeLock == null || wakeLock?.isHeld == false) {
+		if (foregroundTaskOptions.allowWakeLock && (wakeLock == null || wakeLock?.isHeld == false)) {
 			wakeLock = (applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
 				newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ForegroundService:WakeLock").apply {
 					setReferenceCounted(false)
