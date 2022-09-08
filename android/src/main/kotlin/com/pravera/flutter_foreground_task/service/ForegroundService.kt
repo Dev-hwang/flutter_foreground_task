@@ -125,18 +125,11 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
             Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
             if (notificationOptions.isSticky) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(
-                            applicationContext
-                        )
-                    ) {
-                        Log.i(
-                            TAG,
-                            "Turn off battery optimization to restart service in the background."
-                        )
+                    if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)) {
+                        Log.i(TAG, "Turn off battery optimization to restart service in the background.")
                         return
                     }
                 }
-
                 setRestartAlarm()
             }
         }
