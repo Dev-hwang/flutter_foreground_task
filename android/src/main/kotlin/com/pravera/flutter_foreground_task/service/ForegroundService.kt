@@ -41,7 +41,7 @@ private const val DATA_FIELD_NAME = "data"
 class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	companion object {
 		/** Returns whether the foreground service is running. */
-		var isRunningService = false 
+		var isRunningService = false
 			private set
 	}
 
@@ -119,19 +119,21 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		releaseLockMode()
 		destroyForegroundTask()
 		unregisterBroadcastReceiver()
-        if (isSetStopWithTaskFlag()) {
-            exitProcess(0)
-        } else if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
-            Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
-            if (notificationOptions.isSticky) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)) {
-                        Log.i(TAG, "Turn off battery optimization to restart service in the background.")
-                        return
-                    }
-                }
-                setRestartAlarm()
-            }
+         if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
+			 if (isSetStopWithTaskFlag()) {
+				 exitProcess(0)
+			 } else {
+				 Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
+				 if (notificationOptions.isSticky) {
+					 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+						 if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)) {
+							 Log.i(TAG, "Turn off battery optimization to restart service in the background.")
+							 return
+						 }
+					 }
+					 setRestartAlarm()
+				 }
+			 }
         }
 	}
 
