@@ -28,9 +28,8 @@ class MyTaskHandler extends TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
-      notificationTitle: 'MyTaskHandler',
-      notificationText: 'eventCount: $_eventCount'
-    );
+        notificationTitle: 'MyTaskHandler',
+        notificationText: 'eventCount: $_eventCount');
 
     // Send data to the main isolate.
     sendPort?.send(_eventCount);
@@ -135,7 +134,7 @@ class _ExamplePageState extends State<ExamplePage> {
     // you do not need to write this code.
     if (!await FlutterForegroundTask.canDrawOverlays) {
       final isGranted =
-          await FlutterForegroundTask.openSystemAlertWindowSettings();
+          await FlutterForegroundTask.openSystemAlertWindowSettings(false);
       if (!isGranted) {
         print('SYSTEM_ALERT_WINDOW permission denied!');
         return false;

@@ -317,11 +317,15 @@ class FlutterForegroundTask {
   }
 
   /// Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
-  static Future<bool> openSystemAlertWindowSettings() async {
+  /// pass the `forceOpen` bool to open the permissions page even if granted.
+  static Future<bool> openSystemAlertWindowSettings(bool forceOpen) async {
     // This function only works on Android.
     if (!Platform.isAndroid) return true;
 
-    return await _methodChannel.invokeMethod('openSystemAlertWindowSettings');
+    return await _methodChannel.invokeMethod(
+      'openSystemAlertWindowSettings',
+      {"forceOpen": forceOpen},
+    );
   }
 
   /// Set up the task handler and start the foreground task.
