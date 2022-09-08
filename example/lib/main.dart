@@ -28,9 +28,8 @@ class MyTaskHandler extends TaskHandler {
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
-      notificationTitle: 'MyTaskHandler',
-      notificationText: 'eventCount: $_eventCount'
-    );
+        notificationTitle: 'MyTaskHandler',
+        notificationText: 'eventCount: $_eventCount');
 
     // Send data to the main isolate.
     sendPort?.send(_eventCount);
@@ -40,6 +39,7 @@ class MyTaskHandler extends TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+    sendPort?.send('destroyed');
     // You can use the clearAllData function to clear all the stored data.
     await FlutterForegroundTask.clearAllData();
   }
@@ -105,6 +105,7 @@ class _ExamplePageState extends State<ExamplePage> {
           name: 'launcher',
           backgroundColor: Colors.orange,
         ),
+        isSticky: false,
         buttons: [
           const NotificationButton(id: 'sendButton', text: 'Send'),
           const NotificationButton(id: 'testButton', text: 'Test'),
@@ -179,6 +180,8 @@ class _ExamplePageState extends State<ExamplePage> {
         } else if (message is String) {
           if (message == 'onNotificationPressed') {
             Navigator.of(context).pushNamed('/resume-route');
+          } else if (message == 'destroyed') {
+            print('GOT DESTROYED');
           }
         } else if (message is DateTime) {
           print('timestamp: ${message.toString()}');

@@ -22,6 +22,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
 import java.util.*
+import kotlin.system.exitProcess
 
 private val TAG = ForegroundService::class.java.simpleName
 private const val ACTION_TASK_START = "onStart"
@@ -118,22 +119,27 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		releaseLockMode()
 		destroyForegroundTask()
 		unregisterBroadcastReceiver()
-		if (!isSetStopWithTaskFlag() && foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
-			Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
-			if (notificationOptions.isSticky) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-					if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)) {
-						Log.i(TAG, "Turn off battery optimization to restart service in the background.")
-						return
-					}
-				}
+        if (isSetStopWithTaskFlag()) {
+            exitProcess(0)
+        } else if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
+            Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
+            if (notificationOptions.isSticky) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(
+                            applicationContext
+                        )
+                    ) {
+                        Log.i(
+                            TAG,
+                            "Turn off battery optimization to restart service in the background."
+                        )
+                        return
+                    }
+                }
 
-				setRestartAlarm()
-			} else {
-				// exitProcess(0)
-				return
-			}
-		}
+                setRestartAlarm()
+            }
+        }
 	}
 
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
