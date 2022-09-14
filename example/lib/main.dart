@@ -135,7 +135,7 @@ class _ExamplePageState extends State<ExamplePage> {
     // you do not need to write this code.
     if (!await FlutterForegroundTask.canDrawOverlays) {
       final isGranted =
-          await FlutterForegroundTask.openSystemAlertWindowSettings(false);
+          await FlutterForegroundTask.openSystemAlertWindowSettings();
       if (!isGranted) {
         print('SYSTEM_ALERT_WINDOW permission denied!');
         return false;
