@@ -161,9 +161,9 @@ class ForegroundServiceUtils {
 		 * @param activity activity
 		 * @param requestCode the intent action request code
 		 */
-		fun openSystemAlertWindowSettings(activity: Activity?, requestCode: Int, forceOpen: Boolean) {
+		fun openSystemAlertWindowSettings(activity: Activity?, requestCode: Int) {
 			if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				if (!canDrawOverlays(activity.applicationContext) || forceOpen) {
+				if (!canDrawOverlays(activity.applicationContext)) {
 					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
 					intent.data = Uri.parse("package:" + activity.packageName)
 					activity.startActivityForResult(intent, requestCode)

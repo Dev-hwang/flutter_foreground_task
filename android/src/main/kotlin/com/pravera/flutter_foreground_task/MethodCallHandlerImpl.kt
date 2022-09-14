@@ -76,9 +76,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 			"canDrawOverlays" -> result.success(ForegroundServiceUtils.canDrawOverlays(context))
 			"openSystemAlertWindowSettings" -> {
 				methodCallResult3 = result
-				val arguments = callArguments as? Map<*, *>
-				val forceOpen = arguments?.get("forceOpen") as? Boolean ?: false
-				ForegroundServiceUtils.openSystemAlertWindowSettings(activity, 248, forceOpen)
+				ForegroundServiceUtils.openSystemAlertWindowSettings(activity, 248)
 			}
 			else -> result.notImplemented()
 		}
