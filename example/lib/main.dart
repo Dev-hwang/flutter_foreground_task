@@ -29,7 +29,7 @@ class MyTaskHandler extends TaskHandler {
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'MyTaskHandler',
-      notificationText: 'eventCount: $_eventCount'
+      notificationText: 'eventCount: $_eventCount',
     );
 
     // Send data to the main isolate.

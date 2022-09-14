@@ -180,10 +180,11 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		}
 		val iconResId = if (iconResType.isNullOrEmpty()
 			|| iconResPrefix.isNullOrEmpty()
-			|| iconName.isNullOrEmpty())
+			|| iconName.isNullOrEmpty()) {
 			getAppIconResourceId(pm)
-		else
+		} else {
 			getDrawableResourceId(iconResType, iconResPrefix, iconName)
+		}
 		val pendingIntent = getPendingIntent(pm)
 
 		// Create a notification and start the foreground service.
@@ -231,8 +232,12 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 			if (iconBackgroundColor != null) {
 				builder.color = iconBackgroundColor
 			}
-			if (!notificationOptions.enableVibration) { builder.setVibrate(longArrayOf(0L)) }
-			if (!notificationOptions.playSound) { builder.setSound(null) }
+			if (!notificationOptions.enableVibration) {
+				builder.setVibrate(longArrayOf(0L))
+			}
+			if (!notificationOptions.playSound) {
+				builder.setSound(null)
+			}
 			builder.priority = notificationOptions.priority
 			for (action in buildButtonCompatActions()) {
 				builder.addAction(action)
