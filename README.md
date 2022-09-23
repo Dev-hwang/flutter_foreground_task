@@ -204,6 +204,7 @@ Widget build(BuildContext context) {
 
 ```dart
 // The callback function should always be a top-level function.
+@pragma('vm:entry-point')
 void startCallback() {
   // The setTaskHandler function must be called to handle the task in the background.
   FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
@@ -439,6 +440,7 @@ class FirstTaskHandler extends TaskHandler {
 
 ```dart
 // The callback function should always be a top-level function.
+@pragma('vm:entry-point')
 void startCallback() {
   // The setTaskHandler function must be called to handle the task in the background.
   FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
@@ -472,6 +474,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 }
 
+@pragma('vm:entry-point')
 void updateCallback() {
   FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
 }

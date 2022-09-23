@@ -6,6 +6,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 void main() => runApp(const ExampleApp());
 
 // The callback function should always be a top-level function.
+@pragma('vm:entry-point')
 void startCallback() {
   // The setTaskHandler function must be called to handle the task in the background.
   FlutterForegroundTask.setTaskHandler(MyTaskHandler());
