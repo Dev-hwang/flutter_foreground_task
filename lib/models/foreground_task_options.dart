@@ -3,6 +3,7 @@ class ForegroundTaskOptions {
   /// Constructs an instance of [ForegroundTaskOptions].
   const ForegroundTaskOptions({
     this.interval = 5000,
+    this.isOnceEvent = false,
     this.autoRunOnBoot = false,
     this.allowWakeLock = true,
     this.allowWifiLock = false,
@@ -11,6 +12,10 @@ class ForegroundTaskOptions {
   /// The task call interval in milliseconds.
   /// The default is `5000`.
   final int interval;
+
+  /// Whether to invoke the onEvent of [TaskHandler] only once.
+  /// The default is `false`.
+  final bool isOnceEvent;
 
   /// Whether to automatically run foreground task on boot.
   /// The default is `false`.
@@ -30,6 +35,7 @@ class ForegroundTaskOptions {
   Map<String, dynamic> toJson() {
     return {
       'interval': interval,
+      'isOnceEvent': isOnceEvent,
       'autoRunOnBoot': autoRunOnBoot,
       'allowWakeLock': allowWakeLock,
       'allowWifiLock': allowWifiLock,

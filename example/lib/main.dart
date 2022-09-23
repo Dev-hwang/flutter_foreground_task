@@ -117,6 +117,7 @@ class _ExamplePageState extends State<ExamplePage> {
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
+        isOnceEvent: false,
         autoRunOnBoot: true,
         allowWakeLock: true,
         allowWifiLock: true,

@@ -27,6 +27,7 @@ class BackgroundService: NSObject {
   private var showNotification: Bool = true
   private var playSound: Bool = false
   private var taskInterval: Int = 5000
+  private var isOnceEvent: Bool = false
   
   private var flutterEngine: FlutterEngine? = nil
   private var backgroundChannel: FlutterMethodChannel? = nil
@@ -46,6 +47,7 @@ class BackgroundService: NSObject {
     showNotification = prefs.bool(forKey: SHOW_NOTIFICATION)
     playSound = prefs.bool(forKey: PLAY_SOUND)
     taskInterval = prefs.integer(forKey: TASK_INTERVAL)
+    isOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
     
     switch action {
       case .START:
@@ -141,6 +143,11 @@ class BackgroundService: NSObject {
     if backgroundTaskTimer != nil { stopBackgroundTask() }
     
     backgroundChannel?.invokeMethod("onStart", arguments: nil) { _ in
+      if self.isOnceEvent {
+        self.backgroundChannel?.invokeMethod("onEvent", arguments: nil)
+        return
+      }
+      
       let timeInterval = TimeInterval(self.taskInterval / 1000)
       self.backgroundTaskTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
         self.backgroundChannel?.invokeMethod("onEvent", arguments: nil)

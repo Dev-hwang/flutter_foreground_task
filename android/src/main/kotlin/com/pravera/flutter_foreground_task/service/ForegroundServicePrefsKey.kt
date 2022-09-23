@@ -28,6 +28,7 @@ object ForegroundServicePrefsKey {
     const val ICON_DATA = "iconData"
     const val BUTTONS = "buttons"
     const val TASK_INTERVAL = "interval"
+    const val IS_ONCE_EVENT = "isOnceEvent"
     const val AUTO_RUN_ON_BOOT = "autoRunOnBoot"
     const val ALLOW_WAKE_LOCK = "allowWakeLock"
     const val ALLOW_WIFI_LOCK = "allowWifiLock"

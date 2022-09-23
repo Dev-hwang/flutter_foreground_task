@@ -73,6 +73,7 @@ class BackgroundServiceManager: NSObject {
     let showNotification = argsDict[SHOW_NOTIFICATION] as? Bool ?? true
     let playSound = argsDict[PLAY_SOUND] as? Bool ?? false
     let taskInterval = argsDict[TASK_INTERVAL] as? Int ?? 5000
+    let isOnceEvent = argsDict[IS_ONCE_EVENT] as? Bool ?? false
     let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
     
     prefs.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
@@ -80,6 +81,7 @@ class BackgroundServiceManager: NSObject {
     prefs.set(showNotification, forKey: SHOW_NOTIFICATION)
     prefs.set(playSound, forKey: PLAY_SOUND)
     prefs.set(taskInterval, forKey: TASK_INTERVAL)
+    prefs.set(isOnceEvent, forKey: IS_ONCE_EVENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
     prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
     if callbackHandle != nil {
@@ -116,6 +118,7 @@ class BackgroundServiceManager: NSObject {
     prefs.removeObject(forKey: SHOW_NOTIFICATION)
     prefs.removeObject(forKey: PLAY_SOUND)
     prefs.removeObject(forKey: TASK_INTERVAL)
+    prefs.removeObject(forKey: IS_ONCE_EVENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
     prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
   }

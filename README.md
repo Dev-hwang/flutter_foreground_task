@@ -164,7 +164,9 @@ Future<void> _initForegroundTask() async {
     ),
     foregroundTaskOptions: const ForegroundTaskOptions(
       interval: 5000,
+      isOnceEvent: false,
       autoRunOnBoot: true,
+      allowWakeLock: true,
       allowWifiLock: true,
     ),
     printDevLog: true,
@@ -635,7 +637,9 @@ Data class with foreground task options.
 | Property | Description |
 |---|---|
 | `interval` | The task call interval in milliseconds. The default is `5000`. |
+| `isOnceEvent` | Whether to invoke the onEvent of `TaskHandler` only once. The default is `false`. |
 | `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`. |
+| `allowWakeLock` | Whether to keep the CPU turned on. The default is `true`. |
 | `allowWifiLock` | Allows an application to keep the Wi-Fi radio awake. The default is `false`. |
 
 ### :chicken: NotificationChannelImportance

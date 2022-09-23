@@ -349,7 +349,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		val callback = object : MethodChannel.Result {
 			override fun success(result: Any?) {
 				backgroundJob = CoroutineScope(Dispatchers.Default).launch {
-					while (true) {
+					do {
 						withContext(Dispatchers.Main) {
 							try {
 								backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, null)
@@ -359,7 +359,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 						}
 
 						delay(foregroundTaskOptions.interval)
-					}
+					} while (!foregroundTaskOptions.isOnceEvent)
 				}
 			}
 
