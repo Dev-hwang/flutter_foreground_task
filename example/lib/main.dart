@@ -91,8 +91,8 @@ class ExamplePage extends StatefulWidget {
 class _ExamplePageState extends State<ExamplePage> {
   ReceivePort? _receivePort;
 
-  Future<void> _initForegroundTask() async {
-    await FlutterForegroundTask.init(
+  void _initForegroundTask() {
+    FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
@@ -122,7 +122,6 @@ class _ExamplePageState extends State<ExamplePage> {
         allowWakeLock: true,
         allowWifiLock: true,
       ),
-      printDevLog: true,
     );
   }
 
