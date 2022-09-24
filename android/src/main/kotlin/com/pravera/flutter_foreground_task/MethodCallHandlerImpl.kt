@@ -40,13 +40,13 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 		}
 
 		when (callMethod) {
-			"startForegroundService" ->
+			"startService" ->
 				result.success(provider.getForegroundServiceManager().start(context, callArguments))
-			"restartForegroundService" ->
+			"restartService" ->
 				result.success(provider.getForegroundServiceManager().restart(context, callArguments))
-			"updateForegroundService" ->
+			"updateService" ->
 				result.success(provider.getForegroundServiceManager().update(context, callArguments))
-			"stopForegroundService" ->
+			"stopService" ->
 				result.success(provider.getForegroundServiceManager().stop(context))
 			"isRunningService" ->
 				result.success(provider.getForegroundServiceManager().isRunningService())
@@ -95,7 +95,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 	}
 
 	override fun init(messenger: BinaryMessenger) {
-		channel = MethodChannel(messenger, "flutter_foreground_task/method")
+		channel = MethodChannel(messenger, "flutter_foreground_task/methods")
 		channel.setMethodCallHandler(this)
 	}
 

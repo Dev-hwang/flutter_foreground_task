@@ -137,11 +137,10 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 * `androidNotificationOptions`: Options for setting up notifications on the Android platform.
 * `iosNotificationOptions`: Options for setting up notifications on the iOS platform.
 * `foregroundTaskOptions`: Options for setting the foreground task.
-* `printDevLog`: Whether to show the developer log. If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin. It does not work in release mode. The default is `false`.
 
 ```dart
-Future<void> _initForegroundTask() async {
-  await FlutterForegroundTask.init(
+void _initForegroundTask() {
+  FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
       channelId: 'notification_channel_id',
       channelName: 'Foreground Notification',
@@ -169,7 +168,6 @@ Future<void> _initForegroundTask() async {
       allowWakeLock: true,
       allowWifiLock: true,
     ),
-    printDevLog: true,
   );
 }
 
@@ -547,7 +545,6 @@ Widget build(BuildContext context) {
         autoRunOnBoot: false,
         allowWifiLock: false,
       ),
-      printDevLog: true,
       notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,

@@ -23,19 +23,19 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   }
   
   private func initChannels(_ messenger: FlutterBinaryMessenger) {
-    foregroundChannel = FlutterMethodChannel(name: "flutter_foreground_task/method", binaryMessenger: messenger)
+    foregroundChannel = FlutterMethodChannel(name: "flutter_foreground_task/methods", binaryMessenger: messenger)
     foregroundChannel?.setMethodCallHandler(onMethodCall)
   }
   
   private func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-      case "startForegroundService":
+      case "startService":
         result(backgroundServiceManager?.start(call: call) ?? false)
-      case "restartForegroundService":
+      case "restartService":
         result(backgroundServiceManager?.restart(call: call) ?? false)
-      case "updateForegroundService":
+      case "updateService":
         result(backgroundServiceManager?.update(call: call) ?? false)
-      case "stopForegroundService":
+      case "stopService":
         result(backgroundServiceManager?.stop() ?? false)
       case "isRunningService":
         result(backgroundServiceManager?.isRunningService() ?? false)

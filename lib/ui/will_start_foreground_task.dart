@@ -12,16 +12,10 @@ class WillStartForegroundTask extends StatefulWidget {
   final AndroidNotificationOptions androidNotificationOptions;
 
   /// Options for setting up notifications on the iOS platform.
-  final IOSNotificationOptions? iosNotificationOptions;
+  final IOSNotificationOptions iosNotificationOptions;
 
   /// Options for setting the foreground task.
-  final ForegroundTaskOptions? foregroundTaskOptions;
-
-  /// Whether to show the developer log.
-  /// If this value is set to true, you can see logs of the activity (start, stop, etc) of the flutter_foreground_task plugin.
-  /// It does not work in release mode.
-  /// The default is `false`.
-  final bool? printDevLog;
+  final ForegroundTaskOptions foregroundTaskOptions;
 
   /// The title that will be displayed in the notification.
   final String notificationTitle;
@@ -40,9 +34,8 @@ class WillStartForegroundTask extends StatefulWidget {
     Key? key,
     required this.onWillStart,
     required this.androidNotificationOptions,
-    this.iosNotificationOptions,
-    this.foregroundTaskOptions,
-    this.printDevLog,
+    required this.iosNotificationOptions,
+    required this.foregroundTaskOptions,
     required this.notificationTitle,
     required this.notificationText,
     this.callback,
@@ -55,12 +48,11 @@ class WillStartForegroundTask extends StatefulWidget {
 
 class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     with WidgetsBindingObserver {
-  Future<void> _initForegroundTask() async {
-    await FlutterForegroundTask.init(
+  void _initForegroundTask() {
+    FlutterForegroundTask.init(
       androidNotificationOptions: widget.androidNotificationOptions,
       iosNotificationOptions: widget.iosNotificationOptions,
       foregroundTaskOptions: widget.foregroundTaskOptions,
-      printDevLog: widget.printDevLog,
     );
   }
 
