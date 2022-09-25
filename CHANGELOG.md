@@ -1,3 +1,9 @@
+## 3.10.0
+
+* [**FEAT**] Add `isOnceEvent` option to `ForegroundTaskOptions.class`.
+* [**DOCS**] Add `entry-point` pragma.
+* [**REFACTOR**] Refactor code using plugin_platform_interface.
+
 ## 3.9.0
 
 * [**FEAT**] Add `allowWakeLock` option to `ForegroundTaskOptions.class`.
