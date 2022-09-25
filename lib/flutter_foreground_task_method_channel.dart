@@ -35,7 +35,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
         options['callbackHandle'] =
             PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
       }
-      return await methodChannel.invokeMethod('startService');
+      return await methodChannel.invokeMethod('startService', options);
     }
     return false;
   }
@@ -63,7 +63,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
         options['callbackHandle'] =
             PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
       }
-      return await methodChannel.invokeMethod('updateService');
+      return await methodChannel.invokeMethod('updateService', options);
     }
     return false;
   }

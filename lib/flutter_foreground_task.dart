@@ -86,6 +86,7 @@ class FlutterForegroundTask {
       foregroundTaskOptions: _foregroundTaskOptions,
       notificationTitle: notificationTitle,
       notificationText: notificationText,
+      callback: callback,
     );
   }
 
