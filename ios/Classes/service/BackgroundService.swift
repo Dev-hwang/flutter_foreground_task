@@ -13,6 +13,10 @@ let NOTIFICATION_ID: String = "flutter_foreground_task/backgroundNotification"
 let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
 let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 
+let ACTION_TASK_START: String = "onStart"
+let ACTION_TASK_EVENT: String = "onEvent"
+let ACTION_TASK_DESTROY: String = "onDestroy"
+
 @available(iOS 10.0, *)
 class BackgroundService: NSObject {
   static let sharedInstance = BackgroundService()
@@ -72,7 +76,7 @@ class BackgroundService: NSObject {
         }
         break
       case .STOP:
-        destroyBackgroundTask() { _ in
+        destroyBackgroundChannel() { _ in
           self.isRunningService = false
           self.isGrantedNotificationAuthorization = false
           self.removeAllNotification()
@@ -119,8 +123,7 @@ class BackgroundService: NSObject {
   }
   
   private func executeDartCallback(callbackHandle: Int64) {
-    // If there is an already initialized background task, destroy it and perform initialization.
-    destroyBackgroundTask() { _ in
+    destroyBackgroundChannel() { _ in
       // The backgroundChannel cannot be registered unless the registerPlugins function is called.
       if (SwiftFlutterForegroundTaskPlugin.registerPlugins == nil) { return }
       
@@ -142,15 +145,15 @@ class BackgroundService: NSObject {
   private func startBackgroundTask() {
     if backgroundTaskTimer != nil { stopBackgroundTask() }
     
-    backgroundChannel?.invokeMethod("onStart", arguments: nil) { _ in
+    backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: nil) { _ in
       if self.isOnceEvent {
-        self.backgroundChannel?.invokeMethod("onEvent", arguments: nil)
+        self.backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, arguments: nil)
         return
       }
       
       let timeInterval = TimeInterval(self.taskInterval / 1000)
       self.backgroundTaskTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
-        self.backgroundChannel?.invokeMethod("onEvent", arguments: nil)
+        self.backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, arguments: nil)
       }
     }
   }
@@ -160,14 +163,14 @@ class BackgroundService: NSObject {
     backgroundTaskTimer = nil
   }
   
-  private func destroyBackgroundTask(onComplete: @escaping (Bool) -> Void) {
+  private func destroyBackgroundChannel(onComplete: @escaping (Bool) -> Void) {
     stopBackgroundTask()
     
     // The background task destruction is complete and a new background task can be started.
     if backgroundChannel == nil {
       onComplete(true)
     } else {
-      backgroundChannel?.invokeMethod("onDestroy", arguments: nil) { _ in
+      backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
         self.flutterEngine?.destroyContext()
         self.flutterEngine = nil
         self.backgroundChannel = nil
