@@ -27,7 +27,7 @@ export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
 const String _kPortName = 'flutter_foreground_task/isolateComPort';
-const String _kPrefsKeyPrefix = 'com.pravera.flutter_foreground_task:';
+const String _kPrefsKeyPrefix = 'com.pravera.flutter_foreground_task.prefs.';
 
 /// A class that implements a task handler.
 abstract class TaskHandler {

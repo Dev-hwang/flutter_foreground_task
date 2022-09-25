@@ -7,44 +7,44 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 /** FlutterForegroundTaskPlugin */
-class FlutterForegroundTaskPlugin: FlutterPlugin, ActivityAware, ServiceProvider {
-  private lateinit var foregroundServiceManager: ForegroundServiceManager
+class FlutterForegroundTaskPlugin : FlutterPlugin, ActivityAware, ServiceProvider {
+    private lateinit var foregroundServiceManager: ForegroundServiceManager
 
-  private var activityBinding: ActivityPluginBinding? = null
-  private lateinit var methodCallHandler: MethodCallHandlerImpl
+    private var activityBinding: ActivityPluginBinding? = null
+    private lateinit var methodCallHandler: MethodCallHandlerImpl
 
-  override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    foregroundServiceManager = ForegroundServiceManager()
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        foregroundServiceManager = ForegroundServiceManager()
 
-    methodCallHandler = MethodCallHandlerImpl(binding.applicationContext, this)
-    methodCallHandler.init(binding.binaryMessenger)
-  }
-
-  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    if (::methodCallHandler.isInitialized) {
-      methodCallHandler.dispose()
+        methodCallHandler = MethodCallHandlerImpl(binding.applicationContext, this)
+        methodCallHandler.init(binding.binaryMessenger)
     }
-  }
 
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    methodCallHandler.setActivity(binding.activity)
-    binding.addActivityResultListener(methodCallHandler)
-    activityBinding = binding
-  }
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        if (::methodCallHandler.isInitialized) {
+            methodCallHandler.dispose()
+        }
+    }
 
-  override fun onDetachedFromActivityForConfigChanges() {
-    onDetachedFromActivity()
-  }
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        methodCallHandler.setActivity(binding.activity)
+        binding.addActivityResultListener(methodCallHandler)
+        activityBinding = binding
+    }
 
-  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    onAttachedToActivity(binding)
-  }
+    override fun onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity()
+    }
 
-  override fun onDetachedFromActivity() {
-    activityBinding?.removeActivityResultListener(methodCallHandler)
-    activityBinding = null
-    methodCallHandler.setActivity(null)
-  }
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        onAttachedToActivity(binding)
+    }
 
-  override fun getForegroundServiceManager() = foregroundServiceManager
+    override fun onDetachedFromActivity() {
+        activityBinding?.removeActivityResultListener(methodCallHandler)
+        activityBinding = null
+        methodCallHandler.setActivity(null)
+    }
+
+    override fun getForegroundServiceManager() = foregroundServiceManager
 }

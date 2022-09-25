@@ -1,4 +1,4 @@
-package com.pravera.flutter_foreground_task.service
+package com.pravera.flutter_foreground_task
 
 /**
  * Key values for data stored in SharedPreferences.
@@ -6,13 +6,13 @@ package com.pravera.flutter_foreground_task.service
  * @author Dev-hwang
  * @version 1.0
  */
-object ForegroundServicePrefsKey {
+object PreferencesKey {
     private const val prefix = "com.pravera.flutter_foreground_task.prefs."
 
-    const val SERVICE_STATUS_PREFS_NAME = prefix + "SERVICE_STATUS"
-    const val SERVICE_ACTION = "serviceAction"
+    const val FOREGROUND_SERVICE_STATUS_PREFS_NAME = prefix + "FOREGROUND_SERVICE_STATUS"
+    const val FOREGROUND_SERVICE_ACTION = "foregroundServiceAction"
 
-    const val SERVICE_OPTIONS_PREFS_NAME = prefix + "SERVICE_OPTIONS"
+    const val NOTIFICATION_OPTIONS_PREFS_NAME = prefix + "NOTIFICATION_OPTIONS"
     const val NOTIFICATION_CHANNEL_ID = "notificationChannelId"
     const val NOTIFICATION_CHANNEL_NAME = "notificationChannelName"
     const val NOTIFICATION_CHANNEL_DESC = "notificationChannelDescription"
@@ -27,6 +27,8 @@ object ForegroundServicePrefsKey {
     const val VISIBILITY = "visibility"
     const val ICON_DATA = "iconData"
     const val BUTTONS = "buttons"
+
+    const val FOREGROUND_TASK_OPTIONS_PREFS_NAME = prefix + "FOREGROUND_TASK_OPTIONS"
     const val TASK_INTERVAL = "interval"
     const val IS_ONCE_EVENT = "isOnceEvent"
     const val AUTO_RUN_ON_BOOT = "autoRunOnBoot"

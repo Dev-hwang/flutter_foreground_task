@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
 
@@ -13,11 +14,9 @@ import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
  * @author Dev-hwang
  * @version 1.0
  */
-class BootReceiver: BroadcastReceiver() {
+class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent?.action == "android.intent.action.BOOT_COMPLETED") {
-            if (context == null) return
-
+        if (context != null && intent?.action == "android.intent.action.BOOT_COMPLETED") {
             // Check whether to start the service at boot time.
             val options = ForegroundTaskOptions.getData(context)
             if (!options.autoRunOnBoot) return

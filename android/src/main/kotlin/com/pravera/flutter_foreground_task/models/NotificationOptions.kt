@@ -3,7 +3,7 @@ package com.pravera.flutter_foreground_task.models
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
-import com.pravera.flutter_foreground_task.service.ForegroundServicePrefsKey as PrefsKey
+import com.pravera.flutter_foreground_task.PreferencesKey as PrefsKey
 
 data class NotificationOptions(
     val serviceId: Int,
@@ -25,7 +25,7 @@ data class NotificationOptions(
     companion object {
         fun getData(context: Context): NotificationOptions {
             val prefs = context.getSharedPreferences(
-                PrefsKey.SERVICE_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
             val serviceId = 1000
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: ""
@@ -89,7 +89,7 @@ data class NotificationOptions(
 
         fun putData(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.SERVICE_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
             val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String ?: ""
             val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String ?: ""
@@ -116,7 +116,7 @@ data class NotificationOptions(
                 buttonsJson = JSONArray(buttons).toString()
             }
 
-            with (prefs.edit()) {
+            with(prefs.edit()) {
                 putString(PrefsKey.NOTIFICATION_CHANNEL_ID, channelId)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_NAME, channelName)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_DESC, channelDesc)
@@ -137,7 +137,7 @@ data class NotificationOptions(
 
         fun updateContent(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.SERVICE_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
             val contentTitle = map?.get(PrefsKey.NOTIFICATION_CONTENT_TITLE) as? String
                 ?: prefs.getString(PrefsKey.NOTIFICATION_CONTENT_TITLE, null)
@@ -146,7 +146,7 @@ data class NotificationOptions(
                 ?: prefs.getString(PrefsKey.NOTIFICATION_CONTENT_TEXT, null)
                 ?: ""
 
-            with (prefs.edit()) {
+            with(prefs.edit()) {
                 putString(PrefsKey.NOTIFICATION_CONTENT_TITLE, contentTitle)
                 putString(PrefsKey.NOTIFICATION_CONTENT_TEXT, contentText)
                 commit()
@@ -155,9 +155,9 @@ data class NotificationOptions(
 
         fun clearData(context: Context) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.SERVICE_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
-            with (prefs.edit()) {
+            with(prefs.edit()) {
                 clear()
                 commit()
             }

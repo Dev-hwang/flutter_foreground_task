@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 
 /**
@@ -12,7 +13,7 @@ import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
  * @author Dev-hwang
  * @version 1.0
  */
-class RestartReceiver: BroadcastReceiver() {
+class RestartReceiver : BroadcastReceiver() {
 	override fun onReceive(context: Context?, intent: Intent?) {
 		if (context == null) return
 

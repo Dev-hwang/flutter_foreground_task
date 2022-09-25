@@ -1,4 +1,4 @@
-package com.pravera.flutter_foreground_task.service
+package com.pravera.flutter_foreground_task.models
 
 /**
  * Intent action for foreground service control.
@@ -8,6 +8,7 @@ package com.pravera.flutter_foreground_task.service
  */
 object ForegroundServiceAction {
 	private const val prefix = "com.pravera.flutter_foreground_task.action."
+
 	const val START = prefix + "start"
 	const val UPDATE = prefix + "update"
 	const val REBOOT = prefix + "reboot"

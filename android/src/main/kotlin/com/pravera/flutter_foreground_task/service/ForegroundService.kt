@@ -9,6 +9,7 @@ import android.net.wifi.WifiManager
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
 import com.pravera.flutter_foreground_task.models.NotificationOptions
@@ -24,22 +25,22 @@ import kotlinx.coroutines.*
 import java.util.*
 import kotlin.system.exitProcess
 
-private val TAG = ForegroundService::class.java.simpleName
-private const val ACTION_TASK_START = "onStart"
-private const val ACTION_TASK_EVENT = "onEvent"
-private const val ACTION_TASK_DESTROY = "onDestroy"
-private const val ACTION_BUTTON_PRESSED = "onButtonPressed"
-private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
-private const val DATA_FIELD_NAME = "data"
-
 /**
  * A service class for implementing foreground service.
  *
  * @author Dev-hwang
  * @version 1.0
  */
-class ForegroundService: Service(), MethodChannel.MethodCallHandler {
+class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	companion object {
+        private val TAG = ForegroundService::class.java.simpleName
+        private const val ACTION_TASK_START = "onStart"
+        private const val ACTION_TASK_EVENT = "onEvent"
+        private const val ACTION_TASK_DESTROY = "onDestroy"
+        private const val ACTION_BUTTON_PRESSED = "onButtonPressed"
+        private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
+        private const val DATA_FIELD_NAME = "data"
+
 		/** Returns whether the foreground service is running. */
 		var isRunningService = false
 			private set
@@ -117,7 +118,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	override fun onDestroy() {
 		super.onDestroy()
 		releaseLockMode()
-		destroyForegroundTask()
+		destroyBackgroundChannel()
 		unregisterBroadcastReceiver()
 		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
 			if (isSetStopWithTaskFlag()) {
@@ -317,8 +318,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private fun initBackgroundChannel() {
-		// If there is an already initialized foreground task, destroy it and perform initialization.
-		if (currFlutterEngine != null) destroyForegroundTask()
+		if (backgroundChannel != null) destroyBackgroundChannel()
 
 		currFlutterEngine = FlutterEngine(this)
 
@@ -375,7 +375,7 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 		backgroundJob = null
 	}
 
-	private fun destroyForegroundTask() {
+	private fun destroyBackgroundChannel() {
 		stopForegroundTask()
 
 		currFlutterLoader = null
@@ -424,9 +424,8 @@ class ForegroundService: Service(), MethodChannel.MethodCallHandler {
 	}
 
 	private fun getPendingIntent(pm: PackageManager): PendingIntent {
-		val canDrawOverlays = ForegroundServiceUtils.canDrawOverlays(applicationContext)
-
-		return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || canDrawOverlays) {
+		return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+            || ForegroundServiceUtils.canDrawOverlays(applicationContext)) {
 			val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				PendingIntent.getBroadcast(
