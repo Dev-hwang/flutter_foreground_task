@@ -20,15 +20,22 @@ enum ResourcePrefix {
   img,
 }
 
-/// Data for setting the notification icon.
-class NotificationIconData {
-  /// Constructs an instance of [NotificationIconData].
-  const NotificationIconData({
+/// Data for setting the icon.
+class IconResourceData {
+  /// Constructs an instance of [IconData].
+  const IconResourceData({
     required this.resType,
     required this.resPrefix,
     required this.name,
-    this.backgroundColor,
-  });
+  }): backgroundColor = null;
+
+  /// Constructs an instance of [NotificationIconData].
+  const IconResourceData._notificationIcon(
+      this.resType,
+      this.resPrefix,
+      this.name,
+      this.backgroundColor,
+  );
 
   /// The resource type of the notification icon.
   /// If the resource is in the drawable folder, set it to [ResourceType.drawable],
@@ -51,7 +58,7 @@ class NotificationIconData {
     String? backgroundColorRgb;
     if (backgroundColor != null) {
       backgroundColorRgb =
-          '${backgroundColor!.red},${backgroundColor!.green},${backgroundColor!.blue}';
+      '${backgroundColor!.red},${backgroundColor!.green},${backgroundColor!.blue}';
     }
 
     return {
@@ -61,4 +68,15 @@ class NotificationIconData {
       'backgroundColorRgb': backgroundColorRgb,
     };
   }
+}
+
+/// Data for setting the notification icon.
+class NotificationIconData extends IconResourceData {
+  /// Constructs an instance of [NotificationIconData].
+  const NotificationIconData({
+    required ResourceType resType,
+    required ResourcePrefix resPrefix,
+    required String name,
+    Color? backgroundColor,
+  }): super._notificationIcon(resType, resPrefix, name, backgroundColor);
 }

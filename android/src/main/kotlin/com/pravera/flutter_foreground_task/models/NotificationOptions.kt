@@ -1,6 +1,7 @@
 package com.pravera.flutter_foreground_task.models
 
 import android.content.Context
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import com.pravera.flutter_foreground_task.PreferencesKey as PrefsKey
@@ -44,13 +45,7 @@ data class NotificationOptions(
             val iconDataJson = prefs.getString(PrefsKey.ICON_DATA, null)
             var iconData: NotificationIconData? = null
             if (iconDataJson != null) {
-                val iconDataJsonObj = JSONObject(iconDataJson)
-                iconData = NotificationIconData(
-                    resType = iconDataJsonObj.getString("resType") ?: "",
-                    resPrefix = iconDataJsonObj.getString("resPrefix") ?: "",
-                    name = iconDataJsonObj.getString("name") ?: "",
-                    backgroundColorRgb = iconDataJsonObj.getString("backgroundColorRgb")
-                )
+                iconData = getIconData(JSONObject(iconDataJson))
             }
 
             val buttonsJson = prefs.getString(PrefsKey.BUTTONS, null)
@@ -62,7 +57,14 @@ data class NotificationOptions(
                     buttons.add(
                         NotificationButton(
                             id = buttonJsonObj.getString("id") ?: "",
-                            text = buttonJsonObj.getString("text") ?: ""
+                            text = buttonJsonObj.getString("text") ?: "",
+                            textColor = buttonJsonObj.getString("textColor"),
+                            iconData = buttonJsonObj.get("iconData").let {
+                                if (it is JSONObject) {
+                                    return@let getIconData(it)
+                                }
+                                null
+                            }
                         )
                     )
                 }
@@ -84,6 +86,15 @@ data class NotificationOptions(
                 visibility = visibility,
                 iconData = iconData,
                 buttons = buttons
+            )
+        }
+
+        private fun getIconData(iconDataJsonObj: JSONObject): NotificationIconData {
+            return NotificationIconData(
+                resType = iconDataJsonObj.getString("resType") ?: "",
+                resPrefix = iconDataJsonObj.getString("resPrefix") ?: "",
+                name = iconDataJsonObj.getString("name") ?: "",
+                backgroundColorRgb = iconDataJsonObj.getString("backgroundColorRgb")
             )
         }
 
