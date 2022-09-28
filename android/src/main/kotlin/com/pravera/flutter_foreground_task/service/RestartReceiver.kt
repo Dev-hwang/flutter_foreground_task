@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 
@@ -19,11 +20,6 @@ class RestartReceiver : BroadcastReceiver() {
 
 		val nIntent = Intent(context, ForegroundService::class.java)
 		ForegroundServiceStatus.putData(context, ForegroundServiceAction.RESTART)
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			context.startForegroundService(nIntent)
-		} else {
-			context.startService(nIntent)
-		}
+		ContextCompat.startForegroundService(context, nIntent)
 	}
 }

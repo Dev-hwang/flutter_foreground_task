@@ -3,6 +3,7 @@ package com.pravera.flutter_foreground_task.service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
@@ -28,12 +29,7 @@ class ForegroundServiceManager {
 			ForegroundServiceStatus.putData(context, ForegroundServiceAction.START)
 			ForegroundTaskOptions.putData(context, argsMap)
 			NotificationOptions.putData(context, argsMap)
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				context.startForegroundService(nIntent)
-			} else {
-				context.startService(nIntent)
-			}
+			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
 		}
@@ -51,12 +47,7 @@ class ForegroundServiceManager {
 		try {
 			val nIntent = Intent(context, ForegroundService::class.java)
 			ForegroundServiceStatus.putData(context, ForegroundServiceAction.RESTART)
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				context.startForegroundService(nIntent)
-			} else {
-				context.startService(nIntent)
-			}
+			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
 		}
@@ -77,12 +68,7 @@ class ForegroundServiceManager {
 			ForegroundServiceStatus.putData(context, ForegroundServiceAction.UPDATE)
 			ForegroundTaskOptions.updateCallbackHandle(context, argsMap)
 			NotificationOptions.updateContent(context, argsMap)
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				context.startForegroundService(nIntent)
-			} else {
-				context.startService(nIntent)
-			}
+			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
 		}
@@ -105,11 +91,7 @@ class ForegroundServiceManager {
 			ForegroundTaskOptions.clearData(context)
 			NotificationOptions.clearData(context)
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				context.startForegroundService(nIntent)
-			} else {
-				context.startService(nIntent)
-			}
+			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
 		}

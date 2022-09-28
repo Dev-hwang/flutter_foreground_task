@@ -12,11 +12,9 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
@@ -58,10 +56,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
-
-    private var currFlutterLoader: FlutterLoader? = null
-    private var prevFlutterEngine: FlutterEngine? = null
-    private var currFlutterEngine: FlutterEngine? = null
+    private var bundlePath: String? = null
+    private var flutterEngine: FlutterEngine? = null
     private var backgroundChannel: MethodChannel? = null
     private var backgroundJob: Job? = null
 
@@ -96,7 +92,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
         fetchDataFromPreferences()
 
         when (foregroundServiceStatus.action) {
@@ -113,7 +108,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 return START_NOT_STICKY
             }
         }
-
         return if (notificationOptions.isSticky) START_STICKY else START_NOT_STICKY
     }
 
@@ -133,9 +127,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
                 if (notificationOptions.isSticky) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(
-                                applicationContext
-                            )
+                        if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)
                         ) {
                             Log.i(
                                 TAG,
@@ -352,13 +344,16 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private fun initBackgroundChannel() {
         if (backgroundChannel != null) destroyBackgroundChannel()
 
-        currFlutterEngine = FlutterEngine(this)
+        flutterEngine = FlutterEngine(this)
 
-        currFlutterLoader = FlutterInjector.instance().flutterLoader()
-        currFlutterLoader?.startInitialization(this)
-        currFlutterLoader?.ensureInitializationComplete(this, null)
+        val flutterLoader = FlutterInjector.instance().flutterLoader()
+        if (!flutterLoader.initialized()) {
+            flutterLoader.startInitialization(applicationContext)
+            flutterLoader.ensureInitializationComplete(applicationContext, null)
+        }
+        this.bundlePath = flutterLoader.findAppBundlePath()
 
-        val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
+        val messenger = flutterEngine?.dartExecutor?.binaryMessenger ?: return
         backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
         backgroundChannel?.setMethodCallHandler(this)
     }
@@ -369,10 +364,10 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         initBackgroundChannel()
 
-        val bundlePath = currFlutterLoader?.findAppBundlePath() ?: return
+        val bundlePath = this.bundlePath ?: return
         val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
         val dartCallback = DartExecutor.DartCallback(assets, bundlePath, callbackInfo)
-        currFlutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
+        flutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
     }
 
     private fun startForegroundTask() {
@@ -409,30 +404,29 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     private fun destroyBackgroundChannel() {
         stopForegroundTask()
+        val flutterEngine = this.flutterEngine
+        val backgroundChannel = this.backgroundChannel
 
-        currFlutterLoader = null
-        prevFlutterEngine = currFlutterEngine
-        currFlutterEngine = null
+        this.bundlePath = null
+        this.flutterEngine = null
+        this.backgroundChannel = null
 
         val callback = object : MethodChannel.Result {
             override fun success(result: Any?) {
-                prevFlutterEngine?.destroy()
-                prevFlutterEngine = null
+                flutterEngine?.destroy()
             }
 
             override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                prevFlutterEngine?.destroy()
-                prevFlutterEngine = null
+                flutterEngine?.destroy()
             }
 
             override fun notImplemented() {
-                prevFlutterEngine?.destroy()
-                prevFlutterEngine = null
+                flutterEngine?.destroy()
             }
         }
+
         backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null, callback)
         backgroundChannel?.setMethodCallHandler(null)
-        backgroundChannel = null
     }
 
     private fun getDrawableResourceId(resType: String, resPrefix: String, name: String): Int {

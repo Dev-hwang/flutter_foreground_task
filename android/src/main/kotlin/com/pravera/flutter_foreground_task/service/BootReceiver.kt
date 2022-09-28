@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
@@ -24,12 +25,7 @@ class BootReceiver : BroadcastReceiver() {
             // Create an intent for calling the service and store the action to be executed.
             val nIntent = Intent(context, ForegroundService::class.java)
             ForegroundServiceStatus.putData(context, ForegroundServiceAction.REBOOT)
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(nIntent)
-            } else {
-                context.startService(nIntent)
-            }
+            ContextCompat.startForegroundService(context, nIntent)
         }
     }
 }

@@ -27,14 +27,14 @@ class IconResourceData {
     required this.resType,
     required this.resPrefix,
     required this.name,
-  }): backgroundColor = null;
+  }) : _backgroundColor = null;
 
   /// Constructs an instance of [NotificationIconData].
   const IconResourceData._notificationIcon(
-      this.resType,
-      this.resPrefix,
-      this.name,
-      this.backgroundColor,
+    this.resType,
+    this.resPrefix,
+    this.name,
+    this._backgroundColor,
   );
 
   /// The resource type of the notification icon.
@@ -51,14 +51,14 @@ class IconResourceData {
   final String name;
 
   /// Notification icon background color.
-  final Color? backgroundColor;
+  final Color? _backgroundColor;
 
   /// Returns the data fields of [NotificationIconData] in JSON format.
   Map<String, dynamic> toJson() {
     String? backgroundColorRgb;
-    if (backgroundColor != null) {
+    if (_backgroundColor != null) {
       backgroundColorRgb =
-      '${backgroundColor!.red},${backgroundColor!.green},${backgroundColor!.blue}';
+          '${_backgroundColor!.red},${_backgroundColor!.green},${_backgroundColor!.blue}';
     }
 
     return {
@@ -78,5 +78,7 @@ class NotificationIconData extends IconResourceData {
     required ResourcePrefix resPrefix,
     required String name,
     Color? backgroundColor,
-  }): super._notificationIcon(resType, resPrefix, name, backgroundColor);
+  }) : super._notificationIcon(resType, resPrefix, name, backgroundColor);
+
+  Color? get backgroundColor => _backgroundColor;
 }
