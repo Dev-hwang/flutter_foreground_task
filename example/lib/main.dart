@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/material.dart';
@@ -37,6 +38,11 @@ class MyTaskHandler extends TaskHandler {
     sendPort?.send(_eventCount);
 
     _eventCount++;
+  }
+
+  @override
+  Future<void> onClose(DateTime timestamp, SendPort? sendPort) async {
+    print('CLOSED');
   }
 
   @override
@@ -212,6 +218,8 @@ class _ExamplePageState extends State<ExamplePage> {
         } else if (message is String) {
           if (message == 'onNotificationPressed') {
             Navigator.of(context).pushNamed('/resume-route');
+          } else {
+            print("Got message: $message");
           }
         } else if (message is DateTime) {
           print('timestamp: ${message.toString()}');

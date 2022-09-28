@@ -40,6 +40,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private val TAG = ForegroundService::class.java.simpleName
         private const val ACTION_TASK_START = "onStart"
         private const val ACTION_TASK_EVENT = "onEvent"
+        private const val ACTION_TASK_CLOSE = "onClose"
         private const val ACTION_TASK_DESTROY = "onDestroy"
         private const val ACTION_BUTTON_PRESSED = "onButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
@@ -140,6 +141,11 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 }
             }
         }
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        backgroundChannel?.invokeMethod(ACTION_TASK_CLOSE, null)
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {

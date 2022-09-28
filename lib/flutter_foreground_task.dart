@@ -34,6 +34,9 @@ abstract class TaskHandler {
   /// Called when the task is started.
   Future<void> onStart(DateTime timestamp, SendPort? sendPort);
 
+  /// Called when the user swipes the app off recent apps.
+  Future<void> onClose(DateTime timestamp, SendPort? sendPort);
+
   /// Called when an event occurs.
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort);
 
@@ -274,6 +277,9 @@ class FlutterForegroundTask {
           break;
         case 'onEvent':
           await handler.onEvent(timestamp, sendPort);
+          break;
+        case 'onClose':
+          await handler.onClose(timestamp, sendPort);
           break;
         case 'onDestroy':
           await handler.onDestroy(timestamp, sendPort);
