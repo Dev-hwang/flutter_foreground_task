@@ -57,6 +57,9 @@ class FlutterForegroundTask {
   static late ForegroundTaskOptions _foregroundTaskOptions;
   static bool _initialized = false;
 
+  static AndroidNotificationOptions get androidNotificationOptions =>
+      _androidNotificationOptions;
+
   /// Initialize the [FlutterForegroundTask].
   static void init({
     required AndroidNotificationOptions androidNotificationOptions,
@@ -99,12 +102,18 @@ class FlutterForegroundTask {
     String? notificationTitle,
     String? notificationText,
     Function? callback,
-  }) =>
-      FlutterForegroundTaskPlatform.instance.updateService(
-        notificationText: notificationText,
-        notificationTitle: notificationTitle,
-        callback: callback,
-      );
+    AndroidNotificationOptions? androidNotificationOptions,
+  }) {
+    if (androidNotificationOptions != null) {
+      _androidNotificationOptions = androidNotificationOptions;
+    }
+    return FlutterForegroundTaskPlatform.instance.updateService(
+      notificationText: notificationText,
+      notificationTitle: notificationTitle,
+      callback: callback,
+      androidNotificationOptions: androidNotificationOptions,
+    );
+  }
 
   /// Stop the foreground service.
   static Future<bool> stopService() =>

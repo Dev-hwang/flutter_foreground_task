@@ -12,10 +12,12 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.graphics.drawable.IconCompat
+import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import io.flutter.FlutterInjector
@@ -177,8 +179,10 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private fun startForegroundService() {
         // Get the icon and PendingIntent to put in the notification.
         val pm = applicationContext.packageManager
-        val iconBackgroundColor = notificationOptions.iconData?.backgroundColorRgb?.let(::getColorFromRgb)
-        val iconResId = notificationOptions.iconData?.let(::getIconResId) ?: getAppIconResourceId(pm)
+        val iconBackgroundColor =
+            notificationOptions.iconData?.backgroundColorRgb?.let(::getColorFromRgb)
+        val iconResId =
+            notificationOptions.iconData?.let(::getIconResId) ?: getAppIconResourceId(pm)
         val pendingIntent = getPendingIntent(pm)
 
         // Create a notification and start the foreground service.
@@ -488,12 +492,13 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 putExtra(DATA_FIELD_NAME, buttons[i].id)
             }
             val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
+                val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.getBroadcast(this, i + 1, bIntent, flags)
             } else {
                 PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
             }
             val textColor = buttons[i].textColor?.let(::getColorFromRgb)
-			val textSpan = getActionText(buttons[i].text, textColor)
+            val textSpan = getActionText(buttons[i].text, textColor)
             val bAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val icon = buttons[i].iconData?.let {
                     getIconResId(it)?.let { resId ->
@@ -512,13 +517,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     private fun getActionText(text: String, color: Int?): Spannable {
-        val spannable: Spannable = SpannableString(text)
-        if (color != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            spannable.setSpan(
-                ForegroundColorSpan(color), 0, spannable.length, 0
-            )
+        return if (color != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                SpannableString(text).apply {
+                    setSpan(ForegroundColorSpan(color), 0, length, 0)
+                }
+            } else {
+                SpannableString(HtmlCompat.fromHtml("<font color=\"$color\">$text</font>", HtmlCompat.FROM_HTML_MODE_LEGACY));
+            }
+        } else {
+            SpannableString(text)
         }
-        return spannable
     }
 
     private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
@@ -529,7 +538,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 putExtra(DATA_FIELD_NAME, buttons[i].id)
             }
             val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
+                val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.getBroadcast(this, i + 1, bIntent, flags)
             } else {
                 PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
             }
@@ -540,7 +550,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 NotificationCompat.Action.Builder(icon, textSpan, bPendingIntent).build()
             actions.add(bAction)
         }
-
         return actions
     }
 }

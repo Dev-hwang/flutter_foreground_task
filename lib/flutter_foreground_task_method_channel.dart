@@ -53,11 +53,13 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     String? notificationTitle,
     String? notificationText,
     Function? callback,
+    AndroidNotificationOptions? androidNotificationOptions,
   }) async {
     if (await isRunningService) {
       final options = <String, dynamic>{
         'notificationContentTitle': notificationTitle,
         'notificationContentText': notificationText,
+        if (Platform.isAndroid) ...?androidNotificationOptions?.toJson(),
       };
       if (callback != null) {
         options['callbackHandle'] =

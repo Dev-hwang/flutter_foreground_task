@@ -104,11 +104,19 @@ class _ExamplePageState extends State<ExamplePage> {
           resType: ResourceType.mipmap,
           resPrefix: ResourcePrefix.ic,
           name: 'launcher',
-          backgroundColor: Colors.orange,
+          backgroundColor: Colors.green,
         ),
         buttons: [
-          const NotificationButton(id: 'sendButton', text: 'Send'),
-          const NotificationButton(id: 'testButton', text: 'Test'),
+          const NotificationButton(
+            id: 'sendButton',
+            text: 'Send',
+            textColor: Colors.green,
+          ),
+          const NotificationButton(
+            id: 'testButton',
+            text: 'Test',
+            textColor: Colors.yellow,
+          ),
         ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
@@ -123,6 +131,30 @@ class _ExamplePageState extends State<ExamplePage> {
         allowWifiLock: true,
       ),
     );
+  }
+
+  Future<void> _updateForegroundTask() async {
+    if (await FlutterForegroundTask.isRunningService) {
+      await FlutterForegroundTask.updateService(
+        notificationTitle: 'Updated Foreground Service is running',
+        notificationText: 'Update Tap to return to the app',
+        androidNotificationOptions:
+            FlutterForegroundTask.androidNotificationOptions.copyWith(
+          buttons: [
+            const NotificationButton(
+              id: 'updatedSendButton',
+              text: 'Updated Send',
+              textColor: Colors.deepPurpleAccent,
+            ),
+            const NotificationButton(
+              id: 'updatedTestButton',
+              text: 'Updated Test',
+              textColor: Colors.lightBlue,
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Future<bool> _startForegroundTask() async {
@@ -246,6 +278,7 @@ class _ExamplePageState extends State<ExamplePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           buttonBuilder('start', onPressed: _startForegroundTask),
+          buttonBuilder('update', onPressed: _updateForegroundTask),
           buttonBuilder('stop', onPressed: _stopForegroundTask),
         ],
       ),

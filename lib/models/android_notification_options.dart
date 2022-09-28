@@ -87,4 +87,34 @@ class AndroidNotificationOptions {
       'buttons': buttons?.map((e) => e.toJson()).toList(),
     };
   }
+
+  AndroidNotificationOptions copyWith({
+    String? channelId,
+    String? channelName,
+    String? channelDescription,
+    NotificationChannelImportance? channelImportance,
+    NotificationPriority? priority,
+    bool? enableVibration,
+    bool? playSound,
+    bool? showWhen,
+    bool? isSticky,
+    NotificationVisibility? visibility,
+    NotificationIconData? iconData,
+    List<NotificationButton>? buttons,
+  }) {
+    return AndroidNotificationOptions(
+      channelId: channelId ?? this.channelId,
+      channelName: channelName ?? this.channelName,
+      channelDescription: channelDescription ?? this.channelDescription,
+      channelImportance: channelImportance ?? this.channelImportance,
+      priority: priority ?? this.priority,
+      enableVibration: enableVibration ?? this.enableVibration,
+      playSound: playSound ?? this.playSound,
+      showWhen: showWhen ?? this.showWhen,
+      isSticky: isSticky ?? this.isSticky,
+      visibility: visibility ?? this.visibility,
+      iconData: iconData ?? this.iconData,
+      buttons: buttons ?? this.buttons,
+    );
+  }
 }

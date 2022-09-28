@@ -46,6 +46,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     String? notificationTitle,
     String? notificationText,
     Function? callback,
+    AndroidNotificationOptions? androidNotificationOptions,
   }) {
     throw UnimplementedError('updateService() has not been implemented.');
   }
