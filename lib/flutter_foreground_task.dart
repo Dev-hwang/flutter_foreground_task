@@ -62,6 +62,8 @@ class FlutterForegroundTask {
 
   static AndroidNotificationOptions get androidNotificationOptions =>
       _androidNotificationOptions;
+  static IOSNotificationOptions get iosNotificationOptions =>
+      _iosNotificationOptions;
 
   /// Initialize the [FlutterForegroundTask].
   static void init({
@@ -106,15 +108,20 @@ class FlutterForegroundTask {
     String? notificationText,
     Function? callback,
     AndroidNotificationOptions? androidNotificationOptions,
+    IOSNotificationOptions? iosNotificationOptions,
   }) {
     if (androidNotificationOptions != null) {
       _androidNotificationOptions = androidNotificationOptions;
+    }
+    if (iosNotificationOptions != null) {
+      _iosNotificationOptions = iosNotificationOptions;
     }
     return FlutterForegroundTaskPlatform.instance.updateService(
       notificationText: notificationText,
       notificationTitle: notificationTitle,
       callback: callback,
       androidNotificationOptions: androidNotificationOptions,
+      iosNotificationOptions: iosNotificationOptions,
     );
   }
 

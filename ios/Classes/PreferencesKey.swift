@@ -9,8 +9,11 @@ let NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"
 let NOTIFICATION_CONTENT_TEXT = "notificationContentText"
 let SHOW_NOTIFICATION = "showNotification"
 let PLAY_SOUND = "playSound"
+let PERSISTENT = "persistent"
+let BUTTONS_DATA = "buttons"
 
 let TASK_INTERVAL = "interval"
 let IS_ONCE_EVENT = "isOnceEvent"
 let CALLBACK_HANDLE = "callbackHandle"
 let CALLBACK_HANDLE_ON_RESTART = "callbackHandleOnRestart"
+ ـ

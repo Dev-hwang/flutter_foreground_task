@@ -112,13 +112,13 @@ class _ExamplePageState extends State<ExamplePage> {
           name: 'launcher',
           backgroundColor: Colors.green,
         ),
-        buttons: [
-          const NotificationButton(
+        buttons: const [
+          NotificationButton(
             id: 'sendButton',
             text: 'Send',
             textColor: Colors.green,
           ),
-          const NotificationButton(
+          NotificationButton(
             id: 'testButton',
             text: 'Test',
             textColor: Colors.yellow,
@@ -128,6 +128,17 @@ class _ExamplePageState extends State<ExamplePage> {
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
         playSound: false,
+        isPersistent: true,
+        buttons: [
+          IOSNotificationButton(
+            id: 'sendButton',
+            text: 'Send',
+          ),
+          IOSNotificationButton(
+            id: 'testButton',
+            text: 'Test',
+          ),
+        ],
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
@@ -146,16 +157,29 @@ class _ExamplePageState extends State<ExamplePage> {
         notificationText: 'Update Tap to return to the app',
         androidNotificationOptions:
             FlutterForegroundTask.androidNotificationOptions.copyWith(
-          buttons: [
-            const NotificationButton(
+          buttons: const [
+            NotificationButton(
               id: 'updatedSendButton',
               text: 'Updated Send',
               textColor: Colors.deepPurpleAccent,
             ),
-            const NotificationButton(
+            NotificationButton(
               id: 'updatedTestButton',
               text: 'Updated Test',
               textColor: Colors.lightBlue,
+            ),
+          ],
+        ),
+        iosNotificationOptions:
+            FlutterForegroundTask.iosNotificationOptions.copyWith(
+          buttons: const [
+            IOSNotificationButton(
+              id: 'updatedSendButton',
+              text: 'Updated Send',
+            ),
+            IOSNotificationButton(
+              id: 'updatedTestButton',
+              text: 'Updated Test',
             ),
           ],
         ),

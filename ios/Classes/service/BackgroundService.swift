@@ -10,12 +10,15 @@ import Foundation
 import UserNotifications
 
 let NOTIFICATION_ID: String = "flutter_foreground_task/backgroundNotification"
+let NOTIFICATION_CATEGORY_ID: String = "flutter_foreground_task/backgroundNotificationCategory"
 let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
 let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 
 let ACTION_TASK_START: String = "onStart"
 let ACTION_TASK_EVENT: String = "onEvent"
 let ACTION_TASK_DESTROY: String = "onDestroy"
+let ACTION_BUTTON_PRESSED: String = "onButtonPressed"
+let ACTION_NOTIFICATION_PRESSED: String = "onNotificationPressed"
 
 @available(iOS 10.0, *)
 class BackgroundService: NSObject {
@@ -55,6 +58,7 @@ class BackgroundService: NSObject {
     
     switch action {
       case .START:
+        setNotificaionCategory()
         requestNotificationAuthorization()
         isRunningService = true
         if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64 {
@@ -62,6 +66,7 @@ class BackgroundService: NSObject {
         }
         break
       case .RESTART:
+        setNotificaionCategory()
         sendNotification()
         isRunningService = true
         if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE_ON_RESTART) as? Int64 {
@@ -69,6 +74,7 @@ class BackgroundService: NSObject {
         }
         break
       case .UPDATE:
+        setNotificaionCategory()
         sendNotification()
         isRunningService = true
         if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64 {
@@ -103,6 +109,27 @@ class BackgroundService: NSObject {
     }
   }
   
+  private func setNotificaionCategory() {
+    guard let buttonsJson = UserDefaults.standard.string(forKey: BUTTONS_DATA),
+          let buttonsData = buttonsJson.data(using: .utf8),
+          let buttons = try? JSONDecoder().decode([NotificationButton].self, from: buttonsData) else { return }
+    print("GOT HERE")
+    createNotificationCategory(with: buttons)
+  }
+ 
+  private func createNotificationCategory(with buttons: [NotificationButton]) {
+    let notificationActions = buttons.map { buttonData in
+      UNNotificationAction(identifier: buttonData.id, title: buttonData.text, options: [])
+    }
+    
+    let notificationCategory =
+          UNNotificationCategory(identifier: NOTIFICATION_CATEGORY_ID,
+          actions: notificationActions,
+          intentIdentifiers: [],
+          hiddenPreviewsBodyPlaceholder: "", options: [.customDismissAction])
+    userNotificationCenter.setNotificationCategories([notificationCategory])
+  }
+  
   private func sendNotification() {
     if isGrantedNotificationAuthorization && showNotification {
       let notificationContent = UNMutableNotificationContent()
@@ -111,7 +138,8 @@ class BackgroundService: NSObject {
       if playSound {
         notificationContent.sound = UNNotificationSound.default
       }
-      
+      notificationContent.categoryIdentifier = NOTIFICATION_CATEGORY_ID
+      notificationContent.userInfo[PERSISTENT] = UserDefaults.standard.bool(forKey: PERSISTENT)
       let request = UNNotificationRequest(identifier: NOTIFICATION_ID, content: notificationContent, trigger: nil)
       userNotificationCenter.add(request, withCompletionHandler: nil)
     }
@@ -194,6 +222,17 @@ class BackgroundService: NSObject {
     // If it is not a notification requested by this plugin, the processing below is ignored.
     if response.notification.request.identifier != NOTIFICATION_ID { return }
     
+    // Get data from the original notification.
+    if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+      backgroundChannel?.invokeMethod(ACTION_NOTIFICATION_PRESSED, arguments: nil)
+    } else if response.actionIdentifier == UNNotificationDismissActionIdentifier {
+      if let persistent = response.notification.request.content.userInfo[PERSISTENT] as? Bool, persistent {
+        sendNotification()
+      }
+    } else {
+      backgroundChannel?.invokeMethod(ACTION_BUTTON_PRESSED, arguments: response.actionIdentifier)
+    }
+  
     completionHandler()
   }
   
@@ -209,4 +248,5 @@ class BackgroundService: NSObject {
       completionHandler([.alert])
     }
   }
+
 }
