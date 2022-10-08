@@ -16,4 +16,3 @@ let TASK_INTERVAL = "interval"
 let IS_ONCE_EVENT = "isOnceEvent"
 let CALLBACK_HANDLE = "callbackHandle"
 let CALLBACK_HANDLE_ON_RESTART = "callbackHandleOnRestart"
- ـ
