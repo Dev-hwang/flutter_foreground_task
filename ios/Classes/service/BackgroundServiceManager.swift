@@ -75,9 +75,10 @@ class BackgroundServiceManager: NSObject {
     let buttons = argsDict[BUTTONS_DATA] as? String ?? ""
     let taskInterval = argsDict[TASK_INTERVAL] as? Int ?? 5000
     let isOnceEvent = argsDict[IS_ONCE_EVENT] as? Bool ?? false
+    let interruptionLevel = argsDict[INTERRUPTION_LEVEL] as? Int ?? 1
     let isPersistent = argsDict[PERSISTENT] as? Bool ?? false
     let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
-  
+    
     
     prefs.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
     prefs.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
@@ -85,6 +86,7 @@ class BackgroundServiceManager: NSObject {
     prefs.set(playSound, forKey: PLAY_SOUND)
     prefs.set(taskInterval, forKey: TASK_INTERVAL)
     prefs.set(isOnceEvent, forKey: IS_ONCE_EVENT)
+    prefs.set(interruptionLevel, forKey: INTERRUPTION_LEVEL)
     prefs.set(buttons, forKey: BUTTONS_DATA)
     prefs.set(isPersistent, forKey: PERSISTENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
@@ -98,6 +100,14 @@ class BackgroundServiceManager: NSObject {
   private func updateOptions(call: FlutterMethodCall) {
     guard let argsDict = call.arguments as? Dictionary<String, Any> else { return }
     let prefs = UserDefaults.standard
+    
+    [
+      INTERRUPTION_LEVEL,
+    ].forEach { key in
+      if let newValue = argsDict[key] as? Int {
+        prefs.set(newValue, forKey: key)
+      }
+    }
     
     [
       NOTIFICATION_CONTENT_TITLE,
@@ -136,6 +146,7 @@ class BackgroundServiceManager: NSObject {
     prefs.removeObject(forKey: TASK_INTERVAL)
     prefs.removeObject(forKey: BUTTONS_DATA)
     prefs.removeObject(forKey: IS_ONCE_EVENT)
+    prefs.removeObject(forKey: INTERRUPTION_LEVEL)
     prefs.removeObject(forKey: PERSISTENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
     prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)

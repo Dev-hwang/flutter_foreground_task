@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter_foreground_task/models/interruption_level.dart';
+
 import 'notification_button.dart';
 
 /// Notification options for iOS platform.
@@ -9,6 +11,7 @@ class IOSNotificationOptions {
     this.showNotification = true,
     this.playSound = false,
     this.isPersistent = false,
+    this.interruptionLevel = NotificationInterruptionLevel.ACTIVE,
     this.buttons = const [],
   });
 
@@ -24,6 +27,8 @@ class IOSNotificationOptions {
   /// The default is `false`.
   final bool isPersistent;
 
+  final NotificationInterruptionLevel interruptionLevel;
+
   final List<IOSNotificationButton>? buttons;
 
   /// Returns the data fields of [IOSNotificationOptions] in JSON format.
@@ -32,6 +37,7 @@ class IOSNotificationOptions {
       'showNotification': showNotification,
       'playSound': playSound,
       'persistent': isPersistent,
+      'interruptionLevel': interruptionLevel.rawValue,
       if (buttons != null)
         'buttons': jsonEncode(buttons?.map((e) => e.toJson()).toList()),
     };
@@ -41,12 +47,14 @@ class IOSNotificationOptions {
     bool? showNotification,
     bool? playSound,
     bool? isPersistent,
+    NotificationInterruptionLevel? interruptionLevel,
     List<IOSNotificationButton>? buttons,
   }) {
     return IOSNotificationOptions(
       showNotification: showNotification ?? this.showNotification,
       playSound: playSound ?? this.playSound,
       isPersistent: isPersistent ?? this.isPersistent,
+      interruptionLevel: interruptionLevel ?? this.interruptionLevel,
       buttons: buttons ?? this.buttons,
     );
   }

@@ -35,6 +35,7 @@ class BackgroundService: NSObject {
   private var playSound: Bool = false
   private var taskInterval: Int = 5000
   private var isOnceEvent: Bool = false
+  private var interruptionLevel: Int = 1
   
   private var flutterEngine: FlutterEngine? = nil
   private var backgroundChannel: FlutterMethodChannel? = nil
@@ -55,6 +56,7 @@ class BackgroundService: NSObject {
     playSound = prefs.bool(forKey: PLAY_SOUND)
     taskInterval = prefs.integer(forKey: TASK_INTERVAL)
     isOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
+    interruptionLevel = prefs.integer(forKey: INTERRUPTION_LEVEL)
     
     switch action {
       case .START:
@@ -140,6 +142,10 @@ class BackgroundService: NSObject {
       }
       notificationContent.categoryIdentifier = NOTIFICATION_CATEGORY_ID
       notificationContent.userInfo[PERSISTENT] = UserDefaults.standard.bool(forKey: PERSISTENT)
+      if #available(iOS 15.0, *),
+          let interruptionLevel = UNNotificationInterruptionLevel.init(rawValue: UInt(interruptionLevel)) {
+        notificationContent.interruptionLevel = interruptionLevel
+      }
       let request = UNNotificationRequest(identifier: NOTIFICATION_ID, content: notificationContent, trigger: nil)
       userNotificationCenter.add(request, withCompletionHandler: nil)
     }

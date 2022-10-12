@@ -14,5 +14,6 @@ let BUTTONS_DATA = "buttons"
 
 let TASK_INTERVAL = "interval"
 let IS_ONCE_EVENT = "isOnceEvent"
+let INTERRUPTION_LEVEL = "interruptionLevel"
 let CALLBACK_HANDLE = "callbackHandle"
 let CALLBACK_HANDLE_ON_RESTART = "callbackHandleOnRestart"
