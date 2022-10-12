@@ -1,4 +1,4 @@
-/// The interuption level of the notification on iOS.
+/// The interruption level of the notification on iOS.
 /// See https://developer.apple.com/documentation/usernotifications/unnotificationcontent/3747256-interruptionlevel
 class NotificationInterruptionLevel {
   /// Constructs an instance of [NotificationChannelImportance].
