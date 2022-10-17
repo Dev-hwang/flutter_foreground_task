@@ -115,7 +115,6 @@ class BackgroundService: NSObject {
     guard let buttonsJson = UserDefaults.standard.string(forKey: BUTTONS_DATA),
           let buttonsData = buttonsJson.data(using: .utf8),
           let buttons = try? JSONDecoder().decode([NotificationButton].self, from: buttonsData) else { return }
-    print("GOT HERE")
     createNotificationCategory(with: buttons)
   }
  
