@@ -60,7 +60,7 @@ class BackgroundService: NSObject {
     
     switch action {
       case .START:
-        setNotificaionCategory()
+        setNotificationCategory()
         requestNotificationAuthorization()
         isRunningService = true
         if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64 {
@@ -68,7 +68,7 @@ class BackgroundService: NSObject {
         }
         break
       case .RESTART:
-        setNotificaionCategory()
+        setNotificationCategory()
         sendNotification()
         isRunningService = true
         if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE_ON_RESTART) as? Int64 {
@@ -76,7 +76,7 @@ class BackgroundService: NSObject {
         }
         break
       case .UPDATE:
-        setNotificaionCategory()
+        setNotificationCategory()
         sendNotification()
         isRunningService = true
         if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64 {
@@ -111,7 +111,7 @@ class BackgroundService: NSObject {
     }
   }
   
-  private func setNotificaionCategory() {
+  private func setNotificationCategory() {
     guard let buttonsJson = UserDefaults.standard.string(forKey: BUTTONS_DATA),
           let buttonsData = buttonsJson.data(using: .utf8),
           let buttons = try? JSONDecoder().decode([NotificationButton].self, from: buttonsData) else { return }
