@@ -1,3 +1,7 @@
+## 4.0.1
+
+* [**FIX**] fix: Fix mounted error [#133](https://github.com/Dev-hwang/flutter_foreground_task/issues/133)
+
 ## 4.0.0
 
 * [**CHORE**] Bump Android Gradle version to 7.1.2
