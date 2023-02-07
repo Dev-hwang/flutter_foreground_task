@@ -4,24 +4,20 @@ version: 3.10.0
 homepage: https://github.com/Dev-hwang/flutter_foreground_task
 
 environment:
-  sdk: ">=2.14.0 <3.0.0"
-  flutter: ">=2.8.1"
+  sdk: ">=2.17.0 <3.0.0"
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-
-  plugin_platform_interface: ^2.0.2
+  plugin_platform_interface: ^2.1.3
   platform: ^3.1.0
-  shared_preferences: ^2.0.15
-  shared_preferences_android: ^2.0.13
-  shared_preferences_ios: ^2.1.1
+  shared_preferences: ^2.0.17
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.0
 
 flutter:
   plugin:
