@@ -37,10 +37,13 @@ And we need to add this permission to automatically resume foreground service at
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 ```
 
-And specify the service inside the `<application>` tag as follows.
+And specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
 
 ```
-<service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
+<!-- Add android:stopWithTask option only when necessary. -->
+<service 
+    android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+    android:stopWithTask="true" />
 ```
 
 ### :baby_chick: iOS
