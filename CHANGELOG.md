@@ -1,3 +1,9 @@
+## 4.0.0
+
+* [**CHORE**] Bump Android Gradle version to 7.1.2
+* [**CHORE**] Update minimum Flutter version to 3.0.0 [#130](https://github.com/Dev-hwang/flutter_foreground_task/issues/130) [#131](https://github.com/Dev-hwang/flutter_foreground_task/issues/131)
+* [**DOCS**] Update readme [#125](https://github.com/Dev-hwang/flutter_foreground_task/issues/125)
+
 ## 3.10.0
 
 * [**FEAT**] Add `isOnceEvent` option to `ForegroundTaskOptions.class`.
