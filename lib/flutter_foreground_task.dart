@@ -77,7 +77,7 @@ class FlutterForegroundTask {
           'Not initialized. Please call this function after calling the init function.');
     }
 
-    return await FlutterForegroundTaskPlatform.instance.startService(
+    return FlutterForegroundTaskPlatform.instance.startService(
       androidNotificationOptions: _androidNotificationOptions,
       iosNotificationOptions: _iosNotificationOptions,
       foregroundTaskOptions: _foregroundTaskOptions,
@@ -113,31 +113,31 @@ class FlutterForegroundTask {
 
   /// Get the [ReceivePort].
   static Future<ReceivePort?> get receivePort async {
-    if (await isRunningService == false) return null;
+    if (await isRunningService == false) {
+      return null;
+    }
     return _registerPort();
   }
 
   /// Get the stored data with [key].
   static Future<T?> getData<T>({required String key}) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    final prefsKey = _kPrefsKeyPrefix + key;
-    final value = prefs.get(prefsKey);
-
-    return (value is T) ? value : null;
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
+    final data = prefs.get(_kPrefsKeyPrefix + key);
+    return (data is T) ? data : null;
   }
 
   /// Get all stored data.
   static Future<Map<String, Object>> getAllData() async {
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
     final dataList = <String, Object>{};
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    for (final key in prefs.getKeys()) {
-      if (key.contains(_kPrefsKeyPrefix)) {
-        final value = prefs.get(key);
-        if (value != null) {
-          final originKey = key.replaceAll(_kPrefsKeyPrefix, '');
-          dataList[originKey] = value;
+    for (final prefsKey in prefs.getKeys()) {
+      if (prefsKey.contains(_kPrefsKeyPrefix)) {
+        final data = prefs.get(prefsKey);
+        if (data != null) {
+          final originKey = prefsKey.replaceAll(_kPrefsKeyPrefix, '');
+          dataList[originKey] = data;
         }
       }
     }
@@ -150,8 +150,8 @@ class FlutterForegroundTask {
     required String key,
     required Object value,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
     final prefsKey = _kPrefsKeyPrefix + key;
 
     if (value is int) {
@@ -169,20 +169,18 @@ class FlutterForegroundTask {
 
   /// Remove data with [key].
   static Future<bool> removeData({required String key}) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    final prefsKey = _kPrefsKeyPrefix + key;
-
-    return prefs.remove(prefsKey);
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
+    return prefs.remove(_kPrefsKeyPrefix + key);
   }
 
   /// Clears all stored data.
   static Future<bool> clearAllData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    for (final key in prefs.getKeys()) {
-      if (key.contains(_kPrefsKeyPrefix)) {
-        await prefs.remove(key);
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
+    for (final prefsKey in prefs.getKeys()) {
+      if (prefsKey.contains(_kPrefsKeyPrefix)) {
+        await prefs.remove(prefsKey);
       }
     }
 

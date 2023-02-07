@@ -73,7 +73,8 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   }
 
   Future<bool> _onWillPop() async {
-    if (!Navigator.canPop(context) && await widget.onWillStart()) {
+    final bool canPop = context.mounted ? Navigator.canPop(context) : false;
+    if (!canPop && await widget.onWillStart()) {
       FlutterForegroundTask.minimizeApp();
       return false;
     }

@@ -94,8 +94,9 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   void setOnLockScreenVisibility(bool isVisible) {
     if (Platform.isAndroid) {
-      methodChannel
-          .invokeMethod('setOnLockScreenVisibility', {'isVisible': isVisible});
+      methodChannel.invokeMethod('setOnLockScreenVisibility', {
+        'isVisible': isVisible,
+      });
     }
   }
 
@@ -148,8 +149,9 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) async {
     if (Platform.isAndroid) {
-      return await methodChannel.invokeMethod(
-          'openSystemAlertWindowSettings', {'forceOpen': forceOpen});
+      return await methodChannel.invokeMethod('openSystemAlertWindowSettings', {
+        'forceOpen': forceOpen,
+      });
     }
     return true;
   }
