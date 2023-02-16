@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -24,20 +25,43 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     required String notificationText,
     Function? callback,
   }) async {
-    if (await isRunningService == false) {
-      final options = Platform.isAndroid
-          ? androidNotificationOptions.toJson()
-          : iosNotificationOptions.toJson();
-      options['notificationContentTitle'] = notificationTitle;
-      options['notificationContentText'] = notificationText;
-      if (callback != null) {
-        options.addAll(foregroundTaskOptions.toJson());
-        options['callbackHandle'] =
-            PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
-      }
-      return await methodChannel.invokeMethod('startService', options);
+    if (await isRunningService) {
+      return true;
     }
-    return false;
+
+    final options = Platform.isAndroid
+        ? androidNotificationOptions.toJson()
+        : iosNotificationOptions.toJson();
+    options['notificationContentTitle'] = notificationTitle;
+    options['notificationContentText'] = notificationText;
+    if (callback != null) {
+      options.addAll(foregroundTaskOptions.toJson());
+      options['callbackHandle'] =
+          PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
+    }
+
+    final bool reqResult =
+        await methodChannel.invokeMethod('startService', options);
+    if (!reqResult) {
+      return false;
+    }
+
+    final Stopwatch stopwatch = Stopwatch()..start();
+    bool startState = false;
+    await Future.doWhile(() async {
+      startState = await isRunningService;
+
+      // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
+      // ref: https://developer.android.com/guide/components/services#StartingAService
+      if (startState || stopwatch.elapsedMilliseconds > 5 * 1000) {
+        return false;
+      } else {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return true;
+      }
+    });
+
+    return startState;
   }
 
   @override
@@ -70,10 +94,31 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> stopService() async {
-    if (await isRunningService) {
-      return await methodChannel.invokeMethod('stopService');
+    if (!await isRunningService) {
+      return true;
     }
-    return false;
+
+    final bool reqResult = await methodChannel.invokeMethod('stopService');
+    if (!reqResult) {
+      return false;
+    }
+
+    final Stopwatch stopwatch = Stopwatch()..start();
+    bool stopState = false;
+    await Future.doWhile(() async {
+      stopState = !await isRunningService;
+
+      // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
+      // ref: https://developer.android.com/guide/components/services#StartingAService
+      if (stopState || stopwatch.elapsedMilliseconds > 5 * 1000) {
+        return false;
+      } else {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return true;
+      }
+    });
+
+    return stopState;
   }
 
   @override
