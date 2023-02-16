@@ -112,12 +112,7 @@ class FlutterForegroundTask {
       FlutterForegroundTaskPlatform.instance.isRunningService;
 
   /// Get the [ReceivePort].
-  static Future<ReceivePort?> get receivePort async {
-    if (await isRunningService == false) {
-      return null;
-    }
-    return _registerPort();
-  }
+  static ReceivePort? get receivePort => _registerPort();
 
   /// Get the stored data with [key].
   static Future<T?> getData<T>({required String key}) async {

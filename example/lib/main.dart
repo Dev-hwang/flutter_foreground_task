@@ -146,50 +146,50 @@ class _ExamplePageState extends State<ExamplePage> {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
-    bool reqResult;
+    // Register the receivePort before starting the service.
+    final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
+    final bool isRegistered = _registerReceivePort(receivePort);
+    if (!isRegistered) {
+      print('Failed to register receivePort!');
+      return false;
+    }
+
     if (await FlutterForegroundTask.isRunningService) {
-      reqResult = await FlutterForegroundTask.restartService();
+      return FlutterForegroundTask.restartService();
     } else {
-      reqResult = await FlutterForegroundTask.startService(
+      return FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         callback: startCallback,
       );
     }
+  }
 
-    ReceivePort? receivePort;
-    if (reqResult) {
-      receivePort = await FlutterForegroundTask.receivePort;
+  Future<bool> _stopForegroundTask() {
+    return FlutterForegroundTask.stopService();
+  }
+
+  bool _registerReceivePort(ReceivePort? newReceivePort) {
+    if (newReceivePort == null) {
+      return false;
     }
 
-    return _registerReceivePort(receivePort);
-  }
-
-  Future<bool> _stopForegroundTask() async {
-    return await FlutterForegroundTask.stopService();
-  }
-
-  bool _registerReceivePort(ReceivePort? receivePort) {
     _closeReceivePort();
 
-    if (receivePort != null) {
-      _receivePort = receivePort;
-      _receivePort?.listen((message) {
-        if (message is int) {
-          print('eventCount: $message');
-        } else if (message is String) {
-          if (message == 'onNotificationPressed') {
-            Navigator.of(context).pushNamed('/resume-route');
-          }
-        } else if (message is DateTime) {
-          print('timestamp: ${message.toString()}');
+    _receivePort = newReceivePort;
+    _receivePort?.listen((message) {
+      if (message is int) {
+        print('eventCount: $message');
+      } else if (message is String) {
+        if (message == 'onNotificationPressed') {
+          Navigator.of(context).pushNamed('/resume-route');
         }
-      });
+      } else if (message is DateTime) {
+        print('timestamp: ${message.toString()}');
+      }
+    });
 
-      return true;
-    }
-
-    return false;
+    return _receivePort != null;
   }
 
   void _closeReceivePort() {
@@ -206,7 +206,7 @@ class _ExamplePageState extends State<ExamplePage> {
     _ambiguate(WidgetsBinding.instance)?.addPostFrameCallback((_) async {
       // You can get the previous ReceivePort without restarting the service.
       if (await FlutterForegroundTask.isRunningService) {
-        final newReceivePort = await FlutterForegroundTask.receivePort;
+        final newReceivePort = FlutterForegroundTask.receivePort;
         _registerReceivePort(newReceivePort);
       }
     });
