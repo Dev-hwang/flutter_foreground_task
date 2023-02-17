@@ -16,7 +16,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^4.0.1
+  flutter_foreground_task: ^4.1.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -361,7 +361,7 @@ class _ExamplePageState extends State<ExamplePage> {
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       // You can get the previous ReceivePort without restarting the service.
       if (await FlutterForegroundTask.isRunningService) {
-         final newReceivePort = FlutterForegroundTask.receivePort;
+        final newReceivePort = FlutterForegroundTask.receivePort;
         _registerReceivePort(newReceivePort);
       }
     });

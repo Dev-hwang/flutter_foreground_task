@@ -1,6 +1,14 @@
+## 4.1.0
+
+* [**CHORE**] Bump Android coroutines version to 1.6.4
+* [**CHANGE**] Change the way get receivePort from asynchronous to synchronous [#128](https://github.com/Dev-hwang/flutter_foreground_task/issues/128)
+  - Can register and get receivePort without starting the service.
+  - From now on, register receivePort before starting the service. Please check the readme and example.
+* [**FIX**] Fix issue where the results of the service start and stop functions did not match the service status
+
 ## 4.0.1
 
-* [**FIX**] fix: Fix mounted error [#133](https://github.com/Dev-hwang/flutter_foreground_task/issues/133)
+* [**FIX**] Fix mounted error [#133](https://github.com/Dev-hwang/flutter_foreground_task/issues/133)
 
 ## 4.0.0
 
