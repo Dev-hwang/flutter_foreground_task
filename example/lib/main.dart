@@ -236,8 +236,8 @@ class _ExamplePageState extends State<ExamplePage> {
   Widget _buildContentView() {
     buttonBuilder(String text, {VoidCallback? onPressed}) {
       return ElevatedButton(
-        child: Text(text),
         onPressed: onPressed,
+        child: Text(text),
       );
     }
 

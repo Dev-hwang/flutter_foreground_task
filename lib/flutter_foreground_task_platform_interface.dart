@@ -4,6 +4,7 @@ import 'flutter_foreground_task_method_channel.dart';
 import 'models/android_notification_options.dart';
 import 'models/foreground_task_options.dart';
 import 'models/ios_notification_options.dart';
+import 'models/notification_permission.dart';
 
 abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   /// Constructs a FlutterForegroundTaskPlatform.
@@ -101,5 +102,15 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) {
     throw UnimplementedError(
         'openSystemAlertWindowSettings has not been implemented.');
+  }
+
+  Future<NotificationPermission> checkNotificationPermission() {
+    throw UnimplementedError(
+        'checkNotificationPermission() has not been implemented.');
+  }
+
+  Future<NotificationPermission> requestNotificationPermission() {
+    throw UnimplementedError(
+        'requestNotificationPermission() has not been implemented.');
   }
 }

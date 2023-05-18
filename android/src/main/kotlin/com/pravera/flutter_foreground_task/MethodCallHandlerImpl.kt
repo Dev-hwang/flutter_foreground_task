@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 
 import com.pravera.flutter_foreground_task.errors.ErrorCodes
+import com.pravera.flutter_foreground_task.models.NotificationPermission
+import com.pravera.flutter_foreground_task.service.NotificationPermissionCallback
 import com.pravera.flutter_foreground_task.service.ServiceProvider
 import com.pravera.flutter_foreground_task.utils.ErrorHandleUtils
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
@@ -30,6 +32,26 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
         val args = call.arguments
 
         when (call.method) {
+            "checkNotificationPermission" -> {
+                checkActivityNull(result)?.let {
+                    val status = provider.getNotificationPermissionManager().checkPermission(it)
+                    result.success(status)
+                }
+            }
+            "requestNotificationPermission" -> {
+                checkActivityNull(result)?.let {
+                    val callback = object : NotificationPermissionCallback {
+                        override fun onResult(permissionStatus: NotificationPermission) {
+                            result.success(permissionStatus.ordinal)
+                        }
+
+                        override fun onError(errorCode: ErrorCodes) {
+                            ErrorHandleUtils.handleMethodCallError(result, errorCode)
+                        }
+                    }
+                    provider.getNotificationPermissionManager().requestPermission(it, callback)
+                }
+            }
             "startService" ->
                 result.success(provider.getForegroundServiceManager().start(context, args))
             "restartService" ->

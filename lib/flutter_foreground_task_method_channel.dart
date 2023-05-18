@@ -9,6 +9,7 @@ import 'flutter_foreground_task_platform_interface.dart';
 import 'models/android_notification_options.dart';
 import 'models/foreground_task_options.dart';
 import 'models/ios_notification_options.dart';
+import 'models/notification_permission.dart';
 
 /// An implementation of [FlutterForegroundTaskPlatform] that uses method channels.
 class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
@@ -27,6 +28,13 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   }) async {
     if (await isRunningService) {
       return true;
+    }
+
+    // for Android 13
+    final NotificationPermission permission =
+        await requestNotificationPermission();
+    if (permission != NotificationPermission.granted) {
+      return false;
     }
 
     final options = Platform.isAndroid
@@ -199,5 +207,25 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       });
     }
     return true;
+  }
+
+  @override
+  Future<NotificationPermission> checkNotificationPermission() async {
+    if (Platform.isAndroid) {
+      final int result =
+          await methodChannel.invokeMethod('checkNotificationPermission');
+      return getNotificationPermissionFromIndex(result);
+    }
+    return NotificationPermission.granted;
+  }
+
+  @override
+  Future<NotificationPermission> requestNotificationPermission() async {
+    if (Platform.isAndroid) {
+      final int result =
+          await methodChannel.invokeMethod('requestNotificationPermission');
+      return getNotificationPermissionFromIndex(result);
+    }
+    return NotificationPermission.granted;
   }
 }

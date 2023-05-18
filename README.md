@@ -29,6 +29,7 @@ Since this plugin is based on a foreground service, we need to add the following
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <uses-permission android:name="android.permission.WAKE_LOCK" />
 <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- for Android 13 -->
 ```
 
 And we need to add this permission to automatically resume foreground service at boot time.
