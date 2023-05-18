@@ -1,3 +1,10 @@
+## 4.2.0
+
+* [**FEAT**] Add notification permission request func for Android 13
+  - According to the [official documentation](https://developer.android.com/develop/ui/views/notifications/notification-permission), starting with Android 13 and higher, you need to request notification permission to expose foreground service notifications.
+  - In this version, notification permission requests occur when the `startService` function is called.
+  - Add `<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />` permission to your `AndroidManifest.xml` file.
+
 ## 4.1.0
 
 * [**CHORE**] Bump Android coroutines version to 1.6.4
