@@ -8,6 +8,7 @@ import 'package:flutter_foreground_task/exception/foreground_task_exception.dart
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/android_notification_options.dart';
+import 'package:flutter_foreground_task/models/notification_permission.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_foreground_task_platform_interface.dart';
 
@@ -18,6 +19,7 @@ export 'package:flutter_foreground_task/models/notification_button.dart';
 export 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 export 'package:flutter_foreground_task/models/notification_icon_data.dart';
 export 'package:flutter_foreground_task/models/android_notification_options.dart';
+export 'package:flutter_foreground_task/models/notification_permission.dart';
 export 'package:flutter_foreground_task/models/notification_priority.dart';
 export 'package:flutter_foreground_task/models/notification_visibility.dart';
 export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
@@ -225,6 +227,18 @@ class FlutterForegroundTask {
   static Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) =>
       FlutterForegroundTaskPlatform.instance
           .openSystemAlertWindowSettings(forceOpen: forceOpen);
+
+  /// Returns "android.permission.POST_NOTIFICATIONS" permission status.
+  ///
+  /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+  static Future<NotificationPermission> checkNotificationPermission() =>
+      FlutterForegroundTaskPlatform.instance.checkNotificationPermission();
+
+  /// Request "android.permission.POST_NOTIFICATIONS" permission.
+  ///
+  /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+  static Future<NotificationPermission> requestNotificationPermission() =>
+      FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
 
   /// Set up the task handler and start the foreground task.
   ///

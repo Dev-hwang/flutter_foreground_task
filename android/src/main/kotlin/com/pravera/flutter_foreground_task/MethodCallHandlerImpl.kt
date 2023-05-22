@@ -35,7 +35,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
             "checkNotificationPermission" -> {
                 checkActivityNull(result)?.let {
                     val status = provider.getNotificationPermissionManager().checkPermission(it)
-                    result.success(status)
+                    result.success(status.ordinal)
                 }
             }
             "requestNotificationPermission" -> {
