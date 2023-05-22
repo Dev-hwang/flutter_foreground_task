@@ -31,10 +31,10 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     }
 
     // for Android 13
-    final NotificationPermission permission =
-        await requestNotificationPermission();
-    if (permission != NotificationPermission.granted) {
-      return false;
+    final NotificationPermission notificationPermissionStatus =
+        await checkNotificationPermission();
+    if (notificationPermissionStatus != NotificationPermission.granted) {
+      await requestNotificationPermission();
     }
 
     final options = Platform.isAndroid
