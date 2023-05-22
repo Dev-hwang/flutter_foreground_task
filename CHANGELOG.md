@@ -1,3 +1,12 @@
+## 5.0.0
+
+* [**CHORE**] Update dependency constraints to `sdk: '>=2.18.0 <4.0.0'` `flutter: '>=3.3.0'`
+* [**FEAT**] Add notification permission request func for Android 13
+  - `FlutterForegroundTask.checkNotificationPermission()`
+  - `FlutterForegroundTask.requestNotificationPermission()`
+* [**DOCS**] Update documentation to the latest version
+* [**FIX**] Fix service not starting when notification permission is denied
+
 ## 4.2.0
 
 * [**FEAT**] Add notification permission request func for Android 13
