@@ -8,6 +8,7 @@ import 'package:flutter_foreground_task/models/notification_visibility.dart';
 class AndroidNotificationOptions {
   /// Constructs an instance of [AndroidNotificationOptions].
   const AndroidNotificationOptions({
+    this.id,
     required this.channelId,
     required this.channelName,
     this.channelDescription,
@@ -21,6 +22,9 @@ class AndroidNotificationOptions {
     this.iconData,
     this.buttons,
   }) : assert((buttons?.length ?? 0) < 4);
+
+  /// Unique ID of the notification.
+  final int? id;
 
   /// Unique ID of the notification channel.
   final String channelId;
@@ -73,6 +77,7 @@ class AndroidNotificationOptions {
   /// Returns the data fields of [AndroidNotificationOptions] in JSON format.
   Map<String, dynamic> toJson() {
     return {
+      'notificationId': id,
       'notificationChannelId': channelId,
       'notificationChannelName': channelName,
       'notificationChannelDescription': channelDescription,

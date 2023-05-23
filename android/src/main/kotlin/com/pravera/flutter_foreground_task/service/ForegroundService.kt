@@ -220,7 +220,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 				builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
 			}
-			startForeground(notificationOptions.serviceId, builder.build())
+			startForeground(notificationOptions.id, builder.build())
 		} else {
 			val builder = NotificationCompat.Builder(this, notificationOptions.channelId)
 			builder.setOngoing(true)
@@ -243,7 +243,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			for (action in buildButtonCompatActions()) {
 				builder.addAction(action)
 			}
-			startForeground(notificationOptions.serviceId, builder.build())
+			startForeground(notificationOptions.id, builder.build())
 		}
 
 		acquireLockMode()

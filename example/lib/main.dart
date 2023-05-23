@@ -129,6 +129,7 @@ class _ExamplePageState extends State<ExamplePage> {
   void _initForegroundTask() {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
+        id: 500,
         channelId: 'notification_channel_id',
         channelName: 'Foreground Notification',
         channelDescription:

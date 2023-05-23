@@ -6,7 +6,7 @@ import org.json.JSONObject
 import com.pravera.flutter_foreground_task.PreferencesKey as PrefsKey
 
 data class NotificationOptions(
-    val serviceId: Int,
+    val id: Int,
     val channelId: String,
     val channelName: String,
     val channelDescription: String?,
@@ -27,7 +27,7 @@ data class NotificationOptions(
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
-            val serviceId = 1000
+            val id = prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000)
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: ""
             val channelName = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, null) ?: ""
             val channelDesc = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_DESC, null)
@@ -69,7 +69,7 @@ data class NotificationOptions(
             }
 
             return NotificationOptions(
-                serviceId = serviceId,
+                id = id,
                 channelId = channelId,
                 channelName = channelName,
                 channelDescription = channelDesc,
@@ -91,6 +91,7 @@ data class NotificationOptions(
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
+            val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int ?: 1000
             val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String ?: ""
             val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String ?: ""
             val channelDesc = map?.get(PrefsKey.NOTIFICATION_CHANNEL_DESC) as? String
@@ -117,6 +118,7 @@ data class NotificationOptions(
             }
 
             with(prefs.edit()) {
+                putInt(PrefsKey.NOTIFICATION_ID, id)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_ID, channelId)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_NAME, channelName)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_DESC, channelDesc)

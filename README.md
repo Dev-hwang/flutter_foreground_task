@@ -633,6 +633,7 @@ Notification options for Android platform.
 
 | Property | Description |
 |---|---|
+| `id` | Unique ID of the notification. |
 | `channelId` | Unique ID of the notification channel. |
 | `channelName` | The name of the notification channel. This value is displayed to the user in the notification settings. |
 | `channelDescription` | The description of the notification channel. This value is displayed to the user in the notification settings. |
