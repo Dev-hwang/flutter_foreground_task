@@ -1,3 +1,8 @@
+## 5.2.0
+
+* [**FEAT**] Add id option to AndroidNotificationOptions
+* [**FEAT**] The WillStartForegroundTask widget supports receiving data
+
 ## 5.0.0
 
 * [**CHORE**] Update dependency constraints to `sdk: '>=2.18.0 <4.0.0'` `flutter: '>=3.3.0'`
