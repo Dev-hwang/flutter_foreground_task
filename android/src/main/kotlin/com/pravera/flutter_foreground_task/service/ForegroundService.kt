@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.*
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.net.wifi.WifiManager
 import android.os.*
@@ -313,8 +314,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		val pm = applicationContext.packageManager
 		val cName = ComponentName(this, this.javaClass)
 		val flags = pm.getServiceInfo(cName, PackageManager.GET_META_DATA).flags
-
-		return flags > 0
+		return (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
 	}
 
 	private fun initBackgroundChannel() {
