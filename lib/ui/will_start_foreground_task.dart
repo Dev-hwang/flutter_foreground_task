@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -26,6 +28,9 @@ class WillStartForegroundTask extends StatefulWidget {
   /// A top-level function that calls the setTaskHandler function.
   final Function? callback;
 
+  /// Called when [TaskHandler] sends data to main isolate.
+  final ValueChanged? onData;
+
   /// A child widget that contains the [Scaffold] widget.
   final Widget child;
 
@@ -39,6 +44,7 @@ class WillStartForegroundTask extends StatefulWidget {
     required this.notificationTitle,
     required this.notificationText,
     this.callback,
+    this.onData,
     required this.child,
   }) : super(key: key);
 
@@ -48,6 +54,8 @@ class WillStartForegroundTask extends StatefulWidget {
 
 class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     with WidgetsBindingObserver {
+  ReceivePort? _receivePort;
+
   void _initForegroundTask() {
     FlutterForegroundTask.init(
       androidNotificationOptions: widget.androidNotificationOptions,
@@ -56,11 +64,18 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     );
   }
 
-  Future<void> _startForegroundTask() async {
+  Future<bool> _startForegroundTask() async {
+    final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
+    final bool isRegistered = _registerReceivePort(receivePort);
+    if (!isRegistered) {
+      print('Failed to register receivePort!');
+      return false;
+    }
+
     if (await FlutterForegroundTask.isRunningService) {
-      FlutterForegroundTask.restartService();
+      return FlutterForegroundTask.restartService();
     } else {
-      FlutterForegroundTask.startService(
+      return FlutterForegroundTask.startService(
         notificationTitle: widget.notificationTitle,
         notificationText: widget.notificationText,
         callback: widget.callback,
@@ -68,8 +83,26 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     }
   }
 
-  Future<void> _stopForegroundTask() async {
-    await FlutterForegroundTask.stopService();
+  Future<bool> _stopForegroundTask() {
+    return FlutterForegroundTask.stopService();
+  }
+
+  bool _registerReceivePort(ReceivePort? newReceivePort) {
+    if (newReceivePort == null) {
+      return false;
+    }
+
+    _closeReceivePort();
+
+    _receivePort = newReceivePort;
+    _receivePort?.listen(widget.onData);
+
+    return _receivePort != null;
+  }
+
+  void _closeReceivePort() {
+    _receivePort?.close();
+    _receivePort = null;
   }
 
   Future<bool> _onWillPop() async {
@@ -82,18 +115,18 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     return true;
   }
 
-  T? _ambiguate<T>(T? value) => value;
-
   @override
   void initState() {
     super.initState();
     _initForegroundTask();
-    _ambiguate(WidgetsBinding.instance)?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    _ambiguate(WidgetsBinding.instance)?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
+    _stopForegroundTask();
+    _closeReceivePort();
     super.dispose();
   }
 

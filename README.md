@@ -352,15 +352,15 @@ class _ExamplePageState extends State<ExamplePage> {
     _closeReceivePort();
 
     _receivePort = newReceivePort;
-    _receivePort?.listen((message) {
-      if (message is int) {
-        print('eventCount: $message');
-      } else if (message is String) {
-        if (message == 'onNotificationPressed') {
+    _receivePort?.listen((data) {
+      if (data is int) {
+        print('eventCount: $data');
+      } else if (data is String) {
+        if (data == 'onNotificationPressed') {
           Navigator.of(context).pushNamed('/resume-route');
         }
-      } else if (message is DateTime) {
-        print('timestamp: ${message.toString()}');
+      } else if (data is DateTime) {
+        print('timestamp: ${data.toString()}');
       }
     });
 
@@ -538,6 +538,12 @@ Future<bool> _stopForegroundTask() {
 
 #### :hatched_chick: Start with `WillStartForegroundTask` widget
 
+```
+<service 
+    android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+    android:stopWithTask="true" /> <!-- important -->
+```
+
 ```dart
 Future<void> _requestPermissionForAndroid() async {
   if (!Platform.isAndroid) {
@@ -573,6 +579,18 @@ Future<void> _requestPermissionForAndroid() async {
   }
 }
 
+void _onData(dynamic data) {
+  if (data is int) {
+    print('eventCount: $data');
+  } else if (data is String) {
+    if (data == 'onNotificationPressed') {
+      Navigator.of(context).pushNamed('/resume-route');
+    }
+  } else if (data is DateTime) {
+    print('timestamp: ${data.toString()}');
+  }
+}
+
 @override
 void initState() {
   super.initState();
@@ -595,11 +613,16 @@ Widget build(BuildContext context) {
         channelDescription: 'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
-        iconData: NotificationIconData(
+        isSticky: false, // important
+        iconData: const NotificationIconData(
           resType: ResourceType.mipmap,
           resPrefix: ResourcePrefix.ic,
           name: 'launcher',
         ),
+        buttons: [
+          const NotificationButton(id: 'sendButton', text: 'Send'),
+          const NotificationButton(id: 'testButton', text: 'Test'),
+        ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
@@ -607,12 +630,14 @@ Widget build(BuildContext context) {
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
-        autoRunOnBoot: false,
+        isOnceEvent: false,
+        allowWakeLock: false,
         allowWifiLock: false,
       ),
       notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,
+      onData: _onData,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter Foreground Task'),

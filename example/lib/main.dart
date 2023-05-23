@@ -196,15 +196,15 @@ class _ExamplePageState extends State<ExamplePage> {
     _closeReceivePort();
 
     _receivePort = newReceivePort;
-    _receivePort?.listen((message) {
-      if (message is int) {
-        print('eventCount: $message');
-      } else if (message is String) {
-        if (message == 'onNotificationPressed') {
+    _receivePort?.listen((data) {
+      if (data is int) {
+        print('eventCount: $data');
+      } else if (data is String) {
+        if (data == 'onNotificationPressed') {
           Navigator.of(context).pushNamed('/resume-route');
         }
-      } else if (message is DateTime) {
-        print('timestamp: ${message.toString()}');
+      } else if (data is DateTime) {
+        print('timestamp: ${data.toString()}');
       }
     });
 
