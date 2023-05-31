@@ -31,10 +31,12 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     }
 
     // for Android 13
-    final NotificationPermission notificationPermissionStatus =
-        await checkNotificationPermission();
-    if (notificationPermissionStatus != NotificationPermission.granted) {
-      await requestNotificationPermission();
+    if (Platform.isAndroid && await attachedActivity) {
+      final NotificationPermission notificationPermissionStatus =
+          await checkNotificationPermission();
+      if (notificationPermissionStatus != NotificationPermission.granted) {
+        await requestNotificationPermission();
+      }
     }
 
     final options = Platform.isAndroid
@@ -132,6 +134,14 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> get isRunningService async {
     return await methodChannel.invokeMethod('isRunningService');
+  }
+
+  @override
+  Future<bool> get attachedActivity async {
+    if (Platform.isAndroid) {
+      return await methodChannel.invokeMethod('attachedActivity');
+    }
+    return true;
   }
 
   @override

@@ -59,6 +59,10 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('isRunningService has not been implemented.');
   }
 
+  Future<bool> get attachedActivity {
+    throw UnimplementedError('attachedActivity has not been implemented.');
+  }
+
   void minimizeApp() {
     throw UnimplementedError('minimizeApp has not been implemented.');
   }

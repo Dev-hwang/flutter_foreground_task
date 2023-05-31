@@ -62,6 +62,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                 result.success(provider.getForegroundServiceManager().stop(context))
             "isRunningService" ->
                 result.success(provider.getForegroundServiceManager().isRunningService())
+            "attachedActivity" -> result.success(activity != null)
             "minimizeApp" -> {
                 checkActivityNull(result)?.let {
                     ForegroundServiceUtils.minimizeApp(it)
