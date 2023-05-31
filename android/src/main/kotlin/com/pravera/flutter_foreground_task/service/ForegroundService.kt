@@ -8,12 +8,12 @@ import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.net.wifi.WifiManager
 import android.os.*
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
-import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
-import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
-import com.pravera.flutter_foreground_task.models.NotificationOptions
+import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
@@ -168,26 +168,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	private fun startForegroundService() {
 		// Get the icon and PendingIntent to put in the notification.
 		val pm = applicationContext.packageManager
-		val iconResType = notificationOptions.iconData?.resType
-		val iconResPrefix = notificationOptions.iconData?.resPrefix
-		val iconName = notificationOptions.iconData?.name
-		var iconBackgroundColor: Int? = null
-		val iconBackgroundColorRgb = notificationOptions.iconData?.backgroundColorRgb?.split(",")
-		if (iconBackgroundColorRgb != null && iconBackgroundColorRgb.size == 3) {
-			iconBackgroundColor = Color.rgb(
-				iconBackgroundColorRgb[0].toInt(),
-				iconBackgroundColorRgb[1].toInt(),
-				iconBackgroundColorRgb[2].toInt()
-			)
-		}
-		val iconResId = if (iconResType.isNullOrEmpty()
-			|| iconResPrefix.isNullOrEmpty()
-			|| iconName.isNullOrEmpty()) {
-			getAppIconResourceId(pm)
-		} else {
-			getDrawableResourceId(iconResType, iconResPrefix, iconName)
-		}
-		val pendingIntent = getPendingIntent(pm)
+        val iconData = notificationOptions.iconData
+		val iconBackgroundColor: Int?
+        val iconResId: Int
+        if (iconData != null) {
+            iconBackgroundColor = iconData.backgroundColorRgb?.let(::getRgbColor)
+            iconResId = getIconResIdFromIconData(iconData)
+        } else {
+            iconBackgroundColor = null
+            iconResId = getIconResIdFromAppInfo(pm)
+        }
+        val pendingIntent = getPendingIntent(pm)
 
 		// Create a notification and start the foreground service.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -293,7 +284,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	private fun setRestartAlarm() {
+	@SuppressLint("UnspecifiedImmutableFlag")
+    private fun setRestartAlarm() {
 		val calendar = Calendar.getInstance().apply {
 			timeInMillis = System.currentTimeMillis()
 			add(Calendar.SECOND, 1)
@@ -403,7 +395,14 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		backgroundChannel = null
 	}
 
-	private fun getDrawableResourceId(resType: String, resPrefix: String, name: String): Int {
+	private fun getIconResIdFromIconData(iconData: NotificationIconData): Int {
+		val resType = iconData.resType
+		val resPrefix = iconData.resPrefix
+		val name = iconData.name
+		if (resType.isEmpty() || resPrefix.isEmpty() || name.isEmpty()) {
+			return 0
+		}
+
 		val resName = if (resPrefix.contains("ic")) {
 			String.format("ic_%s", name)
 		} else {
@@ -413,38 +412,57 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		return applicationContext.resources.getIdentifier(resName, resType, applicationContext.packageName)
 	}
 
-	private fun getAppIconResourceId(pm: PackageManager): Int {
+	private fun getIconResIdFromAppInfo(pm: PackageManager): Int {
 		return try {
 			val appInfo = pm.getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA)
 			appInfo.icon
 		} catch (e: PackageManager.NameNotFoundException) {
-			Log.e(TAG, "getAppIconResourceId", e)
+			Log.e(TAG, "getIconResIdFromAppInfo", e)
 			0
 		}
 	}
 
-	private fun getPendingIntent(pm: PackageManager): PendingIntent {
+	@SuppressLint("UnspecifiedImmutableFlag")
+    private fun getPendingIntent(pm: PackageManager): PendingIntent {
 		return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
             || ForegroundServiceUtils.canDrawOverlays(applicationContext)) {
 			val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(
-					this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
+				PendingIntent.getBroadcast(this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
 			} else {
 				PendingIntent.getBroadcast(this, 20000, pressedIntent, 0)
 			}
 		} else {
 			val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getActivity(
-					this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+				PendingIntent.getActivity(this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE)
 			} else {
 				PendingIntent.getActivity(this, 20000, launchIntent, 0)
 			}
 		}
 	}
 
-	private fun buildButtonActions(): List<Notification.Action> {
+	private fun getRgbColor(rgb: String): Int? {
+		val rgbSet = rgb.split(",")
+		return if (rgbSet.size == 3) {
+			Color.rgb(rgbSet[0].toInt(), rgbSet[1].toInt(), rgbSet[2].toInt())
+		} else {
+			null
+		}
+	}
+
+	private fun getTextSpan(text: String, color: Int?): Spannable {
+		return if (color != null) {
+			SpannableString(text).apply {
+				setSpan(ForegroundColorSpan(color), 0, length, 0)
+			}
+		} else {
+			SpannableString(text)
+		}
+	}
+
+	@SuppressLint("UnspecifiedImmutableFlag")
+    private fun buildButtonActions(): List<Notification.Action> {
 		val actions = mutableListOf<Notification.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
@@ -456,10 +474,12 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			} else {
 				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
 			}
+			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
+			val bText = getTextSpan(buttons[i].text, bTextColor)
 			val bAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				Notification.Action.Builder(null, buttons[i].text, bPendingIntent).build()
+				Notification.Action.Builder(null, bText, bPendingIntent).build()
 			} else {
-				Notification.Action.Builder(0, buttons[i].text, bPendingIntent).build()
+				Notification.Action.Builder(0, bText, bPendingIntent).build()
 			}
 			actions.add(bAction)
 		}
@@ -467,7 +487,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		return actions
 	}
 
-	private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
+	@SuppressLint("UnspecifiedImmutableFlag")
+    private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
 		val actions = mutableListOf<NotificationCompat.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
@@ -479,7 +500,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			} else {
 				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
 			}
-			val bAction = NotificationCompat.Action.Builder(0, buttons[i].text, bPendingIntent).build()
+			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
+			val bText = getTextSpan(buttons[i].text, bTextColor)
+			val bAction = NotificationCompat.Action.Builder(0, bText, bPendingIntent).build()
 			actions.add(bAction)
 		}
 

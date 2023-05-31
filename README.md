@@ -708,6 +708,7 @@ The button to display in the notification.
 |---|---|
 | `id` | The button identifier. |
 | `text` | The text to display on the button. |
+| `textColor` | The button text color. |
 
 ### :chicken: IOSNotificationOptions
 

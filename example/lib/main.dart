@@ -143,8 +143,16 @@ class _ExamplePageState extends State<ExamplePage> {
           backgroundColor: Colors.orange,
         ),
         buttons: [
-          const NotificationButton(id: 'sendButton', text: 'Send'),
-          const NotificationButton(id: 'testButton', text: 'Test'),
+          const NotificationButton(
+            id: 'sendButton',
+            text: 'Send',
+            textColor: Colors.orange,
+          ),
+          const NotificationButton(
+            id: 'testButton',
+            text: 'Test',
+            textColor: Colors.grey,
+          ),
         ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
 
 /// The resource type of the notification icon.
 enum ResourceType {
