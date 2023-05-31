@@ -1,3 +1,7 @@
+## 5.2.1
+
+* [**FIX**] Fix issue where service could not be started in the background
+
 ## 5.2.0
 
 * [**FEAT**] Add id option to AndroidNotificationOptions
