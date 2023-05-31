@@ -771,6 +771,9 @@ The level of detail displayed in notifications on the lock screen.
 
 Minimize the app to the background.
 
+> **Warning**
+> It only works when the app is in the foreground.
+
 ```dart
 void function() => FlutterForegroundTask.minimizeApp();
 ```
@@ -806,6 +809,9 @@ Future<bool> function() => FlutterForegroundTask.isIgnoringBatteryOptimizations;
 
 Open the settings page where you can set ignore battery optimization.
 
+> **Warning**
+> It only works when the app is in the foreground.
+
 ```dart
 Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
 ```
@@ -813,6 +819,9 @@ Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSe
 ### :lollipop: requestIgnoreBatteryOptimization (Android)
 
 Request to ignore battery optimization. This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+
+> **Warning**
+> It only works when the app is in the foreground.
 
 ```dart
 Future<bool> function() => FlutterForegroundTask.requestIgnoreBatteryOptimization();
@@ -830,6 +839,9 @@ Future<bool> function() => FlutterForegroundTask.canDrawOverlays;
 
 Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
 
+> **Warning**
+> It only works when the app is in the foreground.
+
 ```dart
 Future<bool> function() => FlutterForegroundTask.openSystemAlertWindowSettings();
 ```
@@ -846,6 +858,9 @@ Future<bool> function() => FlutterForegroundTask.isAppOnForeground;
 
 Toggles lockScreen visibility.
 
+> **Warning**
+> It only works when the app is in the foreground.
+
 ```dart
 void function() => FlutterForegroundTask.setOnLockScreenVisibility(true);
 ```
@@ -856,6 +871,9 @@ Returns "android.permission.POST_NOTIFICATIONS" permission status.
 
 for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
 
+> **Warning**
+> It only works when the app is in the foreground.
+
 ```dart
 Future<NotificationPermission> function() => FlutterForegroundTask.checkNotificationPermission();
 ```
@@ -865,6 +883,9 @@ Future<NotificationPermission> function() => FlutterForegroundTask.checkNotifica
 Request "android.permission.POST_NOTIFICATIONS" permission.
 
 for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+
+> **Warning**
+> It only works when the app is in the foreground.
 
 ```dart
 Future<NotificationPermission> function() => FlutterForegroundTask.requestNotificationPermission();
