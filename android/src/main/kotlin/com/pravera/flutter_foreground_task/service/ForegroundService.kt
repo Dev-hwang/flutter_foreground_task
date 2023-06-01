@@ -50,6 +50,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	private lateinit var foregroundServiceStatus: ForegroundServiceStatus
 	private lateinit var foregroundTaskOptions: ForegroundTaskOptions
 	private lateinit var notificationOptions: NotificationOptions
+	private var prevForegroundTaskOptions: ForegroundTaskOptions? = null
 
 	private var wakeLock: PowerManager.WakeLock? = null
 	private var wifiLock: WifiManager.WifiLock? = null
@@ -58,7 +59,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	private var prevFlutterEngine: FlutterEngine? = null
 	private var currFlutterEngine: FlutterEngine? = null
 	private var backgroundChannel: MethodChannel? = null
-	private var backgroundJob: Job? = null
+	private var repeatTask: Job? = null
 
 	// A broadcast receiver that handles intents that occur within the foreground service.
 	private var broadcastReceiver = object : BroadcastReceiver() {
@@ -85,7 +86,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			}
 			ForegroundServiceAction.REBOOT -> {
 				startForegroundService()
-				executeDartCallback(foregroundTaskOptions.callbackHandleOnBoot)
+				executeDartCallback(foregroundTaskOptions.callbackHandle)
 			}
 		}
 	}
@@ -97,11 +98,23 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.UPDATE -> {
 				startForegroundService()
-				executeDartCallback(foregroundTaskOptions.callbackHandle)
+				val prevCallbackHandle = prevForegroundTaskOptions?.callbackHandle
+				val currCallbackHandle = foregroundTaskOptions.callbackHandle
+				if (prevCallbackHandle != currCallbackHandle) {
+					executeDartCallback(currCallbackHandle)
+				} else {
+					val prevInterval = prevForegroundTaskOptions?.interval
+					val currInterval = foregroundTaskOptions.interval
+					val prevIsOnceEvent = prevForegroundTaskOptions?.isOnceEvent
+					val currIsOnceEvent = foregroundTaskOptions.isOnceEvent
+					if (prevInterval != currInterval || prevIsOnceEvent != currIsOnceEvent) {
+						startRepeatTask()
+					}
+				}
 			}
 			ForegroundServiceAction.RESTART -> {
 				startForegroundService()
-				executeDartCallback(foregroundTaskOptions.callbackHandleOnBoot)
+				executeDartCallback(foregroundTaskOptions.callbackHandle)
 			}
 			ForegroundServiceAction.STOP -> {
 				stopForegroundService()
@@ -118,8 +131,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
 	override fun onDestroy() {
 		super.onDestroy()
+		stopForegroundTask()
 		releaseLockMode()
-		destroyBackgroundChannel()
 		unregisterBroadcastReceiver()
 		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
 			if (isSetStopWithTaskFlag()) {
@@ -148,6 +161,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
 	private fun fetchDataFromPreferences() {
 		foregroundServiceStatus = ForegroundServiceStatus.getData(applicationContext)
+		if (::foregroundTaskOptions.isInitialized) {
+			prevForegroundTaskOptions = foregroundTaskOptions
+		}
 		foregroundTaskOptions = ForegroundTaskOptions.getData(applicationContext)
 		notificationOptions = NotificationOptions.getData(applicationContext)
 	}
@@ -168,7 +184,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	private fun startForegroundService() {
 		// Get the icon and PendingIntent to put in the notification.
 		val pm = applicationContext.packageManager
-        val iconData = notificationOptions.iconData
+		val iconData = notificationOptions.iconData
 		val iconBackgroundColor: Int?
         val iconResId: Int
         if (iconData != null) {
@@ -178,7 +194,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             iconBackgroundColor = null
             iconResId = getIconResIdFromAppInfo(pm)
         }
-        val pendingIntent = getPendingIntent(pm)
+		val pendingIntent = getPendingIntent(pm)
 
 		// Create a notification and start the foreground service.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -238,7 +254,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			startForeground(notificationOptions.id, builder.build())
 		}
 
+		releaseLockMode()
 		acquireLockMode()
+
 		isRunningService = true
 	}
 
@@ -274,12 +292,14 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		wakeLock?.let {
 			if (it.isHeld) {
 				it.release()
+				wakeLock = null
 			}
 		}
 
 		wifiLock?.let {
 			if (it.isHeld) {
 				it.release()
+				wifiLock = null
 			}
 		}
 	}
@@ -309,20 +329,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		return (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
 	}
 
-	private fun initBackgroundChannel() {
-		if (backgroundChannel != null) destroyBackgroundChannel()
-
-		currFlutterEngine = FlutterEngine(this)
-
-		currFlutterLoader = FlutterInjector.instance().flutterLoader()
-		currFlutterLoader?.startInitialization(this)
-		currFlutterLoader?.ensureInitializationComplete(this, null)
-
-		val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
-		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
-		backgroundChannel?.setMethodCallHandler(this)
-	}
-
 	private fun executeDartCallback(callbackHandle: Long?) {
 		// If there is no callback handle, the code below will not be executed.
 		if (callbackHandle == null) return
@@ -335,24 +341,28 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		currFlutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
 	}
 
+	private fun initBackgroundChannel() {
+		if (backgroundChannel != null) {
+			stopForegroundTask()
+		}
+
+		currFlutterEngine = FlutterEngine(this)
+
+		currFlutterLoader = FlutterInjector.instance().flutterLoader()
+		currFlutterLoader?.startInitialization(this)
+		currFlutterLoader?.ensureInitializationComplete(this, null)
+
+		val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
+		backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
+		backgroundChannel?.setMethodCallHandler(this)
+	}
+
 	private fun startForegroundTask() {
-		stopForegroundTask()
+		stopRepeatTask()
 
 		val callback = object : MethodChannel.Result {
 			override fun success(result: Any?) {
-				backgroundJob = CoroutineScope(Dispatchers.Default).launch {
-					do {
-						withContext(Dispatchers.Main) {
-							try {
-								backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
-							} catch (e: Exception) {
-								Log.e(TAG, "invokeMethod", e)
-							}
-						}
-
-						delay(foregroundTaskOptions.interval)
-					} while (!foregroundTaskOptions.isOnceEvent)
-				}
+				startRepeatTask()
 			}
 
 			override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) { }
@@ -362,13 +372,31 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		backgroundChannel?.invokeMethod(ACTION_TASK_START, null, callback)
 	}
 
-	private fun stopForegroundTask() {
-		backgroundJob?.cancel()
-		backgroundJob = null
+	private fun startRepeatTask() {
+		stopRepeatTask()
+
+		repeatTask = CoroutineScope(Dispatchers.Default).launch {
+			do {
+				withContext(Dispatchers.Main) {
+					try {
+						backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
+					} catch (e: Exception) {
+						Log.e(TAG, "invokeMethod", e)
+					}
+				}
+
+				delay(foregroundTaskOptions.interval)
+			} while (!foregroundTaskOptions.isOnceEvent)
+		}
 	}
 
-	private fun destroyBackgroundChannel() {
-		stopForegroundTask()
+	private fun stopRepeatTask() {
+		repeatTask?.cancel()
+		repeatTask = null
+	}
+
+	private fun stopForegroundTask() {
+		stopRepeatTask()
 
 		currFlutterLoader = null
 		prevFlutterEngine = currFlutterEngine

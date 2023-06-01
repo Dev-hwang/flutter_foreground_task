@@ -36,5 +36,4 @@ object PreferencesKey {
     const val ALLOW_WAKE_LOCK = "allowWakeLock"
     const val ALLOW_WIFI_LOCK = "allowWifiLock"
     const val CALLBACK_HANDLE = "callbackHandle"
-    const val CALLBACK_HANDLE_ON_BOOT = "callbackHandleOnBoot"
 }

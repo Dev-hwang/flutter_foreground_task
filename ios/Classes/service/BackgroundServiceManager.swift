@@ -83,10 +83,8 @@ class BackgroundServiceManager: NSObject {
     prefs.set(taskInterval, forKey: TASK_INTERVAL)
     prefs.set(isOnceEvent, forKey: IS_ONCE_EVENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
-    prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
     if callbackHandle != nil {
       prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
-      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE_ON_RESTART)
     }
   }
   
@@ -100,14 +98,20 @@ class BackgroundServiceManager: NSObject {
     let notificationContentText = argsDict[NOTIFICATION_CONTENT_TEXT] as? String
       ?? prefs.string(forKey: NOTIFICATION_CONTENT_TEXT)
       ?? ""
+    let taskInterval = argsDict[TASK_INTERVAL] as? Int
+    let isOnceEvent = argsDict[IS_ONCE_EVENT] as? Bool
     let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
     
     prefs.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
     prefs.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
-    prefs.removeObject(forKey: CALLBACK_HANDLE)
+    if taskInterval != nil {
+      prefs.set(taskInterval, forKey: TASK_INTERVAL)
+    }
+    if isOnceEvent != nil {
+      prefs.set(isOnceEvent, forKey: IS_ONCE_EVENT)
+    }
     if callbackHandle != nil {
       prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
-      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE_ON_RESTART)
     }
   }
   
@@ -120,7 +124,6 @@ class BackgroundServiceManager: NSObject {
     prefs.removeObject(forKey: TASK_INTERVAL)
     prefs.removeObject(forKey: IS_ONCE_EVENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
-    prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
   }
   
   @available(iOS 10.0, *)

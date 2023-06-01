@@ -43,13 +43,16 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       }
     }
 
-    final options = Platform.isAndroid
-        ? androidNotificationOptions.toJson()
-        : iosNotificationOptions.toJson();
-    options['notificationContentTitle'] = notificationTitle;
-    options['notificationContentText'] = notificationText;
+    final options = <String, dynamic>{
+      if (Platform.isAndroid)
+        ...androidNotificationOptions.toJson()
+      else
+        ...iosNotificationOptions.toJson(),
+      'notificationContentTitle': notificationTitle,
+      'notificationContentText': notificationText,
+      ...foregroundTaskOptions.toJson(),
+    };
     if (callback != null) {
-      options.addAll(foregroundTaskOptions.toJson());
       options['callbackHandle'] =
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
@@ -88,6 +91,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> updateService({
+    ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
     Function? callback,
@@ -96,6 +100,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       final options = <String, dynamic>{
         'notificationContentTitle': notificationTitle,
         'notificationContentText': notificationText,
+        if (foregroundTaskOptions != null) ...foregroundTaskOptions.toJson(),
       };
       if (callback != null) {
         options['callbackHandle'] =
