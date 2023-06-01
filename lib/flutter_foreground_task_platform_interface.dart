@@ -44,6 +44,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   }
 
   Future<bool> updateService({
+    ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
     Function? callback,

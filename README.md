@@ -451,6 +451,11 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+
+  }
+
+  @override
   Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
     await _streamSubscription?.cancel();
   }
