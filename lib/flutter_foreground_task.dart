@@ -40,7 +40,7 @@ abstract class TaskHandler {
   Future<void> onDestroy(DateTime timestamp, SendPort? sendPort);
 
   /// Called when the notification button on the Android platform is pressed.
-  void onButtonPressed(String id) {}
+  void onNotificationButtonPressed(String id) {}
 
   /// Called when the notification itself on the Android platform is pressed.
   ///
@@ -267,8 +267,8 @@ class FlutterForegroundTask {
         case 'onDestroy':
           await handler.onDestroy(timestamp, sendPort);
           break;
-        case 'onButtonPressed':
-          handler.onButtonPressed(call.arguments.toString());
+        case 'onNotificationButtonPressed':
+          handler.onNotificationButtonPressed(call.arguments.toString());
           break;
         case 'onNotificationPressed':
           handler.onNotificationPressed();

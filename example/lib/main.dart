@@ -47,9 +47,9 @@ class MyTaskHandler extends TaskHandler {
   }
 
   @override
-  void onButtonPressed(String id) {
+  void onNotificationButtonPressed(String id) {
     // Called when the notification button on the Android platform is pressed.
-    print('onButtonPressed >> $id');
+    print('onNotificationButtonPressed >> $id');
   }
 
   @override

@@ -38,7 +38,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private const val ACTION_TASK_START = "onStart"
         private const val ACTION_TASK_EVENT = "onEvent"
         private const val ACTION_TASK_DESTROY = "onDestroy"
-        private const val ACTION_BUTTON_PRESSED = "onButtonPressed"
+        private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
         private const val DATA_FIELD_NAME = "data"
 
@@ -154,7 +154,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
 	private fun registerBroadcastReceiver() {
 		val intentFilter = IntentFilter().apply {
-			addAction(ACTION_BUTTON_PRESSED)
+			addAction(ACTION_NOTIFICATION_BUTTON_PRESSED)
 			addAction(ACTION_NOTIFICATION_PRESSED)
 		}
 		registerReceiver(broadcastReceiver, intentFilter)
@@ -466,7 +466,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		val actions = mutableListOf<Notification.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
-			val bIntent = Intent(ACTION_BUTTON_PRESSED).apply {
+			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
 			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -492,7 +492,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		val actions = mutableListOf<NotificationCompat.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
-			val bIntent = Intent(ACTION_BUTTON_PRESSED).apply {
+			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
 			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

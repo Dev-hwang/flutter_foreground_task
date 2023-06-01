@@ -7,7 +7,7 @@ This plugin is used to implement a foreground service on the Android platform.
 * Can perform repetitive task with foreground service.
 * Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
 * Provides a widget that prevents the app from closing when the foreground service is running.
-* Provides a widget to start the foreground service when the app is minimized or closed.
+* Provides a widget that can start the foreground service when the app is minimized or closed.
 * Provides an option to automatically resume foreground service on boot.
 
 ## Getting started
@@ -240,9 +240,9 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  void onButtonPressed(String id) {
+  void onNotificationButtonPressed(String id) {
     // Called when the notification button on the Android platform is pressed.
-    print('onButtonPressed >> $id');
+    print('onNotificationButtonPressed >> $id');
   }
 
   @override
@@ -600,7 +600,7 @@ void initState() {
 @override
 Widget build(BuildContext context) {
   return MaterialApp(
-    // A widget to start the foreground service when the app is minimized or closed.
+    // A widget that can start the foreground service when the app is minimized or closed.
     // This widget must be declared above the [Scaffold] widget.
     home: WillStartForegroundTask(
       onWillStart: () async {
