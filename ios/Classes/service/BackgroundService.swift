@@ -14,7 +14,7 @@ let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
 let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 
 let ACTION_TASK_START: String = "onStart"
-let ACTION_TASK_EVENT: String = "onEvent"
+let ACTION_TASK_REPEAT_EVENT: String = "onRepeatEvent"
 let ACTION_TASK_DESTROY: String = "onDestroy"
 
 @available(iOS 10.0, *)
@@ -147,13 +147,13 @@ class BackgroundService: NSObject {
     
     backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: nil) { _ in
       if self.isOnceEvent {
-        self.backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, arguments: nil)
+        self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
         return
       }
       
       let timeInterval = TimeInterval(self.taskInterval / 1000)
       self.backgroundTaskTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
-        self.backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, arguments: nil)
+        self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
       }
     }
   }

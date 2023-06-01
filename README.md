@@ -54,7 +54,7 @@ We can also launch `flutter_foreground_task` on iOS platform. However, it has th
 * Works only on iOS 10.0 or later.
 * If the app is forcibly closed, the task will not work.
 * Task cannot be started automatically on device reboot.
-* Due to the background processing limitations of the platform, the `onEvent` event may not work properly in the background. But in the foreground it works fine.
+* Due to the background processing limitations of the platform, the `onRepeatEvent` event may not work properly in the background. But in the foreground it works fine.
 
 **Objective-C**:
 
@@ -217,6 +217,7 @@ void startCallback() {
 class FirstTaskHandler extends TaskHandler {
   SendPort? _sendPort;
 
+  // Called when the task is started.
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
     _sendPort = sendPort;
@@ -227,31 +228,31 @@ class FirstTaskHandler extends TaskHandler {
     print('customData: $customData');
   }
 
+  // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     // Send data to the main isolate.
     sendPort?.send(timestamp);
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
   Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the clearAllData function to clear all the stored data.
-    await FlutterForegroundTask.clearAllData();
+
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
   void onNotificationButtonPressed(String id) {
-    // Called when the notification button on the Android platform is pressed.
     print('onNotificationButtonPressed >> $id');
   }
 
+  // Called when the notification itself on the Android platform is pressed.
+  //
+  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+  // this function to be called.
   @override
   void onNotificationPressed() {
-    // Called when the notification itself on the Android platform is pressed.
-    //
-    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-    // this function to be called.
-
     // Note that the app will only route to "/resume-route" when it is exited so
     // it will usually be necessary to send a message through the send port to
     // signal it to restore state when the app is already started.
@@ -450,11 +451,6 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-
-  }
-
-  @override
   Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
     await _streamSubscription?.cancel();
   }
@@ -480,7 +476,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'FirstTaskHandler',
       notificationText: timestamp.toString(),
@@ -511,7 +507,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'SecondTaskHandler',
       notificationText: timestamp.toString(),
@@ -726,7 +722,7 @@ Data class with foreground task options.
 | Property | Description |
 |---|---|
 | `interval` | The task call interval in milliseconds. The default is `5000`. |
-| `isOnceEvent` | Whether to invoke the onEvent of `TaskHandler` only once. The default is `false`. |
+| `isOnceEvent` | Whether to invoke the onRepeatEvent of `TaskHandler` only once. The default is `false`. |
 | `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`. |
 | `allowWakeLock` | Whether to keep the CPU turned on. The default is `true`. |
 | `allowWifiLock` | Allows an application to keep the Wi-Fi radio awake. The default is `false`. |

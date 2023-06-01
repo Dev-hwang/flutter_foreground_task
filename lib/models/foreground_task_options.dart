@@ -13,7 +13,7 @@ class ForegroundTaskOptions {
   /// The default is `5000`.
   final int interval;
 
-  /// Whether to invoke the onEvent of [TaskHandler] only once.
+  /// Whether to invoke the onRepeatEvent of [TaskHandler] only once.
   /// The default is `false`.
   final bool isOnceEvent;
 

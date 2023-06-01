@@ -17,6 +17,7 @@ class MyTaskHandler extends TaskHandler {
   SendPort? _sendPort;
   int _eventCount = 0;
 
+  // Called when the task is started.
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
     _sendPort = sendPort;
@@ -27,8 +28,9 @@ class MyTaskHandler extends TaskHandler {
     print('customData: $customData');
   }
 
+  // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'MyTaskHandler',
       notificationText: 'eventCount: $_eventCount',
@@ -40,25 +42,24 @@ class MyTaskHandler extends TaskHandler {
     _eventCount++;
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
   Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the clearAllData function to clear all the stored data.
-    await FlutterForegroundTask.clearAllData();
+    print('onDestroy');
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
   void onNotificationButtonPressed(String id) {
-    // Called when the notification button on the Android platform is pressed.
     print('onNotificationButtonPressed >> $id');
   }
 
+  // Called when the notification itself on the Android platform is pressed.
+  //
+  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+  // this function to be called.
   @override
   void onNotificationPressed() {
-    // Called when the notification itself on the Android platform is pressed.
-    //
-    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-    // this function to be called.
-
     // Note that the app will only route to "/resume-route" when it is exited so
     // it will usually be necessary to send a message through the send port to
     // signal it to restore state when the app is already started.

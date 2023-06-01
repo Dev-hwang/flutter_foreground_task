@@ -33,8 +33,8 @@ abstract class TaskHandler {
   /// Called when the task is started.
   Future<void> onStart(DateTime timestamp, SendPort? sendPort);
 
-  /// Called when an event occurs.
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort);
+  /// Called every [interval] milliseconds in [ForegroundTaskOptions].
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort);
 
   /// Called when the task is destroyed.
   Future<void> onDestroy(DateTime timestamp, SendPort? sendPort);
@@ -261,8 +261,8 @@ class FlutterForegroundTask {
         case 'onStart':
           await handler.onStart(timestamp, sendPort);
           break;
-        case 'onEvent':
-          await handler.onEvent(timestamp, sendPort);
+        case 'onRepeatEvent':
+          await handler.onRepeatEvent(timestamp, sendPort);
           break;
         case 'onDestroy':
           await handler.onDestroy(timestamp, sendPort);

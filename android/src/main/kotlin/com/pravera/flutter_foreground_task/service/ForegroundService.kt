@@ -36,7 +36,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	companion object {
         private val TAG = ForegroundService::class.java.simpleName
         private const val ACTION_TASK_START = "onStart"
-        private const val ACTION_TASK_EVENT = "onEvent"
+        private const val ACTION_TASK_REPEAT_EVENT = "onRepeatEvent"
         private const val ACTION_TASK_DESTROY = "onDestroy"
         private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
@@ -344,7 +344,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 					do {
 						withContext(Dispatchers.Main) {
 							try {
-								backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, null)
+								backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
 							} catch (e: Exception) {
 								Log.e(TAG, "invokeMethod", e)
 							}
