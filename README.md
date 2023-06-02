@@ -16,7 +16,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^5.2.1
+  flutter_foreground_task: ^6.0.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
@@ -439,14 +439,14 @@ class FirstTaskHandler extends TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    _streamSubscription = FlLocation.getLocationStream().listen((event) {
+    _streamSubscription = FlLocation.getLocationStream().listen((location) {
       FlutterForegroundTask.updateService(
         notificationTitle: 'My Location',
-        notificationText: '${event.latitude}, ${event.longitude}',
+        notificationText: '${location.latitude}, ${location.longitude}',
       );
 
       // Send data to the main isolate.
-      sendPort?.send(event);
+      sendPort?.send(location);
     });
   }
 
@@ -482,16 +482,22 @@ class FirstTaskHandler extends TaskHandler {
 
   @override
   Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-    FlutterForegroundTask.updateService(
-      notificationTitle: 'FirstTaskHandler',
-      notificationText: timestamp.toString(),
-      callback: _eventCount >= 10 ? updateCallback : null,
-    );
+    if (_eventCount == 10) {
+      FlutterForegroundTask.updateService(
+        foregroundTaskOptions: const ForegroundTaskOptions(interval: 1000),
+        callback: updateCallback,
+      );
+    } else {
+      FlutterForegroundTask.updateService(
+        notificationTitle: 'FirstTaskHandler',
+        notificationText: timestamp.toString(),
+      );
 
-    // Send data to the main isolate.
-    sendPort?.send(_eventCount);
+      // Send data to the main isolate.
+      sendPort?.send(_eventCount);
 
-    _eventCount++;
+      _eventCount++;
+    }
   }
 
   @override

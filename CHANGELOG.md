@@ -1,3 +1,11 @@
+## 6.0.0
+
+* [**BREAKING**] Rename the callback function to clarify what information the event provides
+  - Rename `onButtonPressed` to `onNotificationButtonPressed`
+  - Rename `onEvent` to `onRepeatEvent`
+* [**FEAT**] Add textColor option to NotificationButton
+* [**FEAT**] Add ability to change task options while service is running
+
 ## 5.2.1
 
 * [**FIX**] Fix issue where service could not be started in the background
