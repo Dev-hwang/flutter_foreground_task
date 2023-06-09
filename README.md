@@ -23,22 +23,7 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 ### :baby_chick: Android
 
-Since this plugin is based on a foreground service, we need to add the following permission to the `AndroidManifest.xml` file. Open the `AndroidManifest.xml` file and specify it between the `<manifest>` and `<application>` tags.
-
-```
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.WAKE_LOCK" />
-<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- for Android 13 -->
-```
-
-And we need to add this permission to automatically resume foreground service at boot time.
-
-```
-<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-```
-
-And specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
+Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
 
 ```
 <!-- Add android:stopWithTask option only when necessary. -->
@@ -49,7 +34,7 @@ And specify the service inside the `<application>` tag as follows. If you want t
 
 ### :baby_chick: iOS
 
-We can also launch `flutter_foreground_task` on iOS platform. However, it has the following limitations.
+We can also launch `flutter_foreground_task` on the iOS platform. However, it has the following limitations.
 
 * Works only on iOS 10.0 or later.
 * If the app is forcibly closed, the task will not work.
@@ -302,6 +287,7 @@ class _ExamplePageState extends State<ExamplePage> {
     // If you do not use the onNotificationPressed or launchApp function,
     // you do not need to write this code.
     if (!await FlutterForegroundTask.canDrawOverlays) {
+      // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
       await FlutterForegroundTask.openSystemAlertWindowSettings();
     }
 
@@ -317,7 +303,6 @@ class _ExamplePageState extends State<ExamplePage> {
     final NotificationPermission notificationPermissionStatus =
         await FlutterForegroundTask.checkNotificationPermission();
     if (notificationPermissionStatus != NotificationPermission.granted) {
-      // This function requires `android.permission.POST_NOTIFICATIONS` permission.
       await FlutterForegroundTask.requestNotificationPermission();
     }
   }
@@ -566,6 +551,7 @@ Future<void> _requestPermissionForAndroid() async {
   // If you do not use the onNotificationPressed or launchApp function,
   // you do not need to write this code.
   if (!await FlutterForegroundTask.canDrawOverlays) {
+    // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
     await FlutterForegroundTask.openSystemAlertWindowSettings();
   }
 
@@ -581,7 +567,6 @@ Future<void> _requestPermissionForAndroid() async {
   final NotificationPermission notificationPermissionStatus =
       await FlutterForegroundTask.checkNotificationPermission();
   if (notificationPermissionStatus != NotificationPermission.granted) {
-    // This function requires `android.permission.POST_NOTIFICATIONS` permission.
     await FlutterForegroundTask.requestNotificationPermission();
   }
 }

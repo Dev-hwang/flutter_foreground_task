@@ -225,7 +225,8 @@ class FlutterForegroundTask {
       FlutterForegroundTaskPlatform.instance.canDrawOverlays;
 
   /// Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
-  /// pass the `forceOpen` bool to open the permissions page even if granted.
+  ///
+  /// Pass the `forceOpen` bool to open the permissions page even if granted.
   static Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) =>
       FlutterForegroundTaskPlatform.instance
           .openSystemAlertWindowSettings(forceOpen: forceOpen);

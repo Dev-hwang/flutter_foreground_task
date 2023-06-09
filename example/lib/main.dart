@@ -107,6 +107,7 @@ class _ExamplePageState extends State<ExamplePage> {
     // If you do not use the onNotificationPressed or launchApp function,
     // you do not need to write this code.
     if (!await FlutterForegroundTask.canDrawOverlays) {
+      // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
       await FlutterForegroundTask.openSystemAlertWindowSettings();
     }
 
@@ -122,7 +123,6 @@ class _ExamplePageState extends State<ExamplePage> {
     final NotificationPermission notificationPermissionStatus =
         await FlutterForegroundTask.checkNotificationPermission();
     if (notificationPermissionStatus != NotificationPermission.granted) {
-      // This function requires `android.permission.POST_NOTIFICATIONS` permission.
       await FlutterForegroundTask.requestNotificationPermission();
     }
   }
