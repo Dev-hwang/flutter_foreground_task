@@ -1,3 +1,7 @@
+## 6.0.0+1
+
+* [**REFACTOR**] Move required permissions on the Android platform inside the plugin
+
 ## 6.0.0
 
 * [**BREAKING**] Rename the callback function to clarify what information the event provides
