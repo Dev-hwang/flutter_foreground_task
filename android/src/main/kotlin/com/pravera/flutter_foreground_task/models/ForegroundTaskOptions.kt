@@ -14,7 +14,7 @@ data class ForegroundTaskOptions(
     companion object {
         fun getData(context: Context): ForegroundTaskOptions {
             val prefs = context.getSharedPreferences(
-                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
             val interval = prefs.getLong(PrefsKey.TASK_INTERVAL, 5000L)
             val isOnceEvent = prefs.getBoolean(PrefsKey.IS_ONCE_EVENT, false)
@@ -39,7 +39,7 @@ data class ForegroundTaskOptions(
 
         fun putData(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
             val interval = "${map?.get(PrefsKey.TASK_INTERVAL)}".toLongOrNull() ?: 5000L
             val isOnceEvent = map?.get(PrefsKey.IS_ONCE_EVENT) as? Boolean ?: false
@@ -62,7 +62,7 @@ data class ForegroundTaskOptions(
 
         fun updateData(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
             val interval = "${map?.get(PrefsKey.TASK_INTERVAL)}".toLongOrNull()
             val isOnceEvent = map?.get(PrefsKey.IS_ONCE_EVENT) as? Boolean
@@ -84,7 +84,7 @@ data class ForegroundTaskOptions(
 
         fun clearData(context: Context) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
             with(prefs.edit()) {
                 clear()

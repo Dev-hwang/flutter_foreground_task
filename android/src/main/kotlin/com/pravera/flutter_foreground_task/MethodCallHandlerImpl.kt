@@ -87,13 +87,13 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
             "openIgnoreBatteryOptimizationSettings" -> {
                 checkActivityNull(result)?.let {
                     methodCallResult1 = result
-                    ForegroundServiceUtils.openIgnoreBatteryOptimizationSettings(it, 246)
+                    ForegroundServiceUtils.openIgnoreBatteryOptimizationSettings(it, RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                 }
             }
             "requestIgnoreBatteryOptimization" -> {
                 checkActivityNull(result)?.let {
                     methodCallResult2 = result
-                    ForegroundServiceUtils.requestIgnoreBatteryOptimization(it, 247)
+                    ForegroundServiceUtils.requestIgnoreBatteryOptimization(it, RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION)
                 }
             }
             "canDrawOverlays" -> result.success(ForegroundServiceUtils.canDrawOverlays(context))
@@ -102,7 +102,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                     methodCallResult3 = result
                     val arguments = args as? Map<*, *>
                     val forceOpen = arguments?.get("forceOpen") as? Boolean ?: false
-                    ForegroundServiceUtils.openSystemAlertWindowSettings(it, 248, forceOpen)
+                    ForegroundServiceUtils.openSystemAlertWindowSettings(it, RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS, forceOpen)
                 }
             }
             else -> result.notImplemented()
@@ -111,9 +111,12 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         when (requestCode) {
-            246 -> methodCallResult1?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
-            247 -> methodCallResult2?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
-            248 -> methodCallResult3?.success(ForegroundServiceUtils.canDrawOverlays(context))
+            RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS ->
+                methodCallResult1?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
+            RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION ->
+                methodCallResult2?.success(ForegroundServiceUtils.isIgnoringBatteryOptimizations(context))
+            RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS ->
+                methodCallResult3?.success(ForegroundServiceUtils.canDrawOverlays(context))
         }
 
         return true

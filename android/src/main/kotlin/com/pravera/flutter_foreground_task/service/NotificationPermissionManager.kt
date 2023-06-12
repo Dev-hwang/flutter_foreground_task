@@ -8,16 +8,13 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.pravera.flutter_foreground_task.PreferencesKey
+import com.pravera.flutter_foreground_task.RequestCode
 import com.pravera.flutter_foreground_task.errors.ErrorCodes
 import com.pravera.flutter_foreground_task.models.NotificationPermission
 import io.flutter.plugin.common.PluginRegistry
 
 class NotificationPermissionManager : PluginRegistry.RequestPermissionsResultListener {
-    companion object {
-        private const val PERMISSION_REQ_CODE = 100
-        private const val PREV_PERMISSION_STATUS_PREFS_NAME = "PREV_PERMISSION_STATUS_PREFS"
-    }
-
     private var activity: Activity? = null
     private var callback: NotificationPermissionCallback? = null
 
@@ -54,7 +51,7 @@ class NotificationPermissionManager : PluginRegistry.RequestPermissionsResultLis
         ActivityCompat.requestPermissions(
             activity,
             arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            PERMISSION_REQ_CODE
+            RequestCode.REQUEST_NOTIFICATION_PERMISSION
         )
     }
 
@@ -63,7 +60,8 @@ class NotificationPermissionManager : PluginRegistry.RequestPermissionsResultLis
     }
 
     private fun Context.setPrevPermissionStatus(permission: String, status: NotificationPermission) {
-        val prefs = getSharedPreferences(PREV_PERMISSION_STATUS_PREFS_NAME, Context.MODE_PRIVATE) ?: return
+        val prefs = getSharedPreferences(
+            PreferencesKey.NOTIFICATION_PERMISSION_STATUS_PREFS, Context.MODE_PRIVATE) ?: return
         with (prefs.edit()) {
             putString(permission, status.toString())
             commit()
@@ -71,7 +69,8 @@ class NotificationPermissionManager : PluginRegistry.RequestPermissionsResultLis
     }
 
     private fun Context.getPrevPermissionStatus(permission: String): NotificationPermission? {
-        val prefs = getSharedPreferences(PREV_PERMISSION_STATUS_PREFS_NAME, Context.MODE_PRIVATE) ?: return null
+        val prefs = getSharedPreferences(
+            PreferencesKey.NOTIFICATION_PERMISSION_STATUS_PREFS, Context.MODE_PRIVATE) ?: return null
         val value = prefs.getString(permission, null) ?: return null
         return NotificationPermission.valueOf(value)
     }
@@ -93,7 +92,7 @@ class NotificationPermissionManager : PluginRegistry.RequestPermissionsResultLis
         val permissionIndex: Int
         var permissionStatus = NotificationPermission.DENIED
         when (requestCode) {
-            PERMISSION_REQ_CODE -> {
+            RequestCode.REQUEST_NOTIFICATION_PERMISSION -> {
                 permission = Manifest.permission.POST_NOTIFICATIONS
                 permissionIndex = permissions.indexOf(permission)
                 if (permissionIndex >= 0
