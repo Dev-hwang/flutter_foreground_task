@@ -132,7 +132,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	override fun onDestroy() {
 		super.onDestroy()
 		stopForegroundTask()
-		releaseLockMode()
+		stopForegroundService()
 		unregisterBroadcastReceiver()
 		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
 			if (isSetStopWithTaskFlag()) {
@@ -349,7 +349,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		currFlutterEngine = FlutterEngine(this)
 
 		currFlutterLoader = FlutterInjector.instance().flutterLoader()
-		currFlutterLoader?.startInitialization(this)
+		if (currFlutterLoader?.initialized() == false) {
+			currFlutterLoader?.startInitialization(this)
+		}
 		currFlutterLoader?.ensureInitializationComplete(this, null)
 
 		val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
