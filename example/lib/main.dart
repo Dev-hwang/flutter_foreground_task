@@ -19,7 +19,7 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when the task is started.
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
     _sendPort = sendPort;
 
     // You can use the getData function to get the stored data.
@@ -30,7 +30,7 @@ class MyTaskHandler extends TaskHandler {
 
   // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
-  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'MyTaskHandler',
       notificationText: 'eventCount: $_eventCount',
@@ -44,7 +44,7 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when the notification button on the Android platform is pressed.
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
     print('onDestroy');
   }
 

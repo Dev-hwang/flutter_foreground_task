@@ -31,13 +31,13 @@ const String _kPrefsKeyPrefix = 'com.pravera.flutter_foreground_task.prefs.';
 /// A class that implements a task handler.
 abstract class TaskHandler {
   /// Called when the task is started.
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort);
+  void onStart(DateTime timestamp, SendPort? sendPort);
 
   /// Called every [interval] milliseconds in [ForegroundTaskOptions].
-  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort);
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort);
 
   /// Called when the task is destroyed.
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort);
+  void onDestroy(DateTime timestamp, SendPort? sendPort);
 
   /// Called when the notification button on the Android platform is pressed.
   void onNotificationButtonPressed(String id) {}
@@ -73,7 +73,7 @@ class FlutterForegroundTask {
     required String notificationTitle,
     required String notificationText,
     Function? callback,
-  }) async {
+  }) {
     if (_initialized == false) {
       throw const ForegroundTaskException(
           'Not initialized. Please call this function after calling the init function.');
@@ -262,16 +262,17 @@ class FlutterForegroundTask {
 
       switch (call.method) {
         case 'onStart':
-          await handler.onStart(timestamp, sendPort);
+          handler.onStart(timestamp, sendPort);
           break;
         case 'onRepeatEvent':
-          await handler.onRepeatEvent(timestamp, sendPort);
+          handler.onRepeatEvent(timestamp, sendPort);
           break;
         case 'onDestroy':
-          await handler.onDestroy(timestamp, sendPort);
+          handler.onDestroy(timestamp, sendPort);
           break;
         case 'onNotificationButtonPressed':
-          handler.onNotificationButtonPressed(call.arguments.toString());
+          final String id = call.arguments.toString();
+          handler.onNotificationButtonPressed(id);
           break;
         case 'onNotificationPressed':
           handler.onNotificationPressed();

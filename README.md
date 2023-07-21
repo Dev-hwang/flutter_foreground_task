@@ -204,7 +204,7 @@ class FirstTaskHandler extends TaskHandler {
 
   // Called when the task is started.
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
     _sendPort = sendPort;
 
     // You can use the getData function to get the stored data.
@@ -215,14 +215,14 @@ class FirstTaskHandler extends TaskHandler {
 
   // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
-  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     // Send data to the main isolate.
     sendPort?.send(timestamp);
   }
 
   // Called when the notification button on the Android platform is pressed.
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
 
   }
 
@@ -423,7 +423,7 @@ class FirstTaskHandler extends TaskHandler {
   StreamSubscription<Location>? _streamSubscription;
 
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
     _streamSubscription = FlLocation.getLocationStream().listen((location) {
       FlutterForegroundTask.updateService(
         notificationTitle: 'My Location',
@@ -436,12 +436,12 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
 
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
     await _streamSubscription?.cancel();
   }
 }
@@ -461,12 +461,12 @@ class FirstTaskHandler extends TaskHandler {
   int _eventCount = 0;
 
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
 
   }
 
   @override
-  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     if (_eventCount == 10) {
       FlutterForegroundTask.updateService(
         foregroundTaskOptions: const ForegroundTaskOptions(interval: 1000),
@@ -486,7 +486,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
 
   }
 }
@@ -498,12 +498,12 @@ void updateCallback() {
 
 class SecondTaskHandler extends TaskHandler {
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
 
   }
 
   @override
-  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'SecondTaskHandler',
       notificationText: timestamp.toString(),
@@ -514,7 +514,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
 
   }
 }
@@ -648,114 +648,114 @@ Widget build(BuildContext context) {
 
 Notification options for Android platform.
 
-| Property | Description |
-|---|---|
-| `id` | Unique ID of the notification. |
-| `channelId` | Unique ID of the notification channel. |
-| `channelName` | The name of the notification channel. This value is displayed to the user in the notification settings. |
-| `channelDescription` | The description of the notification channel. This value is displayed to the user in the notification settings. |
-| `channelImportance` | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`. |
-| `priority` | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`. |
-| `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
-| `playSound` | Whether to play sound when creating notifications. The default is `false`. |
-| `showWhen` | Whether to show the timestamp when the notification was created in the content view. The default is `false`. |
-| `isSticky` | Whether the system will restart the service if the service is killed. The default is `true`. |
-| `visibility` | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
-| `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
-| `buttons` | A list of buttons to display in the notification. A maximum of 3 is allowed. |
+| Property             | Description                                                                                                                           |
+|----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `id`                 | Unique ID of the notification.                                                                                                        |
+| `channelId`          | Unique ID of the notification channel.                                                                                                |
+| `channelName`        | The name of the notification channel. This value is displayed to the user in the notification settings.                               |
+| `channelDescription` | The description of the notification channel. This value is displayed to the user in the notification settings.                        |
+| `channelImportance`  | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.                                   |
+| `priority`           | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.                                   |
+| `enableVibration`    | Whether to enable vibration when creating notifications. The default is `false`.                                                      |
+| `playSound`          | Whether to play sound when creating notifications. The default is `false`.                                                            |
+| `showWhen`           | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                          |
+| `isSticky`           | Whether the system will restart the service if the service is killed. The default is `true`.                                          |
+| `visibility`         | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
+| `iconData`           | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
+| `buttons`            | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
 
 ### :chicken: NotificationIconData
 
 Data for setting the notification icon.
 
-| Property | Description |
-|---|---|
-| `resType` | The resource type of the notification icon. If the resource is in the drawable folder, set it to `ResourceType.drawable`, if the resource is in the mipmap folder, set it to `ResourceType.mipmap`. |
-| `resPrefix` | The resource prefix of the notification icon. If the notification icon name is `ic_simple_notification`, set it to `ResourcePrefix.ic` and set `name` to `simple_notification`. |
-| `name` | Notification icon name without prefix. |
+| Property    | Description                                                                                                                                                                                         |
+|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `resType`   | The resource type of the notification icon. If the resource is in the drawable folder, set it to `ResourceType.drawable`, if the resource is in the mipmap folder, set it to `ResourceType.mipmap`. |
+| `resPrefix` | The resource prefix of the notification icon. If the notification icon name is `ic_simple_notification`, set it to `ResourcePrefix.ic` and set `name` to `simple_notification`.                     |
+| `name`      | Notification icon name without prefix.                                                                                                                                                              |
 
 ### :chicken: ResourceType
 
 The resource type of the notification icon.
 
-| Value | Description |
-|---|---|
-| `drawable` | A resources in the drawable folder. The drawable folder is where all kinds of images are stored. |
-| `mipmap` | A resources in the mipmap folder. The mipmap folder is usually where the launcher icon image is stored. |
+| Value      | Description                                                                                             |
+|------------|---------------------------------------------------------------------------------------------------------|
+| `drawable` | A resources in the drawable folder. The drawable folder is where all kinds of images are stored.        |
+| `mipmap`   | A resources in the mipmap folder. The mipmap folder is usually where the launcher icon image is stored. |
 
 ### :chicken: ResourcePrefix
 
 The resource prefix of the notification icon.
 
-| Value | Description |
-|---|---|
-| `ic` | A resources with the `ic_` prefix. |
+| Value | Description                         |
+|-------|-------------------------------------|
+| `ic`  | A resources with the `ic_` prefix.  |
 | `img` | A resources with the `img_` prefix. |
 
 ### :chicken: NotificationButton
 
 The button to display in the notification.
 
-| Property | Description |
-|---|---|
-| `id` | The button identifier. |
-| `text` | The text to display on the button. |
-| `textColor` | The button text color. |
+| Property    | Description                        |
+|-------------|------------------------------------|
+| `id`        | The button identifier.             |
+| `text`      | The text to display on the button. |
+| `textColor` | The button text color.             |
 
 ### :chicken: IOSNotificationOptions
 
 Notification options for iOS platform.
 
-| Property | Description |
-|---|---|
-| `showNotification` | Whether to show notifications. The default is `true`. |
-| `playSound` | Whether to play sound when creating notifications. The default is `false`. |
+| Property           | Description                                                                |
+|--------------------|----------------------------------------------------------------------------|
+| `showNotification` | Whether to show notifications. The default is `true`.                      |
+| `playSound`        | Whether to play sound when creating notifications. The default is `false`. |
 
 ### :chicken: ForegroundTaskOptions
 
 Data class with foreground task options.
 
-| Property | Description |
-|---|---|
-| `interval` | The task call interval in milliseconds. The default is `5000`. |
-| `isOnceEvent` | Whether to invoke the onRepeatEvent of `TaskHandler` only once. The default is `false`. |
-| `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`. |
-| `allowWakeLock` | Whether to keep the CPU turned on. The default is `true`. |
-| `allowWifiLock` | Allows an application to keep the Wi-Fi radio awake. The default is `false`. |
+| Property        | Description                                                                             |
+|-----------------|-----------------------------------------------------------------------------------------|
+| `interval`      | The task call interval in milliseconds. The default is `5000`.                          |
+| `isOnceEvent`   | Whether to invoke the onRepeatEvent of `TaskHandler` only once. The default is `false`. |
+| `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`.           |
+| `allowWakeLock` | Whether to keep the CPU turned on. The default is `true`.                               |
+| `allowWifiLock` | Allows an application to keep the Wi-Fi radio awake. The default is `false`.            |
 
 ### :chicken: NotificationChannelImportance
 
 The importance of the notification channel. See https://developer.android.com/training/notify-user/channels?hl=ko#importance
 
-| Value | Description |
-|---|---|
-| `NONE` | A notification with no importance: does not show in the shade. |
-| `MIN` | Min notification importance: only shows in the shade, below the fold. |
-| `LOW` | Low notification importance: shows in the shade, and potentially in the status bar (see shouldHideSilentStatusBarIcons()), but is not audibly intrusive. |
-| `DEFAULT` | Default notification importance: shows everywhere, makes noise, but does not visually intrude. |
-| `HIGH` | Higher notification importance: shows everywhere, makes noise and peeks. May use full screen intents. |
-| `MAX` | Max notification importance: same as HIGH, but generally not used. |
+| Value     | Description                                                                                                                                              |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `NONE`    | A notification with no importance: does not show in the shade.                                                                                           |
+| `MIN`     | Min notification importance: only shows in the shade, below the fold.                                                                                    |
+| `LOW`     | Low notification importance: shows in the shade, and potentially in the status bar (see shouldHideSilentStatusBarIcons()), but is not audibly intrusive. |
+| `DEFAULT` | Default notification importance: shows everywhere, makes noise, but does not visually intrude.                                                           |
+| `HIGH`    | Higher notification importance: shows everywhere, makes noise and peeks. May use full screen intents.                                                    |
+| `MAX`     | Max notification importance: same as HIGH, but generally not used.                                                                                       |
 
 ### :chicken: NotificationPriority
 
 Priority of notifications for Android 7.1 and lower.
 
-| Value | Description |
-|---|---|
-| `MIN` | No sound and does not appear in the status bar. |
-| `LOW` | No sound. |
-| `DEFAULT` | Makes a sound. |
-| `HIGH` | Makes a sound and appears as a heads-up notification. |
-| `MAX` | Same as HIGH, but used when you want to notify notification immediately. |
+| Value     | Description                                                              |
+|-----------|--------------------------------------------------------------------------|
+| `MIN`     | No sound and does not appear in the status bar.                          |
+| `LOW`     | No sound.                                                                |
+| `DEFAULT` | Makes a sound.                                                           |
+| `HIGH`    | Makes a sound and appears as a heads-up notification.                    |
+| `MAX`     | Same as HIGH, but used when you want to notify notification immediately. |
 
 ### :chicken: NotificationVisibility
 
 The level of detail displayed in notifications on the lock screen.
 
-| Value | Description |
-|---|---|
-| `VISIBILITY_PUBLIC` | Show this notification in its entirety on all lockscreens. |
-| `VISIBILITY_SECRET` | Do not reveal any part of this notification on a secure lockscreen. |
+| Value                | Description                                                                                                    |
+|----------------------|----------------------------------------------------------------------------------------------------------------|
+| `VISIBILITY_PUBLIC`  | Show this notification in its entirety on all lockscreens.                                                     |
+| `VISIBILITY_SECRET`  | Do not reveal any part of this notification on a secure lockscreen.                                            |
 | `VISIBILITY_PRIVATE` | Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens. |
 
 ## Utility methods
