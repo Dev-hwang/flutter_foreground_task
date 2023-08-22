@@ -257,6 +257,7 @@ class FlutterForegroundTask {
 
     // Set the method call handler for the background channel.
     backgroundChannel.setMethodCallHandler((call) async {
+      await (await SharedPreferences.getInstance()).reload();
       final timestamp = DateTime.now();
       final sendPort = _lookupPort();
 
