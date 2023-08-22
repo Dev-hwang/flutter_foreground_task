@@ -182,8 +182,14 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
 	@SuppressLint("WrongConstant")
 	private fun startForegroundService() {
-		// Get the icon and PendingIntent to put in the notification.
+		// channel info
 		val pm = applicationContext.packageManager
+		val channelId = notificationOptions.channelId
+		val channelName = notificationOptions.channelName
+		val channelDesc = notificationOptions.channelDescription
+		val channelImportance = notificationOptions.channelImportance
+
+		// notification icon
 		val iconData = notificationOptions.iconData
 		val iconBackgroundColor: Int?
         val iconResId: Int
@@ -194,24 +200,27 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             iconBackgroundColor = null
             iconResId = getIconResIdFromAppInfo(pm)
         }
+
+		// notification intent
 		val pendingIntent = getPendingIntent(pm)
 
 		// Create a notification and start the foreground service.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			val channel = NotificationChannel(
-				notificationOptions.channelId,
-				notificationOptions.channelName,
-				notificationOptions.channelImportance
-			)
-			channel.description = notificationOptions.channelDescription
-			channel.enableVibration(notificationOptions.enableVibration)
-			if (!notificationOptions.playSound) {
-				channel.setSound(null, null)
-			}
 			val nm = getSystemService(NotificationManager::class.java)
-			nm.createNotificationChannel(channel)
+			if (nm.getNotificationChannel(channelId) == null) {
+				val channel = NotificationChannel(channelId, channelName, channelImportance).apply {
+					if (channelDesc != null) {
+						description = channelDesc
+					}
+					enableVibration(notificationOptions.enableVibration)
+					if (!notificationOptions.playSound) {
+						setSound(null, null)
+					}
+				}
+				nm.createNotificationChannel(channel)
+			}
 
-			val builder = Notification.Builder(this, notificationOptions.channelId)
+			val builder = Notification.Builder(this, channelId)
 			builder.setOngoing(true)
 			builder.setShowWhen(notificationOptions.showWhen)
 			builder.setSmallIcon(iconResId)
@@ -230,7 +239,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			}
 			startForeground(notificationOptions.id, builder.build())
 		} else {
-			val builder = NotificationCompat.Builder(this, notificationOptions.channelId)
+			val builder = NotificationCompat.Builder(this, channelId)
 			builder.setOngoing(true)
 			builder.setShowWhen(notificationOptions.showWhen)
 			builder.setSmallIcon(iconResId)

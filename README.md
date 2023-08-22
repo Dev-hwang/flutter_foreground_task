@@ -131,8 +131,8 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 void _initForegroundTask() {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
-      channelId: 'notification_channel_id',
-      channelName: 'Foreground Notification',
+      channelId: 'foreground_service',
+      channelName: 'Foreground Service Notification',
       channelDescription: 'This notification appears when the foreground service is running.',
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
@@ -600,8 +600,8 @@ Widget build(BuildContext context) {
         return true;
       },
       androidNotificationOptions: AndroidNotificationOptions(
-        channelId: 'notification_channel_id',
-        channelName: 'Foreground Notification',
+        channelId: 'foreground_service',
+        channelName: 'Foreground Service Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,

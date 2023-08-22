@@ -28,8 +28,8 @@ data class NotificationOptions(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
             val id = prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000)
-            val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: ""
-            val channelName = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, null) ?: ""
+            val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: "foreground_service"
+            val channelName = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, null) ?: "Foreground Service"
             val channelDesc = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_DESC, null)
             val channelImportance = prefs.getInt(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, 3)
             val priority = prefs.getInt(PrefsKey.NOTIFICATION_PRIORITY, 0)
@@ -93,8 +93,8 @@ data class NotificationOptions(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
             val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int ?: 1000
-            val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String ?: ""
-            val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String ?: ""
+            val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String
+            val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String
             val channelDesc = map?.get(PrefsKey.NOTIFICATION_CHANNEL_DESC) as? String
             val channelImportance = map?.get(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE) as? Int ?: 3
             val priority = map?.get(PrefsKey.NOTIFICATION_PRIORITY) as? Int ?: 0

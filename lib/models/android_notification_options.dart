@@ -7,7 +7,7 @@ import 'package:flutter_foreground_task/models/notification_visibility.dart';
 /// Notification options for Android platform.
 class AndroidNotificationOptions {
   /// Constructs an instance of [AndroidNotificationOptions].
-  const AndroidNotificationOptions({
+  AndroidNotificationOptions({
     this.id,
     required this.channelId,
     required this.channelName,
@@ -21,7 +21,9 @@ class AndroidNotificationOptions {
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
     this.iconData,
     this.buttons,
-  }) : assert((buttons?.length ?? 0) < 4);
+  })  : assert(channelId.isNotEmpty),
+        assert(channelName.isNotEmpty),
+        assert((buttons?.length ?? 0) < 4);
 
   /// Unique ID of the notification.
   final int? id;

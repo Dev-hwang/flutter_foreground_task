@@ -131,8 +131,8 @@ class _ExamplePageState extends State<ExamplePage> {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         id: 500,
-        channelId: 'notification_channel_id',
-        channelName: 'Foreground Notification',
+        channelId: 'foreground_service',
+        channelName: 'Foreground Service Notification',
         channelDescription:
             'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
