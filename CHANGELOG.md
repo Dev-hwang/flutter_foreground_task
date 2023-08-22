@@ -1,3 +1,11 @@
+## 6.1.0
+
+* [**BREAKING**] Remove future return of TaskHandler callback function
+* [**FIX**] Fix issue where isRunningService is not updated after calling onDestroy
+* [**FIX**] Fix storage data not syncing between isolates
+* [**FIX**] Fix the service could not be started when the notification channel information is empty
+* [**CHORE**] Upgrade dependencies - shared_preferences
+
 ## 6.0.0+1
 
 * [**REFACTOR**] Move required permissions on the Android platform inside the plugin
