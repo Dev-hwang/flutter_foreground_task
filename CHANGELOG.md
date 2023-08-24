@@ -1,3 +1,7 @@
+## 6.1.1
+
+* [**TEST**] Add assertions to service options
+
 ## 6.1.0
 
 * [**BREAKING**] Remove future return of TaskHandler callback function
