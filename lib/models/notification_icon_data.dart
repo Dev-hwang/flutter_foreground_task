@@ -28,7 +28,7 @@ class NotificationIconData {
     required this.resPrefix,
     required this.name,
     this.backgroundColor,
-  });
+  }) : assert(name.length > 0);
 
   /// The resource type of the notification icon.
   /// If the resource is in the drawable folder, set it to [ResourceType.drawable],

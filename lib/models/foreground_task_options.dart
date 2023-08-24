@@ -7,7 +7,7 @@ class ForegroundTaskOptions {
     this.autoRunOnBoot = false,
     this.allowWakeLock = true,
     this.allowWifiLock = false,
-  });
+  }) : assert(interval > 0);
 
   /// The task call interval in milliseconds.
   /// The default is `5000`.

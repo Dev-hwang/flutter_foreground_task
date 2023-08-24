@@ -7,7 +7,8 @@ class NotificationButton {
     required this.id,
     required this.text,
     this.textColor,
-  });
+  })  : assert(id.length > 0),
+        assert(text.length > 0);
 
   /// The button identifier.
   final String id;
