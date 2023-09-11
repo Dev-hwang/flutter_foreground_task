@@ -17,8 +17,9 @@ class MyTaskHandler extends TaskHandler {
   SendPort? _sendPort;
   int _eventCount = 0;
 
+  // Called when the task is started.
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
     _sendPort = sendPort;
 
     // You can use the getData function to get the stored data.
@@ -27,8 +28,9 @@ class MyTaskHandler extends TaskHandler {
     print('customData: $customData');
   }
 
+  // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'MyTaskHandler',
       notificationText: 'eventCount: $_eventCount',
@@ -40,30 +42,28 @@ class MyTaskHandler extends TaskHandler {
     _eventCount++;
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
-  Future<void> onClose(DateTime timestamp, SendPort? sendPort) async {
-    print('CLOSED');
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
+    print('onDestroy');
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the clearAllData function to clear all the stored data.
-    await FlutterForegroundTask.clearAllData();
+  void onNotificationButtonPressed(
+    DateTime timestamp,
+    SendPort? sendPort,
+    String? id,
+  ) {
+    print('onNotificationButtonPressed >> $id');
   }
 
+  // Called when the notification itself on the Android platform is pressed.
+  //
+  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+  // this function to be called.
   @override
-  void onButtonPressed(String id) {
-    // Called when the notification button on the Android platform is pressed.
-    print('onButtonPressed >> $id');
-  }
-
-  @override
-  void onNotificationPressed() {
-    // Called when the notification itself on the Android platform is pressed.
-    //
-    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-    // this function to be called.
-
+  void onNotificationPressed(DateTime timestamp, SendPort? sendPort) {
     // Note that the app will only route to "/resume-route" when it is exited so
     // it will usually be necessary to send a message through the send port to
     // signal it to restore state when the app is already started.
@@ -97,11 +97,46 @@ class ExamplePage extends StatefulWidget {
 class _ExamplePageState extends State<ExamplePage> {
   ReceivePort? _receivePort;
 
+  Future<void> _requestPermissionForAndroid() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+
+    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+    // onNotificationPressed function to be called.
+    //
+    // When the notification is pressed while permission is denied,
+    // the onNotificationPressed function is not called and the app opens.
+    //
+    // If you do not use the onNotificationPressed or launchApp function,
+    // you do not need to write this code.
+    if (!await FlutterForegroundTask.canDrawOverlays) {
+      // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
+      await FlutterForegroundTask.openSystemAlertWindowSettings();
+    }
+
+    // Android 12 or higher, there are restrictions on starting a foreground service.
+    //
+    // To restart the service on device reboot or unexpected problem, you need to allow below permission.
+    if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
+      // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+      await FlutterForegroundTask.requestIgnoreBatteryOptimization();
+    }
+
+    // Android 13 and higher, you need to allow notification permission to expose foreground service notification.
+    final NotificationPermission notificationPermissionStatus =
+        await FlutterForegroundTask.checkNotificationPermission();
+    if (notificationPermissionStatus != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+  }
+
   void _initForegroundTask() {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
-        channelId: 'notification_channel_id',
-        channelName: 'Foreground Notification',
+        id: 500,
+        channelId: 'foreground_service',
+        channelName: 'Foreground Service Notification',
         channelDescription:
             'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
@@ -110,35 +145,24 @@ class _ExamplePageState extends State<ExamplePage> {
           resType: ResourceType.mipmap,
           resPrefix: ResourcePrefix.ic,
           name: 'launcher',
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.orange,
         ),
-        buttons: const [
-          NotificationButton(
+        buttons: [
+          const NotificationButton(
             id: 'sendButton',
             text: 'Send',
-            textColor: Colors.green,
+            textColor: Colors.orange,
           ),
-          NotificationButton(
+          const NotificationButton(
             id: 'testButton',
             text: 'Test',
-            textColor: Colors.yellow,
+            textColor: Colors.grey,
           ),
         ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
         playSound: false,
-        isPersistent: true,
-        buttons: [
-          IOSNotificationButton(
-            id: 'sendButton',
-            text: 'Send',
-          ),
-          IOSNotificationButton(
-            id: 'testButton',
-            text: 'Test',
-          ),
-        ],
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
@@ -150,110 +174,54 @@ class _ExamplePageState extends State<ExamplePage> {
     );
   }
 
-  Future<void> _updateForegroundTask() async {
-    if (await FlutterForegroundTask.isRunningService) {
-      await FlutterForegroundTask.updateService(
-        notificationTitle: 'Updated Foreground Service is running',
-        notificationText: 'Update Tap to return to the app',
-        androidNotificationOptions:
-            FlutterForegroundTask.androidNotificationOptions.copyWith(
-          buttons: const [
-            NotificationButton(
-              id: 'updatedSendButton',
-              text: 'Updated Send',
-              textColor: Colors.deepPurpleAccent,
-            ),
-            NotificationButton(
-              id: 'updatedTestButton',
-              text: 'Updated Test',
-              textColor: Colors.lightBlue,
-            ),
-          ],
-        ),
-        iosNotificationOptions:
-            FlutterForegroundTask.iosNotificationOptions.copyWith(
-          buttons: const [
-            IOSNotificationButton(
-              id: 'updatedSendButton',
-              text: 'Updated Send',
-            ),
-            IOSNotificationButton(
-              id: 'updatedTestButton',
-              text: 'Updated Test',
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   Future<bool> _startForegroundTask() async {
-    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-    // onNotificationPressed function to be called.
-    //
-    // When the notification is pressed while permission is denied,
-    // the onNotificationPressed function is not called and the app opens.
-    //
-    // If you do not use the onNotificationPressed or launchApp function,
-    // you do not need to write this code.
-    if (!await FlutterForegroundTask.canDrawOverlays) {
-      final isGranted =
-          await FlutterForegroundTask.openSystemAlertWindowSettings();
-      if (!isGranted) {
-        print('SYSTEM_ALERT_WINDOW permission denied!');
-        return false;
-      }
-    }
-
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
-    bool reqResult;
+    // Register the receivePort before starting the service.
+    final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
+    final bool isRegistered = _registerReceivePort(receivePort);
+    if (!isRegistered) {
+      print('Failed to register receivePort!');
+      return false;
+    }
+
     if (await FlutterForegroundTask.isRunningService) {
-      reqResult = await FlutterForegroundTask.restartService();
+      return FlutterForegroundTask.restartService();
     } else {
-      reqResult = await FlutterForegroundTask.startService(
+      return FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         callback: startCallback,
       );
     }
+  }
 
-    ReceivePort? receivePort;
-    if (reqResult) {
-      receivePort = await FlutterForegroundTask.receivePort;
+  Future<bool> _stopForegroundTask() {
+    return FlutterForegroundTask.stopService();
+  }
+
+  bool _registerReceivePort(ReceivePort? newReceivePort) {
+    if (newReceivePort == null) {
+      return false;
     }
 
-    return _registerReceivePort(receivePort);
-  }
-
-  Future<bool> _stopForegroundTask() async {
-    return await FlutterForegroundTask.stopService();
-  }
-
-  bool _registerReceivePort(ReceivePort? receivePort) {
     _closeReceivePort();
 
-    if (receivePort != null) {
-      _receivePort = receivePort;
-      _receivePort?.listen((message) {
-        if (message is int) {
-          print('eventCount: $message');
-        } else if (message is String) {
-          if (message == 'onNotificationPressed') {
-            Navigator.of(context).pushNamed('/resume-route');
-          } else {
-            print("Got message: $message");
-          }
-        } else if (message is DateTime) {
-          print('timestamp: ${message.toString()}');
+    _receivePort = newReceivePort;
+    _receivePort?.listen((data) {
+      if (data is int) {
+        print('eventCount: $data');
+      } else if (data is String) {
+        if (data == 'onNotificationPressed') {
+          Navigator.of(context).pushNamed('/resume-route');
         }
-      });
+      } else if (data is DateTime) {
+        print('timestamp: ${data.toString()}');
+      }
+    });
 
-      return true;
-    }
-
-    return false;
+    return _receivePort != null;
   }
 
   void _closeReceivePort() {
@@ -261,16 +229,16 @@ class _ExamplePageState extends State<ExamplePage> {
     _receivePort = null;
   }
 
-  T? _ambiguate<T>(T? value) => value;
-
   @override
   void initState() {
     super.initState();
-    _initForegroundTask();
-    _ambiguate(WidgetsBinding.instance)?.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _requestPermissionForAndroid();
+      _initForegroundTask();
+
       // You can get the previous ReceivePort without restarting the service.
       if (await FlutterForegroundTask.isRunningService) {
-        final newReceivePort = await FlutterForegroundTask.receivePort;
+        final newReceivePort = FlutterForegroundTask.receivePort;
         _registerReceivePort(newReceivePort);
       }
     });
@@ -300,8 +268,8 @@ class _ExamplePageState extends State<ExamplePage> {
   Widget _buildContentView() {
     buttonBuilder(String text, {VoidCallback? onPressed}) {
       return ElevatedButton(
-        child: Text(text),
         onPressed: onPressed,
+        child: Text(text),
       );
     }
 
@@ -310,7 +278,6 @@ class _ExamplePageState extends State<ExamplePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           buttonBuilder('start', onPressed: _startForegroundTask),
-          buttonBuilder('update', onPressed: _updateForegroundTask),
           buttonBuilder('stop', onPressed: _stopForegroundTask),
         ],
       ),

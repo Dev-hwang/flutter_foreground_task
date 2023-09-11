@@ -79,7 +79,7 @@ class BackgroundServiceManager: NSObject {
     let isPersistent = argsDict[PERSISTENT] as? Bool ?? false
     let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
     
-    
+
     prefs.set(notificationContentTitle, forKey: NOTIFICATION_CONTENT_TITLE)
     prefs.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
     prefs.set(showNotification, forKey: SHOW_NOTIFICATION)
@@ -90,25 +90,32 @@ class BackgroundServiceManager: NSObject {
     prefs.set(buttons, forKey: BUTTONS_DATA)
     prefs.set(isPersistent, forKey: PERSISTENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
-    prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
     if callbackHandle != nil {
       prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
-      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE_ON_RESTART)
     }
   }
   
   private func updateOptions(call: FlutterMethodCall) {
     guard let argsDict = call.arguments as? Dictionary<String, Any> else { return }
     let prefs = UserDefaults.standard
-    
+
+    [
+      CALLBACK_HANDLE,
+    ].forEach { key in
+      if let newValue = argsDict[key] as? Int64 {
+        prefs.set(newValue, forKey: key)
+      }
+    }
+
     [
       INTERRUPTION_LEVEL,
+      TASK_INTERVAL,
     ].forEach { key in
       if let newValue = argsDict[key] as? Int {
         prefs.set(newValue, forKey: key)
       }
     }
-    
+
     [
       NOTIFICATION_CONTENT_TITLE,
       NOTIFICATION_CONTENT_TEXT,
@@ -118,22 +125,16 @@ class BackgroundServiceManager: NSObject {
         prefs.set(newValue, forKey: key)
       }
     }
-    
+
     [
       PLAY_SOUND,
       SHOW_NOTIFICATION,
       PERSISTENT,
+      IS_ONCE_EVENT,
     ].forEach { key in
       if let newValue = argsDict[key] as? Bool {
         prefs.set(newValue, forKey: key)
       }
-    }
-    
-    let callbackHandle = argsDict[CALLBACK_HANDLE] as? Int64
-    prefs.removeObject(forKey: CALLBACK_HANDLE)
-    if callbackHandle != nil {
-      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
-      prefs.set(callbackHandle, forKey: CALLBACK_HANDLE_ON_RESTART)
     }
   }
   
@@ -149,7 +150,6 @@ class BackgroundServiceManager: NSObject {
     prefs.removeObject(forKey: INTERRUPTION_LEVEL)
     prefs.removeObject(forKey: PERSISTENT)
     prefs.removeObject(forKey: CALLBACK_HANDLE)
-    prefs.removeObject(forKey: CALLBACK_HANDLE_ON_RESTART)
   }
   
   @available(iOS 10.0, *)

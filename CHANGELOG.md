@@ -1,3 +1,70 @@
+## 6.1.1
+
+* [**TEST**] Add assertions to service options
+
+## 6.1.0
+
+* [**BREAKING**] Remove future return of TaskHandler callback function
+* [**FIX**] Fix issue where isRunningService is not updated after calling onDestroy
+* [**FIX**] Fix storage data not syncing between isolates
+* [**FIX**] Fix the service could not be started when the notification channel information is empty
+* [**CHORE**] Upgrade dependencies - shared_preferences
+
+## 6.0.0+1
+
+* [**REFACTOR**] Move required permissions on the Android platform inside the plugin
+
+## 6.0.0
+
+* [**BREAKING**] Rename the callback function to clarify what information the event provides
+  - Rename `onButtonPressed` to `onNotificationButtonPressed`
+  - Rename `onEvent` to `onRepeatEvent`
+* [**FEAT**] Add textColor option to NotificationButton
+* [**FEAT**] Add ability to change task options while service is running
+
+## 5.2.1
+
+* [**FIX**] Fix issue where service could not be started in the background
+
+## 5.2.0
+
+* [**FEAT**] Add id option to AndroidNotificationOptions
+* [**FEAT**] The WillStartForegroundTask widget supports receiving data
+
+## 5.0.0
+
+* [**CHORE**] Update dependency constraints to `sdk: '>=2.18.0 <4.0.0'` `flutter: '>=3.3.0'`
+* [**FEAT**] Add notification permission request func for Android 13
+  - `FlutterForegroundTask.checkNotificationPermission()`
+  - `FlutterForegroundTask.requestNotificationPermission()`
+* [**DOCS**] Update documentation to the latest version
+* [**FIX**] Fix service not starting when notification permission is denied
+
+## 4.2.0
+
+* [**FEAT**] Add notification permission request func for Android 13
+  - According to the [official documentation](https://developer.android.com/develop/ui/views/notifications/notification-permission), starting with Android 13 and higher, you need to request notification permission to expose foreground service notifications.
+  - In this version, notification permission requests occur when the `startService` function is called.
+  - Add `<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />` permission to your `AndroidManifest.xml` file.
+
+## 4.1.0
+
+* [**CHORE**] Bump Android coroutines version to 1.6.4
+* [**CHANGE**] Change the way get receivePort from asynchronous to synchronous [#128](https://github.com/Dev-hwang/flutter_foreground_task/issues/128)
+  - Can register and get receivePort without starting the service.
+  - From now on, register receivePort before starting the service. Please check the readme and example.
+* [**FIX**] Fix issue where the results of the service start and stop functions did not match the service status
+
+## 4.0.1
+
+* [**FIX**] Fix mounted error [#133](https://github.com/Dev-hwang/flutter_foreground_task/issues/133)
+
+## 4.0.0
+
+* [**CHORE**] Bump Android Gradle version to 7.1.2
+* [**CHORE**] Update minimum Flutter version to 3.0.0 [#130](https://github.com/Dev-hwang/flutter_foreground_task/issues/130) [#131](https://github.com/Dev-hwang/flutter_foreground_task/issues/131)
+* [**DOCS**] Update readme [#125](https://github.com/Dev-hwang/flutter_foreground_task/issues/125)
+
 ## 3.10.0
 
 * [**FEAT**] Add `isOnceEvent` option to `ForegroundTaskOptions.class`.

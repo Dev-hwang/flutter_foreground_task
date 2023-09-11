@@ -27,7 +27,8 @@ class IconResourceData {
     required this.resType,
     required this.resPrefix,
     required this.name,
-  }) : _backgroundColor = null;
+  }) : _backgroundColor = null,
+        assert(name.length > 0);
 
   /// Constructs an instance of [NotificationIconData].
   const IconResourceData._notificationIcon(
@@ -35,7 +36,7 @@ class IconResourceData {
       this.resPrefix,
       this.name,
       this._backgroundColor,
-      );
+      ) : assert(name.length > 0);
 
   /// The resource type of the notification icon.
   /// If the resource is in the drawable folder, set it to [ResourceType.drawable],

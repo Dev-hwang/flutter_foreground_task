@@ -15,7 +15,7 @@ let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
 let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 
 let ACTION_TASK_START: String = "onStart"
-let ACTION_TASK_EVENT: String = "onEvent"
+let ACTION_TASK_REPEAT_EVENT: String = "onRepeatEvent"
 let ACTION_TASK_DESTROY: String = "onDestroy"
 let ACTION_BUTTON_PRESSED: String = "onButtonPressed"
 let ACTION_NOTIFICATION_PRESSED: String = "onNotificationPressed"
@@ -29,19 +29,23 @@ class BackgroundService: NSObject {
 
   private let userNotificationCenter: UNUserNotificationCenter
   private var isGrantedNotificationAuthorization: Bool = false
-
+  
   private var notificationContentTitle: String = ""
   private var notificationContentText: String = ""
   private var showNotification: Bool = true
   private var playSound: Bool = false
-  private var taskInterval: Int = 5000
-  private var isOnceEvent: Bool = false
+  private var prevInterval: Int? = nil
+  private var currInterval: Int = 5000
+  private var prevIsOnceEvent: Bool? = nil
+  private var currIsOnceEvent: Bool = false
+  private var prevCallbackHandle: Int64? = nil
+  private var currCallbackHandle: Int64? = nil
   private var interruptionLevel: Int = 1
 
   private var flutterEngine: FlutterEngine? = nil
   private var backgroundChannel: FlutterMethodChannel? = nil
-  private var backgroundTaskTimer: Timer? = nil
-
+  private var repeatTask: Timer? = nil
+  
   override init() {
     userNotificationCenter = UNUserNotificationCenter.current()
     super.init()
@@ -55,8 +59,12 @@ class BackgroundService: NSObject {
     notificationContentText = prefs.string(forKey: NOTIFICATION_CONTENT_TEXT) ?? notificationContentText
     showNotification = prefs.bool(forKey: SHOW_NOTIFICATION)
     playSound = prefs.bool(forKey: PLAY_SOUND)
-    taskInterval = prefs.integer(forKey: TASK_INTERVAL)
-    isOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
+    prevInterval = currInterval
+    currInterval = prefs.integer(forKey: TASK_INTERVAL)
+    prevIsOnceEvent = currIsOnceEvent
+    currIsOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
+    prevCallbackHandle = currCallbackHandle
+    currCallbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64
     interruptionLevel = prefs.integer(forKey: INTERRUPTION_LEVEL)
 
     switch action {
@@ -65,7 +73,7 @@ class BackgroundService: NSObject {
         setNotificationCategory()
         requestNotificationAuthorization()
         isRunningService = true
-        if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64 {
+        if let callbackHandle = currCallbackHandle {
           executeDartCallback(callbackHandle: callbackHandle)
         }
         break
@@ -74,7 +82,7 @@ class BackgroundService: NSObject {
         setNotificationCategory()
         sendNotification()
         isRunningService = true
-        if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE_ON_RESTART) as? Int64 {
+        if let callbackHandle = currCallbackHandle {
           executeDartCallback(callbackHandle: callbackHandle)
         }
         break
@@ -83,14 +91,18 @@ class BackgroundService: NSObject {
             setNotificationCategory()
             sendNotification()
             isRunningService = true
-            if let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64 {
-              executeDartCallback(callbackHandle: callbackHandle)
+            if let callbackHandle = currCallbackHandle {
+                if prevCallbackHandle != callbackHandle {
+                    executeDartCallback(callbackHandle: callbackHandle)
+                } else if prevInterval != currInterval || prevIsOnceEvent != currIsOnceEvent {
+                    startRepeatTask()
+                }
             }
         }
         break
       case .STOP:
         isStarted = false
-        destroyBackgroundChannel() { _ in
+        stopBackgroundTask() { _ in
           self.isRunningService = false
           self.isGrantedNotificationAuthorization = false
           self.removeAllNotification()
@@ -162,7 +174,7 @@ class BackgroundService: NSObject {
   }
 
   private func executeDartCallback(callbackHandle: Int64) {
-    destroyBackgroundChannel() { _ in
+    stopBackgroundTask() { _ in
       // The backgroundChannel cannot be registered unless the registerPlugins function is called.
       if (SwiftFlutterForegroundTaskPlugin.registerPlugins == nil) { return }
 
@@ -182,29 +194,35 @@ class BackgroundService: NSObject {
   }
 
   private func startBackgroundTask() {
-    if backgroundTaskTimer != nil { stopBackgroundTask() }
-
+    stopRepeatTask()
+    
     backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: nil) { _ in
-      if self.isOnceEvent {
-        self.backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, arguments: nil)
-        return
-      }
-
-      let timeInterval = TimeInterval(self.taskInterval / 1000)
-      self.backgroundTaskTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
-        self.backgroundChannel?.invokeMethod(ACTION_TASK_EVENT, arguments: nil)
-      }
+      self.startRepeatTask()
     }
   }
 
-  private func stopBackgroundTask() {
-    backgroundTaskTimer?.invalidate()
-    backgroundTaskTimer = nil
+  private func startRepeatTask() {
+    stopRepeatTask()
+
+    if currIsOnceEvent {
+      backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
+      return
+    }
+
+    let timeInterval = TimeInterval(currInterval / 1000)
+    repeatTask = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
+      self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
+    }
   }
-
-  private func destroyBackgroundChannel(onComplete: @escaping (Bool) -> Void) {
-    stopBackgroundTask()
-
+  
+  private func stopRepeatTask() {
+    repeatTask?.invalidate()
+    repeatTask = nil
+  }
+  
+  private func stopBackgroundTask(onComplete: @escaping (Bool) -> Void) {
+    stopRepeatTask()
+    
     // The background task destruction is complete and a new background task can be started.
     if backgroundChannel == nil {
       onComplete(true)
@@ -259,5 +277,4 @@ class BackgroundService: NSObject {
       completionHandler([.alert])
     }
   }
-
 }
