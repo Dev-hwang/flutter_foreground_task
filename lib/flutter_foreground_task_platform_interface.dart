@@ -12,7 +12,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   static final Object _token = Object();
 
   static FlutterForegroundTaskPlatform _instance =
-      MethodChannelFlutterForegroundTask();
+  MethodChannelFlutterForegroundTask();
 
   /// The default instance of [FlutterForegroundTaskPlatform] to use.
   ///

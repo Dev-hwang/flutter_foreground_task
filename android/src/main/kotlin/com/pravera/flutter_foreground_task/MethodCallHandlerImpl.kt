@@ -16,9 +16,9 @@ import io.flutter.plugin.common.PluginRegistry
 
 /** MethodCallHandlerImpl */
 class MethodCallHandlerImpl(private val context: Context, private val provider: ServiceProvider) :
-    MethodChannel.MethodCallHandler,
-    FlutterForegroundTaskPluginChannel,
-    PluginRegistry.ActivityResultListener {
+        MethodChannel.MethodCallHandler,
+        FlutterForegroundTaskPluginChannel,
+        PluginRegistry.ActivityResultListener {
     private lateinit var channel: MethodChannel
 
     private var activity: Activity? = null

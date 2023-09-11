@@ -37,7 +37,7 @@ import kotlin.system.exitProcess
  */
 class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     companion object {
-        private val TAG = ForegroundService::class.java.simpleName
+        private const val TAG = "ForegroundService"
         private const val ACTION_TASK_START = "onStart"
         private const val ACTION_TASK_EVENT = "onEvent"
         private const val ACTION_TASK_CLOSE = "onClose"
@@ -48,6 +48,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         /** Returns whether the foreground service is running. */
         var isRunningService = false
+            private set
+        var isStarted = false
             private set
     }
 
@@ -94,11 +96,14 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         fetchDataFromPreferences()
-
         when (foregroundServiceStatus.action) {
             ForegroundServiceAction.UPDATE -> {
-                startForegroundService()
-                executeDartCallback(foregroundTaskOptions.callbackHandle)
+                if (isStarted) {
+                    setupForegroundService()
+                    executeDartCallback(foregroundTaskOptions.callbackHandle)
+                } else {
+                    stopSelf(startId)
+                }
             }
             ForegroundServiceAction.RESTART -> {
                 startForegroundService()
@@ -131,8 +136,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                         if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)
                         ) {
                             Log.i(
-                                TAG,
-                                "Turn off battery optimization to restart service in the background."
+                                    TAG,
+                                    "Turn off battery optimization to restart service in the background."
                             )
                             return
                         }
@@ -173,22 +178,27 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         unregisterReceiver(broadcastReceiver)
     }
 
-    @SuppressLint("WrongConstant")
     private fun startForegroundService() {
+        isStarted = true
+        setupForegroundService()
+    }
+
+    @SuppressLint("WrongConstant")
+    private fun setupForegroundService() {
         // Get the icon and PendingIntent to put in the notification.
         val pm = applicationContext.packageManager
         val iconBackgroundColor =
-            notificationOptions.iconData?.backgroundColorRgb?.let(::getColorFromRgb)
+                notificationOptions.iconData?.backgroundColorRgb?.let(::getColorFromRgb)
         val iconResId =
-            notificationOptions.iconData?.let(::getIconResId) ?: getAppIconResourceId(pm)
+                notificationOptions.iconData?.let(::getIconResId) ?: getAppIconResourceId(pm)
         val pendingIntent = getPendingIntent(pm)
 
         // Create a notification and start the foreground service.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                notificationOptions.channelId,
-                notificationOptions.channelName,
-                notificationOptions.channelImportance
+                    notificationOptions.channelId,
+                    notificationOptions.channelName,
+                    notificationOptions.channelImportance
             )
             channel.description = notificationOptions.channelDescription
             channel.enableVibration(notificationOptions.enableVibration)
@@ -250,8 +260,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         val iconResPrefix = iconData.resPrefix
         val iconName = iconData.name
         return if (iconResType.isEmpty()
-            || iconResPrefix.isEmpty()
-            || iconName.isEmpty()
+                || iconResPrefix.isEmpty()
+                || iconName.isEmpty()
         ) {
             null
         } else {
@@ -264,15 +274,16 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         val iconBackgroundColorRgb = rgb.split(",")
         if (iconBackgroundColorRgb.size == 3) {
             iconBackgroundColor = Color.rgb(
-                iconBackgroundColorRgb[0].toInt(),
-                iconBackgroundColorRgb[1].toInt(),
-                iconBackgroundColorRgb[2].toInt()
+                    iconBackgroundColorRgb[0].toInt(),
+                    iconBackgroundColorRgb[1].toInt(),
+                    iconBackgroundColorRgb[2].toInt()
             )
         }
         return iconBackgroundColor
     }
 
     private fun stopForegroundService() {
+        isStarted = false
         releaseLockMode()
         stopForeground(true)
         stopSelf()
@@ -283,28 +294,28 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private fun acquireLockMode() {
         if (foregroundTaskOptions.allowWakeLock && (wakeLock == null || wakeLock?.isHeld == false)) {
             wakeLock =
-                (applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                    newWakeLock(
-                        PowerManager.PARTIAL_WAKE_LOCK,
-                        "ForegroundService:WakeLock"
-                    ).apply {
-                        setReferenceCounted(false)
-                        acquire()
+                    (applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                        newWakeLock(
+                                PowerManager.PARTIAL_WAKE_LOCK,
+                                "ForegroundService:WakeLock"
+                        ).apply {
+                            setReferenceCounted(false)
+                            acquire()
+                        }
                     }
-                }
         }
 
         if (foregroundTaskOptions.allowWifiLock && (wifiLock == null || wifiLock?.isHeld == false)) {
             wifiLock =
-                (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
-                    createWifiLock(
-                        WifiManager.WIFI_MODE_FULL_HIGH_PERF,
-                        "ForegroundService:WifiLock"
-                    ).apply {
-                        setReferenceCounted(false)
-                        acquire()
+                    (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
+                        createWifiLock(
+                                WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+                                "ForegroundService:WifiLock"
+                        ).apply {
+                            setReferenceCounted(false)
+                            acquire()
+                        }
                     }
-                }
         }
     }
 
@@ -443,16 +454,16 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
 
         return applicationContext.resources.getIdentifier(
-            resName,
-            resType,
-            applicationContext.packageName
+                resName,
+                resType,
+                applicationContext.packageName
         )
     }
 
     private fun getAppIconResourceId(pm: PackageManager): Int {
         return try {
             val appInfo =
-                pm.getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA)
+                    pm.getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA)
             appInfo.icon
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "getAppIconResourceId", e)
@@ -462,12 +473,12 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     private fun getPendingIntent(pm: PackageManager): PendingIntent {
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-            || ForegroundServiceUtils.canDrawOverlays(applicationContext)
+                || ForegroundServiceUtils.canDrawOverlays(applicationContext)
         ) {
             val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 PendingIntent.getBroadcast(
-                    this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE
+                        this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE
                 )
             } else {
                 PendingIntent.getBroadcast(this, 20000, pressedIntent, 0)
@@ -476,7 +487,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 PendingIntent.getActivity(
-                    this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE
+                        this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE
                 )
             } else {
                 PendingIntent.getActivity(this, 20000, launchIntent, 0)
@@ -547,7 +558,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             val textSpan = getActionText(buttons[i].text, textColor)
             val icon = buttons[i].iconData?.let(::getIconResId) ?: 0
             val bAction =
-                NotificationCompat.Action.Builder(icon, textSpan, bPendingIntent).build()
+                    NotificationCompat.Action.Builder(icon, textSpan, bPendingIntent).build()
             actions.add(bAction)
         }
         return actions

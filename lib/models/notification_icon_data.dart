@@ -31,11 +31,11 @@ class IconResourceData {
 
   /// Constructs an instance of [NotificationIconData].
   const IconResourceData._notificationIcon(
-    this.resType,
-    this.resPrefix,
-    this.name,
-    this._backgroundColor,
-  );
+      this.resType,
+      this.resPrefix,
+      this.name,
+      this._backgroundColor,
+      );
 
   /// The resource type of the notification icon.
   /// If the resource is in the drawable folder, set it to [ResourceType.drawable],
@@ -58,7 +58,7 @@ class IconResourceData {
     String? backgroundColorRgb;
     if (_backgroundColor != null) {
       backgroundColorRgb =
-          '${_backgroundColor!.red},${_backgroundColor!.green},${_backgroundColor!.blue}';
+      '${_backgroundColor!.red},${_backgroundColor!.green},${_backgroundColor!.blue}';
     }
 
     return {

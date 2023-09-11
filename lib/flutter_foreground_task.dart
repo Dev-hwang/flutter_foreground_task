@@ -262,7 +262,7 @@ class FlutterForegroundTask {
   static void setTaskHandler(TaskHandler handler) {
     // Create a method channel to communicate with the platform.
     const backgroundChannel =
-        MethodChannel('flutter_foreground_task/background');
+    MethodChannel('flutter_foreground_task/background');
 
     // Binding the framework to the flutter engine.
     WidgetsFlutterBinding.ensureInitialized();

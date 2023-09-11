@@ -7,26 +7,26 @@ import org.json.JSONObject
 import com.pravera.flutter_foreground_task.PreferencesKey as PrefsKey
 
 data class NotificationOptions(
-    val serviceId: Int,
-    val channelId: String,
-    val channelName: String,
-    val channelDescription: String?,
-    val channelImportance: Int,
-    val priority: Int,
-    val contentTitle: String,
-    val contentText: String,
-    val enableVibration: Boolean,
-    val playSound: Boolean,
-    val showWhen: Boolean,
-    val isSticky: Boolean,
-    val visibility: Int,
-    val iconData: NotificationIconData?,
-    val buttons: List<NotificationButton>
+        val serviceId: Int,
+        val channelId: String,
+        val channelName: String,
+        val channelDescription: String?,
+        val channelImportance: Int,
+        val priority: Int,
+        val contentTitle: String,
+        val contentText: String,
+        val enableVibration: Boolean,
+        val playSound: Boolean,
+        val showWhen: Boolean,
+        val isSticky: Boolean,
+        val visibility: Int,
+        val iconData: NotificationIconData?,
+        val buttons: List<NotificationButton>
 ) {
     companion object {
         fun getData(context: Context): NotificationOptions {
             val prefs = context.getSharedPreferences(
-                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                    PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
             val serviceId = 1000
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: ""
@@ -55,52 +55,49 @@ data class NotificationOptions(
                 for (i in 0 until buttonsJsonArr.length()) {
                     val buttonJsonObj = buttonsJsonArr.getJSONObject(i)
                     buttons.add(
-                        NotificationButton(
-                            id = buttonJsonObj.getString("id") ?: "",
-                            text = buttonJsonObj.getString("text") ?: "",
-                            textColor = buttonJsonObj.getString("textColor"),
-                            iconData = buttonJsonObj.get("iconData").let {
-                                if (it is JSONObject) {
-                                    return@let getIconData(it)
-                                }
-                                null
-                            }
-                        )
+                            NotificationButton(
+                                    id = buttonJsonObj.optString("id"),
+                                    text = buttonJsonObj.optString("text"),
+                                    textColor = buttonJsonObj.optString("textColor").ifBlank { null },
+                                    iconData = buttonJsonObj.optJSONObject("iconData")?.let {
+                                        getIconData(it)
+                                    }
+                            )
                     )
                 }
             }
 
             return NotificationOptions(
-                serviceId = serviceId,
-                channelId = channelId,
-                channelName = channelName,
-                channelDescription = channelDesc,
-                channelImportance = channelImportance,
-                priority = priority,
-                contentTitle = contentTitle,
-                contentText = contentText,
-                enableVibration = enableVibration,
-                playSound = playSound,
-                showWhen = showWhen,
-                isSticky = isSticky,
-                visibility = visibility,
-                iconData = iconData,
-                buttons = buttons
+                    serviceId = serviceId,
+                    channelId = channelId,
+                    channelName = channelName,
+                    channelDescription = channelDesc,
+                    channelImportance = channelImportance,
+                    priority = priority,
+                    contentTitle = contentTitle,
+                    contentText = contentText,
+                    enableVibration = enableVibration,
+                    playSound = playSound,
+                    showWhen = showWhen,
+                    isSticky = isSticky,
+                    visibility = visibility,
+                    iconData = iconData,
+                    buttons = buttons
             )
         }
 
         private fun getIconData(iconDataJsonObj: JSONObject): NotificationIconData {
             return NotificationIconData(
-                resType = iconDataJsonObj.getString("resType") ?: "",
-                resPrefix = iconDataJsonObj.getString("resPrefix") ?: "",
-                name = iconDataJsonObj.getString("name") ?: "",
-                backgroundColorRgb = iconDataJsonObj.getString("backgroundColorRgb")
+                    resType = iconDataJsonObj.optString("resType"),
+                    resPrefix = iconDataJsonObj.optString("resPrefix"),
+                    name = iconDataJsonObj.optString("name"),
+                    backgroundColorRgb = iconDataJsonObj.optString("backgroundColorRgb").ifBlank { null }
             )
         }
 
         fun putData(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                    PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
             val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String ?: ""
             val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String ?: ""
@@ -148,7 +145,7 @@ data class NotificationOptions(
 
         fun updateContent(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                    PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
             val iconData = map?.get(PrefsKey.ICON_DATA) as? Map<*, *>
             var iconDataJson: String? = null
@@ -170,13 +167,13 @@ data class NotificationOptions(
                     putString(PrefsKey.BUTTONS, it)
                 }
                 listOf(
-                    PrefsKey.NOTIFICATION_CHANNEL_ID,
-                    PrefsKey.NOTIFICATION_CHANNEL_NAME,
-                    PrefsKey.NOTIFICATION_CHANNEL_DESC,
-                    PrefsKey.NOTIFICATION_CONTENT_TITLE,
-                    PrefsKey.NOTIFICATION_CONTENT_TEXT,
-                    PrefsKey.NOTIFICATION_CHANNEL_ID,
-                    PrefsKey.NOTIFICATION_CHANNEL_ID,
+                        PrefsKey.NOTIFICATION_CHANNEL_ID,
+                        PrefsKey.NOTIFICATION_CHANNEL_NAME,
+                        PrefsKey.NOTIFICATION_CHANNEL_DESC,
+                        PrefsKey.NOTIFICATION_CONTENT_TITLE,
+                        PrefsKey.NOTIFICATION_CONTENT_TEXT,
+                        PrefsKey.NOTIFICATION_CHANNEL_ID,
+                        PrefsKey.NOTIFICATION_CHANNEL_ID,
                 ).forEach { key ->
                     val newValue = map?.get(key) as? String;
                     newValue?.let { value ->
@@ -184,9 +181,9 @@ data class NotificationOptions(
                     }
                 }
                 listOf(
-                    PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE,
-                    PrefsKey.NOTIFICATION_PRIORITY,
-                    PrefsKey.VISIBILITY,
+                        PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE,
+                        PrefsKey.NOTIFICATION_PRIORITY,
+                        PrefsKey.VISIBILITY,
                 ).forEach { key ->
                     val newValue = map?.get(key) as? Int;
                     newValue?.let { value ->
@@ -194,10 +191,10 @@ data class NotificationOptions(
                     }
                 }
                 listOf(
-                    PrefsKey.ENABLE_VIBRATION,
-                    PrefsKey.PLAY_SOUND,
-                    PrefsKey.SHOW_WHEN,
-                    PrefsKey.IS_STICKY,
+                        PrefsKey.ENABLE_VIBRATION,
+                        PrefsKey.PLAY_SOUND,
+                        PrefsKey.SHOW_WHEN,
+                        PrefsKey.IS_STICKY,
                 ).forEach { key ->
                     val newValue = map?.get(key) as? Boolean;
                     newValue?.let { value ->
@@ -210,7 +207,7 @@ data class NotificationOptions(
 
         fun clearData(context: Context) {
             val prefs = context.getSharedPreferences(
-                PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
+                    PrefsKey.NOTIFICATION_OPTIONS_PREFS_NAME, Context.MODE_PRIVATE)
 
             with(prefs.edit()) {
                 clear()
