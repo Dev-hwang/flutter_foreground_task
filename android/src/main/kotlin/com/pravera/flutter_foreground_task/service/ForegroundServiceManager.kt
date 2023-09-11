@@ -66,7 +66,7 @@ class ForegroundServiceManager {
 			val nIntent = Intent(context, ForegroundService::class.java)
 			val argsMap = arguments as? Map<*, *>
 			ForegroundServiceStatus.putData(context, ForegroundServiceAction.UPDATE)
-			ForegroundTaskOptions.updateCallbackHandle(context, argsMap)
+			ForegroundTaskOptions.updateData(context, argsMap)
 			NotificationOptions.updateContent(context, argsMap)
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
@@ -90,7 +90,6 @@ class ForegroundServiceManager {
 			ForegroundServiceStatus.putData(context, ForegroundServiceAction.STOP)
 			ForegroundTaskOptions.clearData(context)
 			NotificationOptions.clearData(context)
-
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false

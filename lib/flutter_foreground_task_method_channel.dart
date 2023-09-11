@@ -8,6 +8,7 @@ import 'flutter_foreground_task_platform_interface.dart';
 import 'models/android_notification_options.dart';
 import 'models/foreground_task_options.dart';
 import 'models/ios_notification_options.dart';
+import 'models/notification_permission.dart';
 
 /// An implementation of [FlutterForegroundTaskPlatform] that uses method channels.
 class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
@@ -24,20 +25,59 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     required String notificationText,
     Function? callback,
   }) async {
-    if (await isRunningService == false) {
-      final options = Platform.isAndroid
-          ? androidNotificationOptions.toJson()
-          : iosNotificationOptions.toJson();
-      options['notificationContentTitle'] = notificationTitle;
-      options['notificationContentText'] = notificationText;
-      if (callback != null) {
-        options.addAll(foregroundTaskOptions.toJson());
-        options['callbackHandle'] =
-            PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
-      }
-      return await methodChannel.invokeMethod('startService', options);
+    if (await isRunningService) {
+      return true;
     }
-    return false;
+
+    // for Android 13
+    if (Platform.isAndroid && await attachedActivity) {
+      try {
+        final NotificationPermission notificationPermissionStatus =
+            await checkNotificationPermission();
+        if (notificationPermissionStatus != NotificationPermission.granted) {
+          await requestNotificationPermission();
+        }
+      } catch (_) {
+        //
+      }
+    }
+
+    final options = <String, dynamic>{
+      if (Platform.isAndroid)
+        ...androidNotificationOptions.toJson()
+      else
+        ...iosNotificationOptions.toJson(),
+      'notificationContentTitle': notificationTitle,
+      'notificationContentText': notificationText,
+      ...foregroundTaskOptions.toJson(),
+    };
+    if (callback != null) {
+      options['callbackHandle'] =
+          PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
+    }
+
+    final bool reqResult =
+        await methodChannel.invokeMethod('startService', options);
+    if (!reqResult) {
+      return false;
+    }
+
+    final Stopwatch stopwatch = Stopwatch()..start();
+    bool startState = false;
+    await Future.doWhile(() async {
+      startState = await isRunningService;
+
+      // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
+      // ref: https://developer.android.com/guide/components/services#StartingAService
+      if (startState || stopwatch.elapsedMilliseconds > 5 * 1000) {
+        return false;
+      } else {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return true;
+      }
+    });
+
+    return startState;
   }
 
   @override
@@ -50,6 +90,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> updateService({
+    ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
     Function? callback,
@@ -60,6 +101,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       final options = <String, dynamic>{
         'notificationContentTitle': notificationTitle,
         'notificationContentText': notificationText,
+        if (foregroundTaskOptions != null) ...foregroundTaskOptions.toJson(),
         if (Platform.isAndroid) ...?androidNotificationOptions?.toJson(),
         if (Platform.isIOS) ...?iosNotificationOptions?.toJson(),
       };
@@ -74,15 +116,44 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> stopService() async {
-    if (await isRunningService) {
-      return await methodChannel.invokeMethod('stopService');
+    if (!await isRunningService) {
+      return true;
     }
-    return false;
+
+    final bool reqResult = await methodChannel.invokeMethod('stopService');
+    if (!reqResult) {
+      return false;
+    }
+
+    final Stopwatch stopwatch = Stopwatch()..start();
+    bool stopState = false;
+    await Future.doWhile(() async {
+      stopState = !await isRunningService;
+
+      // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
+      // ref: https://developer.android.com/guide/components/services#StartingAService
+      if (stopState || stopwatch.elapsedMilliseconds > 5 * 1000) {
+        return false;
+      } else {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return true;
+      }
+    });
+
+    return stopState;
   }
 
   @override
   Future<bool> get isRunningService async {
     return await methodChannel.invokeMethod('isRunningService');
+  }
+
+  @override
+  Future<bool> get attachedActivity async {
+    if (Platform.isAndroid) {
+      return await methodChannel.invokeMethod('attachedActivity');
+    }
+    return true;
   }
 
   @override
@@ -98,8 +169,9 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   void setOnLockScreenVisibility(bool isVisible) {
     if (Platform.isAndroid) {
-      methodChannel
-          .invokeMethod('setOnLockScreenVisibility', {'isVisible': isVisible});
+      methodChannel.invokeMethod('setOnLockScreenVisibility', {
+        'isVisible': isVisible,
+      });
     }
   }
 
@@ -152,9 +224,30 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) async {
     if (Platform.isAndroid) {
-      return await methodChannel.invokeMethod(
-          'openSystemAlertWindowSettings', {'forceOpen': forceOpen});
+      return await methodChannel.invokeMethod('openSystemAlertWindowSettings', {
+        'forceOpen': forceOpen,
+      });
     }
     return true;
+  }
+
+  @override
+  Future<NotificationPermission> checkNotificationPermission() async {
+    if (Platform.isAndroid) {
+      final int result =
+          await methodChannel.invokeMethod('checkNotificationPermission');
+      return getNotificationPermissionFromIndex(result);
+    }
+    return NotificationPermission.granted;
+  }
+
+  @override
+  Future<NotificationPermission> requestNotificationPermission() async {
+    if (Platform.isAndroid) {
+      final int result =
+          await methodChannel.invokeMethod('requestNotificationPermission');
+      return getNotificationPermissionFromIndex(result);
+    }
+    return NotificationPermission.granted;
   }
 }

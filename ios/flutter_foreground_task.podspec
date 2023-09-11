@@ -18,6 +18,8 @@ A new Flutter plugin.
   s.platform = :ios, '8.0'
 
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES',
+                            'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+                            'APPLICATION_EXTENSION_API_ONLY' => 'NO' }
   s.swift_version = '5.0'
 end

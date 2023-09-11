@@ -7,7 +7,7 @@ This plugin is used to implement a foreground service on the Android platform.
 * Can perform repetitive task with foreground service.
 * Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
 * Provides a widget that prevents the app from closing when the foreground service is running.
-* Provides a widget to start the foreground service when the app is minimized or closed.
+* Provides a widget that can start the foreground service when the app is minimized or closed.
 * Provides an option to automatically resume foreground service on boot.
 
 ## Getting started
@@ -16,41 +16,30 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^3.10.0
+  flutter_foreground_task: ^6.1.1
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
 
 ### :baby_chick: Android
 
-Since this plugin is based on a foreground service, we need to add the following permission to the `AndroidManifest.xml` file. Open the `AndroidManifest.xml` file and specify it between the `<manifest>` and `<application>` tags.
+Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
 
 ```
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.WAKE_LOCK" />
-<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-```
-
-And we need to add this permission to automatically resume foreground service at boot time.
-
-```
-<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-```
-
-And specify the service inside the `<application>` tag as follows.
-
-```
-<service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
+<!-- Add android:stopWithTask option only when necessary. -->
+<service 
+    android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+    android:stopWithTask="true" />
 ```
 
 ### :baby_chick: iOS
 
-We can also launch `flutter_foreground_task` on iOS platform. However, it has the following limitations.
+We can also launch `flutter_foreground_task` on the iOS platform. However, it has the following limitations.
 
 * Works only on iOS 10.0 or later.
 * If the app is forcibly closed, the task will not work.
 * Task cannot be started automatically on device reboot.
-* Due to the background processing limitations of the platform, the `onEvent` event may not work properly in the background. But in the foreground it works fine.
+* Due to the background processing limitations of the platform, the `onRepeatEvent` event may not work properly in the background. But in the foreground it works fine.
 
 **Objective-C**:
 
@@ -142,8 +131,8 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 void _initForegroundTask() {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
-      channelId: 'notification_channel_id',
-      channelName: 'Foreground Notification',
+      channelId: 'foreground_service',
+      channelName: 'Foreground Service Notification',
       channelDescription: 'This notification appears when the foreground service is running.',
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
@@ -213,8 +202,9 @@ void startCallback() {
 class FirstTaskHandler extends TaskHandler {
   SendPort? _sendPort;
 
+  // Called when the task is started.
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
     _sendPort = sendPort;
 
     // You can use the getData function to get the stored data.
@@ -223,31 +213,31 @@ class FirstTaskHandler extends TaskHandler {
     print('customData: $customData');
   }
 
+  // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     // Send data to the main isolate.
     sendPort?.send(timestamp);
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the clearAllData function to clear all the stored data.
-    await FlutterForegroundTask.clearAllData();
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
+
   }
 
+  // Called when the notification button on the Android platform is pressed.
   @override
-  void onButtonPressed(String id) {
-    // Called when the notification button on the Android platform is pressed.
-    print('onButtonPressed >> $id');
+  void onNotificationButtonPressed(String id) {
+    print('onNotificationButtonPressed >> $id');
   }
 
+  // Called when the notification itself on the Android platform is pressed.
+  //
+  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+  // this function to be called.
   @override
   void onNotificationPressed() {
-    // Called when the notification itself on the Android platform is pressed.
-    //
-    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-    // this function to be called.
-
     // Note that the app will only route to "/resume-route" when it is exited so
     // it will usually be necessary to send a message through the send port to
     // signal it to restore state when the app is already started.
@@ -283,7 +273,11 @@ class _ExamplePageState extends State<ExamplePage> {
 
   // ...
 
-  Future<bool> _startForegroundTask() async {
+  Future<void> _requestPermissionForAndroid() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+
     // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
     // onNotificationPressed function to be called.
     //
@@ -293,55 +287,70 @@ class _ExamplePageState extends State<ExamplePage> {
     // If you do not use the onNotificationPressed or launchApp function,
     // you do not need to write this code.
     if (!await FlutterForegroundTask.canDrawOverlays) {
-      final isGranted =
-          await FlutterForegroundTask.openSystemAlertWindowSettings();
-      if (!isGranted) {
-        print('SYSTEM_ALERT_WINDOW permission denied!');
-        return false;
-      }
+      // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
+      await FlutterForegroundTask.openSystemAlertWindowSettings();
     }
 
+    // Android 12 or higher, there are restrictions on starting a foreground service.
+    //
+    // To restart the service on device reboot or unexpected problem, you need to allow below permission.
+    if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
+      // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+      await FlutterForegroundTask.requestIgnoreBatteryOptimization();
+    }
+
+    // Android 13 and higher, you need to allow notification permission to expose foreground service notification.
+    final NotificationPermission notificationPermissionStatus =
+        await FlutterForegroundTask.checkNotificationPermission();
+    if (notificationPermissionStatus != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+  }
+
+  Future<bool> _startForegroundTask() async {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
-    bool reqResult;
+    // Register the receivePort before starting the service.
+    final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
+    final bool isRegistered = _registerReceivePort(receivePort);
+    if (!isRegistered) {
+      print('Failed to register receivePort!');
+      return false;
+    }
+
     if (await FlutterForegroundTask.isRunningService) {
-      reqResult = await FlutterForegroundTask.restartService();
+      return FlutterForegroundTask.restartService();
     } else {
-      reqResult = await FlutterForegroundTask.startService(
+      return FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         callback: startCallback,
       );
     }
-
-    ReceivePort? receivePort;
-    if (reqResult) {
-      receivePort = await FlutterForegroundTask.receivePort;
-    }
- 
-    return _registerReceivePort(receivePort);
   }
 
-  bool _registerReceivePort(ReceivePort? receivePort) {
-    _closeReceivePort();
-
-    if (receivePort != null) {
-      _receivePort = receivePort;
-      _receivePort?.listen((message) {
-        if (message is DateTime) {
-          print('timestamp: ${message.toString()}');
-        } else if (message is String) {
-          if (message == 'onNotificationPressed') {
-            Navigator.of(context).pushNamed('/resume-route');
-          }
-        }
-      });
-
-      return true;
+  bool _registerReceivePort(ReceivePort? newReceivePort) {
+    if (newReceivePort == null) {
+      return false;
     }
 
-    return false;
+    _closeReceivePort();
+
+    _receivePort = newReceivePort;
+    _receivePort?.listen((data) {
+      if (data is int) {
+        print('eventCount: $data');
+      } else if (data is String) {
+        if (data == 'onNotificationPressed') {
+          Navigator.of(context).pushNamed('/resume-route');
+        }
+      } else if (data is DateTime) {
+        print('timestamp: ${data.toString()}');
+      }
+    });
+
+    return _receivePort != null;
   }
 
   void _closeReceivePort() {
@@ -352,11 +361,13 @@ class _ExamplePageState extends State<ExamplePage> {
   @override
   void initState() {
     super.initState();
-    _initForegroundTask();
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _requestPermissionForAndroid();
+      _initForegroundTask();
+      
       // You can get the previous ReceivePort without restarting the service.
       if (await FlutterForegroundTask.isRunningService) {
-        final newReceivePort = await FlutterForegroundTask.receivePort;
+        final newReceivePort = FlutterForegroundTask.receivePort;
         _registerReceivePort(newReceivePort);
       }
     });
@@ -412,25 +423,25 @@ class FirstTaskHandler extends TaskHandler {
   StreamSubscription<Location>? _streamSubscription;
 
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
-    _streamSubscription = FlLocation.getLocationStream().listen((event) {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
+    _streamSubscription = FlLocation.getLocationStream().listen((location) {
       FlutterForegroundTask.updateService(
         notificationTitle: 'My Location',
-        notificationText: '${event.latitude}, ${event.longitude}',
+        notificationText: '${location.latitude}, ${location.longitude}',
       );
 
       // Send data to the main isolate.
-      sendPort?.send(event);
+      sendPort?.send(location);
     });
   }
 
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
 
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
     await _streamSubscription?.cancel();
   }
 }
@@ -450,26 +461,32 @@ class FirstTaskHandler extends TaskHandler {
   int _eventCount = 0;
 
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
 
   }
 
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    FlutterForegroundTask.updateService(
-      notificationTitle: 'FirstTaskHandler',
-      notificationText: timestamp.toString(),
-      callback: _eventCount >= 10 ? updateCallback : null,
-    );
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+    if (_eventCount == 10) {
+      FlutterForegroundTask.updateService(
+        foregroundTaskOptions: const ForegroundTaskOptions(interval: 1000),
+        callback: updateCallback,
+      );
+    } else {
+      FlutterForegroundTask.updateService(
+        notificationTitle: 'FirstTaskHandler',
+        notificationText: timestamp.toString(),
+      );
 
-    // Send data to the main isolate.
-    sendPort?.send(_eventCount);
+      // Send data to the main isolate.
+      sendPort?.send(_eventCount);
 
-    _eventCount++;
+      _eventCount++;
+    }
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
 
   }
 }
@@ -481,12 +498,12 @@ void updateCallback() {
 
 class SecondTaskHandler extends TaskHandler {
   @override
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp, SendPort? sendPort) async {
 
   }
 
   @override
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'SecondTaskHandler',
       notificationText: timestamp.toString(),
@@ -497,7 +514,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
 
   }
 }
@@ -506,18 +523,76 @@ class SecondTaskHandler extends TaskHandler {
 5. If you no longer use the foreground service, call `FlutterForegroundTask.stopService()`.
 
 ```dart
-Future<bool> _stopForegroundTask() async {
-  return await FlutterForegroundTask.stopService();
+Future<bool> _stopForegroundTask() {
+  return FlutterForegroundTask.stopService();
 }
 ```
 
 #### :hatched_chick: Start with `WillStartForegroundTask` widget
 
+```
+<service 
+    android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+    android:stopWithTask="true" /> <!-- important -->
+```
+
 ```dart
+Future<void> _requestPermissionForAndroid() async {
+  if (!Platform.isAndroid) {
+    return;
+  }
+
+  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
+  // onNotificationPressed function to be called.
+  //
+  // When the notification is pressed while permission is denied,
+  // the onNotificationPressed function is not called and the app opens.
+  //
+  // If you do not use the onNotificationPressed or launchApp function,
+  // you do not need to write this code.
+  if (!await FlutterForegroundTask.canDrawOverlays) {
+    // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
+    await FlutterForegroundTask.openSystemAlertWindowSettings();
+  }
+
+  // Android 12 or higher, there are restrictions on starting a foreground service.
+  //
+  // To restart the service on device reboot or unexpected problem, you need to allow below permission.
+  if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
+    // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+    await FlutterForegroundTask.requestIgnoreBatteryOptimization();
+  }
+
+  // Android 13 and higher, you need to allow notification permission to expose foreground service notification.
+  final NotificationPermission notificationPermissionStatus =
+      await FlutterForegroundTask.checkNotificationPermission();
+  if (notificationPermissionStatus != NotificationPermission.granted) {
+    await FlutterForegroundTask.requestNotificationPermission();
+  }
+}
+
+void _onData(dynamic data) {
+  if (data is int) {
+    print('eventCount: $data');
+  } else if (data is String) {
+    if (data == 'onNotificationPressed') {
+      Navigator.of(context).pushNamed('/resume-route');
+    }
+  } else if (data is DateTime) {
+    print('timestamp: ${data.toString()}');
+  }
+}
+
+@override
+void initState() {
+  super.initState();
+  _requestPermissionForAndroid();
+}
+
 @override
 Widget build(BuildContext context) {
   return MaterialApp(
-    // A widget to start the foreground service when the app is minimized or closed.
+    // A widget that can start the foreground service when the app is minimized or closed.
     // This widget must be declared above the [Scaffold] widget.
     home: WillStartForegroundTask(
       onWillStart: () async {
@@ -525,16 +600,21 @@ Widget build(BuildContext context) {
         return true;
       },
       androidNotificationOptions: AndroidNotificationOptions(
-        channelId: 'notification_channel_id',
-        channelName: 'Foreground Notification',
+        channelId: 'foreground_service',
+        channelName: 'Foreground Service Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
-        iconData: NotificationIconData(
+        isSticky: false, // important
+        iconData: const NotificationIconData(
           resType: ResourceType.mipmap,
           resPrefix: ResourcePrefix.ic,
           name: 'launcher',
         ),
+        buttons: [
+          const NotificationButton(id: 'sendButton', text: 'Send'),
+          const NotificationButton(id: 'testButton', text: 'Test'),
+        ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
@@ -542,12 +622,14 @@ Widget build(BuildContext context) {
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
-        autoRunOnBoot: false,
+        isOnceEvent: false,
+        allowWakeLock: false,
         allowWifiLock: false,
       ),
       notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
       callback: startCallback,
+      onData: _onData,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter Foreground Task'),
@@ -566,112 +648,114 @@ Widget build(BuildContext context) {
 
 Notification options for Android platform.
 
-| Property | Description |
-|---|---|
-| `channelId` | Unique ID of the notification channel. |
-| `channelName` | The name of the notification channel. This value is displayed to the user in the notification settings. |
-| `channelDescription` | The description of the notification channel. This value is displayed to the user in the notification settings. |
-| `channelImportance` | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`. |
-| `priority` | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`. |
-| `enableVibration` | Whether to enable vibration when creating notifications. The default is `false`. |
-| `playSound` | Whether to play sound when creating notifications. The default is `false`. |
-| `showWhen` | Whether to show the timestamp when the notification was created in the content view. The default is `false`. |
-| `isSticky` | Whether the system will restart the service if the service is killed. The default is `true`. |
-| `visibility` | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
-| `iconData` | The data of the icon to display in the notification. If the value is null, the app launcher icon is used. |
-| `buttons` | A list of buttons to display in the notification. A maximum of 3 is allowed. |
+| Property             | Description                                                                                                                           |
+|----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `id`                 | Unique ID of the notification.                                                                                                        |
+| `channelId`          | Unique ID of the notification channel.                                                                                                |
+| `channelName`        | The name of the notification channel. This value is displayed to the user in the notification settings.                               |
+| `channelDescription` | The description of the notification channel. This value is displayed to the user in the notification settings.                        |
+| `channelImportance`  | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.                                   |
+| `priority`           | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.                                   |
+| `enableVibration`    | Whether to enable vibration when creating notifications. The default is `false`.                                                      |
+| `playSound`          | Whether to play sound when creating notifications. The default is `false`.                                                            |
+| `showWhen`           | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                          |
+| `isSticky`           | Whether the system will restart the service if the service is killed. The default is `true`.                                          |
+| `visibility`         | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
+| `iconData`           | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
+| `buttons`            | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
 
 ### :chicken: NotificationIconData
 
 Data for setting the notification icon.
 
-| Property | Description |
-|---|---|
-| `resType` | The resource type of the notification icon. If the resource is in the drawable folder, set it to `ResourceType.drawable`, if the resource is in the mipmap folder, set it to `ResourceType.mipmap`. |
-| `resPrefix` | The resource prefix of the notification icon. If the notification icon name is `ic_simple_notification`, set it to `ResourcePrefix.ic` and set `name` to `simple_notification`. |
-| `name` | Notification icon name without prefix. |
+| Property    | Description                                                                                                                                                                                         |
+|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `resType`   | The resource type of the notification icon. If the resource is in the drawable folder, set it to `ResourceType.drawable`, if the resource is in the mipmap folder, set it to `ResourceType.mipmap`. |
+| `resPrefix` | The resource prefix of the notification icon. If the notification icon name is `ic_simple_notification`, set it to `ResourcePrefix.ic` and set `name` to `simple_notification`.                     |
+| `name`      | Notification icon name without prefix.                                                                                                                                                              |
 
 ### :chicken: ResourceType
 
 The resource type of the notification icon.
 
-| Value | Description |
-|---|---|
-| `drawable` | A resources in the drawable folder. The drawable folder is where all kinds of images are stored. |
-| `mipmap` | A resources in the mipmap folder. The mipmap folder is usually where the launcher icon image is stored. |
+| Value      | Description                                                                                             |
+|------------|---------------------------------------------------------------------------------------------------------|
+| `drawable` | A resources in the drawable folder. The drawable folder is where all kinds of images are stored.        |
+| `mipmap`   | A resources in the mipmap folder. The mipmap folder is usually where the launcher icon image is stored. |
 
 ### :chicken: ResourcePrefix
 
 The resource prefix of the notification icon.
 
-| Value | Description |
-|---|---|
-| `ic` | A resources with the `ic_` prefix. |
+| Value | Description                         |
+|-------|-------------------------------------|
+| `ic`  | A resources with the `ic_` prefix.  |
 | `img` | A resources with the `img_` prefix. |
 
 ### :chicken: NotificationButton
 
 The button to display in the notification.
 
-| Property | Description |
-|---|---|
-| `id` | The button identifier. |
-| `text` | The text to display on the button. |
+| Property    | Description                        |
+|-------------|------------------------------------|
+| `id`        | The button identifier.             |
+| `text`      | The text to display on the button. |
+| `textColor` | The button text color.             |
 
 ### :chicken: IOSNotificationOptions
 
 Notification options for iOS platform.
 
-| Property | Description |
-|---|---|
-| `showNotification` | Whether to show notifications. The default is `true`. |
-| `playSound` | Whether to play sound when creating notifications. The default is `false`. |
+| Property           | Description                                                                |
+|--------------------|----------------------------------------------------------------------------|
+| `showNotification` | Whether to show notifications. The default is `true`.                      |
+| `playSound`        | Whether to play sound when creating notifications. The default is `false`. |
 
 ### :chicken: ForegroundTaskOptions
 
 Data class with foreground task options.
 
-| Property | Description |
-|---|---|
-| `interval` | The task call interval in milliseconds. The default is `5000`. |
-| `isOnceEvent` | Whether to invoke the onEvent of `TaskHandler` only once. The default is `false`. |
-| `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`. |
-| `allowWakeLock` | Whether to keep the CPU turned on. The default is `true`. |
-| `allowWifiLock` | Allows an application to keep the Wi-Fi radio awake. The default is `false`. |
+| Property        | Description                                                                             |
+|-----------------|-----------------------------------------------------------------------------------------|
+| `interval`      | The task call interval in milliseconds. The default is `5000`.                          |
+| `isOnceEvent`   | Whether to invoke the onRepeatEvent of `TaskHandler` only once. The default is `false`. |
+| `autoRunOnBoot` | Whether to automatically run foreground task on boot. The default is `false`.           |
+| `allowWakeLock` | Whether to keep the CPU turned on. The default is `true`.                               |
+| `allowWifiLock` | Allows an application to keep the Wi-Fi radio awake. The default is `false`.            |
 
 ### :chicken: NotificationChannelImportance
 
 The importance of the notification channel. See https://developer.android.com/training/notify-user/channels?hl=ko#importance
 
-| Value | Description |
-|---|---|
-| `NONE` | A notification with no importance: does not show in the shade. |
-| `MIN` | Min notification importance: only shows in the shade, below the fold. |
-| `LOW` | Low notification importance: shows in the shade, and potentially in the status bar (see shouldHideSilentStatusBarIcons()), but is not audibly intrusive. |
-| `DEFAULT` | Default notification importance: shows everywhere, makes noise, but does not visually intrude. |
-| `HIGH` | Higher notification importance: shows everywhere, makes noise and peeks. May use full screen intents. |
-| `MAX` | Max notification importance: same as HIGH, but generally not used. |
+| Value     | Description                                                                                                                                              |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `NONE`    | A notification with no importance: does not show in the shade.                                                                                           |
+| `MIN`     | Min notification importance: only shows in the shade, below the fold.                                                                                    |
+| `LOW`     | Low notification importance: shows in the shade, and potentially in the status bar (see shouldHideSilentStatusBarIcons()), but is not audibly intrusive. |
+| `DEFAULT` | Default notification importance: shows everywhere, makes noise, but does not visually intrude.                                                           |
+| `HIGH`    | Higher notification importance: shows everywhere, makes noise and peeks. May use full screen intents.                                                    |
+| `MAX`     | Max notification importance: same as HIGH, but generally not used.                                                                                       |
 
 ### :chicken: NotificationPriority
 
 Priority of notifications for Android 7.1 and lower.
 
-| Value | Description |
-|---|---|
-| `MIN` | No sound and does not appear in the status bar. |
-| `LOW` | No sound. |
-| `DEFAULT` | Makes a sound. |
-| `HIGH` | Makes a sound and appears as a heads-up notification. |
-| `MAX` | Same as HIGH, but used when you want to notify notification immediately. |
+| Value     | Description                                                              |
+|-----------|--------------------------------------------------------------------------|
+| `MIN`     | No sound and does not appear in the status bar.                          |
+| `LOW`     | No sound.                                                                |
+| `DEFAULT` | Makes a sound.                                                           |
+| `HIGH`    | Makes a sound and appears as a heads-up notification.                    |
+| `MAX`     | Same as HIGH, but used when you want to notify notification immediately. |
 
 ### :chicken: NotificationVisibility
 
 The level of detail displayed in notifications on the lock screen.
 
-| Value | Description |
-|---|---|
-| `VISIBILITY_PUBLIC` | Show this notification in its entirety on all lockscreens. |
-| `VISIBILITY_SECRET` | Do not reveal any part of this notification on a secure lockscreen. |
+| Value                | Description                                                                                                    |
+|----------------------|----------------------------------------------------------------------------------------------------------------|
+| `VISIBILITY_PUBLIC`  | Show this notification in its entirety on all lockscreens.                                                     |
+| `VISIBILITY_SECRET`  | Do not reveal any part of this notification on a secure lockscreen.                                            |
 | `VISIBILITY_PRIVATE` | Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens. |
 
 ## Utility methods
@@ -680,9 +764,10 @@ The level of detail displayed in notifications on the lock screen.
 
 Minimize the app to the background.
 
-```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+> **Warning**
+> It only works when the app is in the foreground.
 
+```dart
 void function() => FlutterForegroundTask.minimizeApp();
 ```
 
@@ -691,8 +776,6 @@ void function() => FlutterForegroundTask.minimizeApp();
 Launch the app if it is not running otherwise open the current activity.
 
 ```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-
 void function() => FlutterForegroundTask.launchApp();
 ```
 
@@ -704,8 +787,6 @@ be loaded if the app is not already running.
 Wake up the screen of a device that is turned off.
 
 ```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-
 void function() => FlutterForegroundTask.wakeUpScreen();
 ```
 
@@ -714,8 +795,6 @@ void function() => FlutterForegroundTask.wakeUpScreen();
 Returns whether the app has been excluded from battery optimization.
 
 ```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-
 Future<bool> function() => FlutterForegroundTask.isIgnoringBatteryOptimizations;
 ```
 
@@ -723,9 +802,10 @@ Future<bool> function() => FlutterForegroundTask.isIgnoringBatteryOptimizations;
 
 Open the settings page where you can set ignore battery optimization.
 
-```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+> **Warning**
+> It only works when the app is in the foreground.
 
+```dart
 Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
 ```
 
@@ -733,9 +813,10 @@ Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSe
 
 Request to ignore battery optimization. This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
 
-```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+> **Warning**
+> It only works when the app is in the foreground.
 
+```dart
 Future<bool> function() => FlutterForegroundTask.requestIgnoreBatteryOptimization();
 ```
 
@@ -744,8 +825,6 @@ Future<bool> function() => FlutterForegroundTask.requestIgnoreBatteryOptimizatio
 Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
 
 ```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-
 Future<bool> function() => FlutterForegroundTask.canDrawOverlays;
 ```
 
@@ -753,9 +832,10 @@ Future<bool> function() => FlutterForegroundTask.canDrawOverlays;
 
 Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
 
-```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+> **Warning**
+> It only works when the app is in the foreground.
 
+```dart
 Future<bool> function() => FlutterForegroundTask.openSystemAlertWindowSettings();
 ```
 
@@ -764,8 +844,6 @@ Future<bool> function() => FlutterForegroundTask.openSystemAlertWindowSettings()
 Returns whether the app is in the foreground.
 
 ```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-
 Future<bool> function() => FlutterForegroundTask.isAppOnForeground;
 ```
 
@@ -773,10 +851,37 @@ Future<bool> function() => FlutterForegroundTask.isAppOnForeground;
 
 Toggles lockScreen visibility.
 
-```dart
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+> **Warning**
+> It only works when the app is in the foreground.
 
+```dart
 void function() => FlutterForegroundTask.setOnLockScreenVisibility(true);
+```
+
+### :lollipop: checkNotificationPermission (Android)
+
+Returns "android.permission.POST_NOTIFICATIONS" permission status.
+
+for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<NotificationPermission> function() => FlutterForegroundTask.checkNotificationPermission();
+```
+
+### :lollipop: requestNotificationPermission (Android)
+
+Request "android.permission.POST_NOTIFICATIONS" permission.
+
+for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<NotificationPermission> function() => FlutterForegroundTask.requestNotificationPermission();
 ```
 
 ## Support

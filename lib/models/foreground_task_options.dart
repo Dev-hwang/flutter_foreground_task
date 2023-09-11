@@ -7,13 +7,13 @@ class ForegroundTaskOptions {
     this.autoRunOnBoot = false,
     this.allowWakeLock = true,
     this.allowWifiLock = false,
-  });
+  }) : assert(interval > 0);
 
   /// The task call interval in milliseconds.
   /// The default is `5000`.
   final int interval;
 
-  /// Whether to invoke the onEvent of [TaskHandler] only once.
+  /// Whether to invoke the onRepeatEvent of [TaskHandler] only once.
   /// The default is `false`.
   final bool isOnceEvent;
 

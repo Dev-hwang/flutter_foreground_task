@@ -26,12 +26,12 @@ class ForegroundServiceUtils {
 		fun isAppOnForeground(context: Context): Boolean {
 			val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 			val processes: MutableList<RunningAppProcessInfo> = am.runningAppProcesses
-				?: return false
+					?: return false
 
 			val packageName = context.packageName
 			for (process in processes) {
 				if (process.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND
-					&& process.processName.equals(packageName)) {
+						&& process.processName.equals(packageName)) {
 					return true
 				}
 			}
@@ -58,7 +58,7 @@ class ForegroundServiceUtils {
 			val pm = context.packageManager
 			val launchIntent = pm.getLaunchIntentForPackage(context.packageName)
 			if (launchIntent != null) {
-				launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+				launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				if (route != null) {
 					launchIntent.putExtra("route", route)
 				}

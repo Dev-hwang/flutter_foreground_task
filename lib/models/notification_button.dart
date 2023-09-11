@@ -48,7 +48,7 @@ class NotificationButton extends BaseNotificationButton {
     }
     return {
       ...super.toJson(),
-      'textColor': textColorRgb,
+      'textColorRgb': textColorRgb,
       'iconData': iconData?.toJson(),
     };
   }

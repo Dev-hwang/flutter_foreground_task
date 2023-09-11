@@ -9,9 +9,8 @@ import 'package:flutter_foreground_task/exception/foreground_task_exception.dart
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/android_notification_options.dart';
+import 'package:flutter_foreground_task/models/notification_permission.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_android/shared_preferences_android.dart';
-import 'package:shared_preferences_ios/shared_preferences_ios.dart';
 import 'flutter_foreground_task_platform_interface.dart';
 
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
@@ -21,6 +20,7 @@ export 'package:flutter_foreground_task/models/notification_button.dart';
 export 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 export 'package:flutter_foreground_task/models/notification_icon_data.dart';
 export 'package:flutter_foreground_task/models/android_notification_options.dart';
+export 'package:flutter_foreground_task/models/notification_permission.dart';
 export 'package:flutter_foreground_task/models/notification_priority.dart';
 export 'package:flutter_foreground_task/models/notification_visibility.dart';
 export 'package:flutter_foreground_task/models/interruption_level.dart';
@@ -33,25 +33,31 @@ const String _kPrefsKeyPrefix = 'com.pravera.flutter_foreground_task.prefs.';
 /// A class that implements a task handler.
 abstract class TaskHandler {
   /// Called when the task is started.
-  Future<void> onStart(DateTime timestamp, SendPort? sendPort);
+  void onStart(DateTime timestamp, SendPort? sendPort) {}
 
-  /// Called when the user swipes the app off recent apps.
-  Future<void> onClose(DateTime timestamp, SendPort? sendPort);
+  /// Called when the user swipes the app off recent apps. (Android only)
+  void onClose(DateTime timestamp, SendPort? sendPort) {}
 
-  /// Called when an event occurs.
-  Future<void> onEvent(DateTime timestamp, SendPort? sendPort);
+  /// Called every [interval] milliseconds in [ForegroundTaskOptions].
+  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) {}
 
   /// Called when the task is destroyed.
-  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort);
+  void onDestroy(DateTime timestamp, SendPort? sendPort) {}
 
   /// Called when the notification button on the Android platform is pressed.
-  void onButtonPressed(String id) {}
+  void onNotificationButtonPressed(
+    DateTime timestamp,
+    SendPort? sendPort,
+    String id,
+  ) {}
 
   /// Called when the notification itself on the Android platform is pressed.
   ///
   /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
   /// this function to be called.
-  void onNotificationPressed() => FlutterForegroundTask.launchApp();
+  void onNotificationPressed(DateTime timestamp, SendPort? sendPort) {
+    FlutterForegroundTask.launchApp();
+  }
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -83,13 +89,13 @@ class FlutterForegroundTask {
     required String notificationTitle,
     required String notificationText,
     Function? callback,
-  }) async {
+  }) {
     if (_initialized == false) {
       throw const ForegroundTaskException(
           'Not initialized. Please call this function after calling the init function.');
     }
 
-    return await FlutterForegroundTaskPlatform.instance.startService(
+    return FlutterForegroundTaskPlatform.instance.startService(
       androidNotificationOptions: _androidNotificationOptions,
       iosNotificationOptions: _iosNotificationOptions,
       foregroundTaskOptions: _foregroundTaskOptions,
@@ -105,6 +111,7 @@ class FlutterForegroundTask {
 
   /// Update the foreground service.
   static Future<bool> updateService({
+    ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
     Function? callback,
@@ -118,6 +125,7 @@ class FlutterForegroundTask {
       _iosNotificationOptions = iosNotificationOptions;
     }
     return FlutterForegroundTaskPlatform.instance.updateService(
+      foregroundTaskOptions: foregroundTaskOptions,
       notificationText: notificationText,
       notificationTitle: notificationTitle,
       callback: callback,
@@ -135,32 +143,27 @@ class FlutterForegroundTask {
       FlutterForegroundTaskPlatform.instance.isRunningService;
 
   /// Get the [ReceivePort].
-  static Future<ReceivePort?> get receivePort async {
-    if (await isRunningService == false) return null;
-    return _registerPort();
-  }
+  static ReceivePort? get receivePort => _registerPort();
 
   /// Get the stored data with [key].
   static Future<T?> getData<T>({required String key}) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    final prefsKey = _kPrefsKeyPrefix + key;
-    final value = prefs.get(prefsKey);
-
-    return (value is T) ? value : null;
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
+    final data = prefs.get(_kPrefsKeyPrefix + key);
+    return (data is T) ? data : null;
   }
 
   /// Get all stored data.
   static Future<Map<String, Object>> getAllData() async {
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
     final dataList = <String, Object>{};
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    for (final key in prefs.getKeys()) {
-      if (key.contains(_kPrefsKeyPrefix)) {
-        final value = prefs.get(key);
-        if (value != null) {
-          final originKey = key.replaceAll(_kPrefsKeyPrefix, '');
-          dataList[originKey] = value;
+    for (final prefsKey in prefs.getKeys()) {
+      if (prefsKey.contains(_kPrefsKeyPrefix)) {
+        final data = prefs.get(prefsKey);
+        if (data != null) {
+          final originKey = prefsKey.replaceAll(_kPrefsKeyPrefix, '');
+          dataList[originKey] = data;
         }
       }
     }
@@ -173,8 +176,8 @@ class FlutterForegroundTask {
     required String key,
     required Object value,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
     final prefsKey = _kPrefsKeyPrefix + key;
 
     if (value is int) {
@@ -192,20 +195,18 @@ class FlutterForegroundTask {
 
   /// Remove data with [key].
   static Future<bool> removeData({required String key}) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    final prefsKey = _kPrefsKeyPrefix + key;
-
-    return prefs.remove(prefsKey);
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
+    return prefs.remove(_kPrefsKeyPrefix + key);
   }
 
   /// Clears all stored data.
   static Future<bool> clearAllData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-    for (final key in prefs.getKeys()) {
-      if (key.contains(_kPrefsKeyPrefix)) {
-        await prefs.remove(key);
+    final prefs = await SharedPreferences.getInstance()
+      ..reload();
+    for (final prefsKey in prefs.getKeys()) {
+      if (prefsKey.contains(_kPrefsKeyPrefix)) {
+        await prefs.remove(prefsKey);
       }
     }
 
@@ -251,10 +252,23 @@ class FlutterForegroundTask {
       FlutterForegroundTaskPlatform.instance.canDrawOverlays;
 
   /// Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
-  /// pass the `forceOpen` bool to open the permissions page even if granted.
+  ///
+  /// Pass the `forceOpen` bool to open the permissions page even if granted.
   static Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) =>
       FlutterForegroundTaskPlatform.instance
           .openSystemAlertWindowSettings(forceOpen: forceOpen);
+
+  /// Returns "android.permission.POST_NOTIFICATIONS" permission status.
+  ///
+  /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+  static Future<NotificationPermission> checkNotificationPermission() =>
+      FlutterForegroundTaskPlatform.instance.checkNotificationPermission();
+
+  /// Request "android.permission.POST_NOTIFICATIONS" permission.
+  ///
+  /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+  static Future<NotificationPermission> requestNotificationPermission() =>
+      FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
 
   /// Set up the task handler and start the foreground task.
   ///
@@ -266,37 +280,33 @@ class FlutterForegroundTask {
 
     // Binding the framework to the flutter engine.
     WidgetsFlutterBinding.ensureInitialized();
-
-    // Initializing the Platform-specific SharedPreferences plugin.
-    if (Platform.isAndroid) {
-      SharedPreferencesAndroid.registerWith();
-    } else if (Platform.isIOS) {
-      SharedPreferencesIOS.registerWith();
-    }
+    DartPluginRegistrant.ensureInitialized();
 
     // Set the method call handler for the background channel.
     backgroundChannel.setMethodCallHandler((call) async {
+      await (await SharedPreferences.getInstance()).reload();
       final timestamp = DateTime.now();
       final sendPort = _lookupPort();
 
       switch (call.method) {
         case 'onStart':
-          await handler.onStart(timestamp, sendPort);
-          break;
-        case 'onEvent':
-          await handler.onEvent(timestamp, sendPort);
+          handler.onStart(timestamp, sendPort);
           break;
         case 'onClose':
-          await handler.onClose(timestamp, sendPort);
+          handler.onClose(timestamp, sendPort);
+          break;
+        case 'onRepeatEvent':
+          handler.onRepeatEvent(timestamp, sendPort);
           break;
         case 'onDestroy':
-          await handler.onDestroy(timestamp, sendPort);
+          handler.onDestroy(timestamp, sendPort);
           break;
-        case 'onButtonPressed':
-          handler.onButtonPressed(call.arguments.toString());
+        case 'onNotificationButtonPressed':
+          final String id = call.arguments.toString();
+          handler.onNotificationButtonPressed(timestamp, sendPort, id);
           break;
         case 'onNotificationPressed':
-          handler.onNotificationPressed();
+          handler.onNotificationPressed(timestamp, sendPort);
       }
     });
 
