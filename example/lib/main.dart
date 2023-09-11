@@ -28,6 +28,11 @@ class MyTaskHandler extends TaskHandler {
     print('customData: $customData');
   }
 
+  @override
+  void onClose(DateTime timestamp, SendPort? sendPort) {
+    print('onClose');
+  }
+
   // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
   void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
