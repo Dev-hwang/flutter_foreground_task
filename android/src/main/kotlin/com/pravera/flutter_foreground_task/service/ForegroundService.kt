@@ -173,7 +173,11 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			addAction(ACTION_NOTIFICATION_BUTTON_PRESSED)
 			addAction(ACTION_NOTIFICATION_PRESSED)
 		}
-		registerReceiver(broadcastReceiver, intentFilter)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			registerReceiver(broadcastReceiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
+		} else {
+			registerReceiver(broadcastReceiver, intentFilter)
+		}
 	}
 
 	private fun unregisterBroadcastReceiver() {
