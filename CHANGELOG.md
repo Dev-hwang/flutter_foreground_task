@@ -1,3 +1,7 @@
+## 6.1.2
+
+* [**FIX**] Fix issue where SecurityException occurred when registering runtime receiver [#175](https://github.com/Dev-hwang/flutter_foreground_task/issues/175)
+
 ## 6.1.1
 
 * [**TEST**] Add assertions to service options
