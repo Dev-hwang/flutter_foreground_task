@@ -38,15 +38,7 @@ class BootReceiver : BroadcastReceiver() {
             val nIntent = Intent(context, ForegroundService::class.java)
             ForegroundServiceStatus.putData(context, ForegroundServiceAction.REBOOT)
             ContextCompat.startForegroundService(context, nIntent)
-
-
-            // Show toast message
-            Toast.makeText(context, "Boot completed 2", Toast.LENGTH_LONG).show();
-
         }
 
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())){
-
-        }
     }
 }
