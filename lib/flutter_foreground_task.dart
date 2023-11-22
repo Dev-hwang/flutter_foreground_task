@@ -47,6 +47,9 @@ abstract class TaskHandler {
   /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
   /// this function to be called.
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
+
+  /// Called when notification reply button clicked
+  void onNotificationReplied(String id, String reply) {}
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -277,6 +280,12 @@ class FlutterForegroundTask {
           break;
         case 'onNotificationPressed':
           handler.onNotificationPressed();
+          break;
+        case 'onNotificationReplied':
+          final String data = call.arguments.toString();
+          List<String> result = data.split("#");
+          handler.onNotificationReplied(result.first, result.last);
+          break;
       }
     });
 

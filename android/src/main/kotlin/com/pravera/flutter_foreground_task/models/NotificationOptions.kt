@@ -63,7 +63,8 @@ data class NotificationOptions(
                         NotificationButton(
                             id = buttonJsonObj.getString("id") ?: "",
                             text = buttonJsonObj.getString("text") ?: "",
-                            textColorRgb = buttonJsonObj.getString("textColorRgb")
+                            textColorRgb = buttonJsonObj.getString("textColorRgb"),
+                            isReply = buttonJsonObj.getString("isReply") == "true" ?: false,
                         )
                     )
                 }

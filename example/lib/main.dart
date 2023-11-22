@@ -54,6 +54,11 @@ class MyTaskHandler extends TaskHandler {
     print('onNotificationButtonPressed >> $id');
   }
 
+  @override
+  void onNotificationReplied(String id, String? reply) {
+    print('onNotificationReplied >> $id, $reply');
+  }
+
   // Called when the notification itself on the Android platform is pressed.
   //
   // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
@@ -153,6 +158,7 @@ class _ExamplePageState extends State<ExamplePage> {
             id: 'testButton',
             text: 'Test',
             textColor: Colors.grey,
+            isReply: true,
           ),
         ],
       ),
