@@ -25,12 +25,28 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
 
+As it is mentionned in the Android Guidelines, in Android 14, to start a FG service, you need to specify its type.
+
+You can read all the details in the Android Developper Page : https://developer.android.com/about/versions/14/changes/fgs-types-required
+
+If you want to target Android 14 phones, you need to add a few lines to your manifest. 
+Change the type with your type (all types are listed in the link above). Beware, certzin type have some requirements to be met to work.
+
+
 ```
+<!-- In the permission part of your manifest, these permission are needed if you target Android 14 phones -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" /> <!-- Here, chose the type according to your app -->
+
 <!-- Add android:stopWithTask option only when necessary. -->
 <service 
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-    android:stopWithTask="true" />
+    android:stopWithTask="true"
+    android:foregroundServiceType="mediaPlayback" <!-- Here, chose the type according to your app -->
+    android:exported="false" />
+
 ```
+
 
 ### :baby_chick: iOS
 
