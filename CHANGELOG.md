@@ -1,3 +1,9 @@
+## 6.1.3
+
+* Added ACTION_BOOT_COMPLETED event to start foreground service on restart
+* Update gradle version to 7.2
+
+
 ## 6.1.2
 
 * [**FIX**] Fix issue where SecurityException occurred when registering runtime receiver [#175](https://github.com/Dev-hwang/flutter_foreground_task/issues/175)
