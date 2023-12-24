@@ -156,6 +156,36 @@ data class NotificationOptions(
             }
         }
 
+        fun notificationContent(context: Context, map: Map<*, *>?) {
+            val prefs = context.getSharedPreferences(
+                PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
+
+            val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int ?: 1000
+            val contentTitle = map?.get(PrefsKey.NOTIFICATION_CONTENT_TITLE) as? String ?: ""
+            val contentText = map?.get(PrefsKey.NOTIFICATION_CONTENT_TEXT) as? String ?: ""
+
+            val iconData = map?.get(PrefsKey.ICON_DATA) as? Map<*, *>
+            var iconDataJson: String? = null
+            if (iconData != null) {
+                iconDataJson = JSONObject(iconData).toString()
+            }
+
+            val buttons = map?.get(PrefsKey.BUTTONS) as? List<*>
+            var buttonsJson: String? = null
+            if (buttons != null) {
+                buttonsJson = JSONArray(buttons).toString()
+            }
+
+            with(prefs.edit()) {
+                putInt(PrefsKey.NOTIFICATION_ID, id)
+                putString(PrefsKey.NOTIFICATION_CONTENT_TITLE, contentTitle)
+                putString(PrefsKey.NOTIFICATION_CONTENT_TEXT, contentText)
+                putString(PrefsKey.ICON_DATA, iconDataJson)
+                putString(PrefsKey.BUTTONS, buttonsJson)
+                commit()
+            }
+        }
+
         fun clearData(context: Context) {
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)

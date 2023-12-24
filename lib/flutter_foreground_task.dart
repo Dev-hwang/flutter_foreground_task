@@ -8,6 +8,8 @@ import 'package:flutter_foreground_task/exception/foreground_task_exception.dart
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/android_notification_options.dart';
+import 'package:flutter_foreground_task/models/notification_button.dart';
+import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 import 'package:flutter_foreground_task/models/notification_permission.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_foreground_task_platform_interface.dart';
@@ -55,6 +57,7 @@ class FlutterForegroundTask {
   static late IOSNotificationOptions _iosNotificationOptions;
   static late ForegroundTaskOptions _foregroundTaskOptions;
   static bool _initialized = false;
+  static late MethodChannel backgroundChannel;
 
   /// Initialize the [FlutterForegroundTask].
   static void init({
@@ -110,6 +113,27 @@ class FlutterForegroundTask {
   /// Stop the foreground service.
   static Future<bool> stopService() =>
       FlutterForegroundTaskPlatform.instance.stopService();
+
+  /// Notifies the foreground service.
+  static Future<bool> notification({
+    required int notificationId,
+    String? notificationTitle,
+    String? notificationText,
+    NotificationIconData? iconData,
+    List<NotificationButton>? buttons,
+  }) async {
+    final options = <String, dynamic>{
+      'notificationId': notificationId,
+      'notificationContentTitle': notificationTitle,
+      'notificationContentText': notificationText,
+      'iconData': iconData?.toJson(),
+      'buttons': buttons?.map((e) => e.toJson()).toList(),
+    };
+
+    // Notifies the foreground task.
+    await backgroundChannel.invokeMethod('notification', options);
+    return true;
+  }
 
   /// Returns whether the foreground service is running.
   static Future<bool> get isRunningService =>
@@ -248,8 +272,8 @@ class FlutterForegroundTask {
   /// It must always be called from a top-level function, otherwise foreground task will not work.
   static void setTaskHandler(TaskHandler handler) {
     // Create a method channel to communicate with the platform.
-    const backgroundChannel =
-        MethodChannel('flutter_foreground_task/background');
+    backgroundChannel =
+        const MethodChannel('flutter_foreground_task/background');
 
     // Binding the framework to the flutter engine.
     WidgetsFlutterBinding.ensureInitialized();

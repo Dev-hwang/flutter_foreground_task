@@ -155,6 +155,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 		when (call.method) {
 			"initialize" -> startForegroundTask()
+			"notification" -> notifyService(call)
 			else -> result.notImplemented()
 		}
 	}
@@ -278,6 +279,45 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		stopForeground(true)
 		stopSelf()
 		isRunningService = false
+	}
+
+	private fun notifyService(call: MethodCall) {
+		val argsMap = call.arguments as? Map<*, *>
+		NotificationOptions.notificationContent(applicationContext, argsMap)
+		notificationOptions = NotificationOptions.getData(applicationContext)
+
+		// channel info
+		val pm = applicationContext.packageManager
+		val channelId = notificationOptions.channelId
+
+		// notification icon
+		val iconData = notificationOptions.iconData
+		val iconBackgroundColor: Int?
+		val iconResId: Int
+		if (iconData != null) {
+			iconBackgroundColor = iconData.backgroundColorRgb?.let(::getRgbColor)
+			iconResId = getIconResIdFromIconData(iconData)
+		} else {
+			iconBackgroundColor = null
+			iconResId = getIconResIdFromAppInfo(pm)
+		}
+
+		// Modify notification
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			val nm = getSystemService(NotificationManager::class.java)
+			val builder = Notification.Builder(this, channelId)
+			builder.setSmallIcon(iconResId)
+			if (iconBackgroundColor != null) {
+				builder.setColor(iconBackgroundColor)
+			}
+			builder.setContentTitle(notificationOptions.contentTitle)
+			builder.setContentText(notificationOptions.contentText)
+			val actions = buildButtonActions().toTypedArray()
+			builder.setActions(*actions)
+			nm.notify(notificationOptions.id, builder.build())
+		}
+
+		isRunningService = true
 	}
 
 	@SuppressLint("WakelockTimeout")
