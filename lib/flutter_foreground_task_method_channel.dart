@@ -4,6 +4,8 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_foreground_task/models/notification_button.dart';
+import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 
 import 'flutter_foreground_task_platform_interface.dart';
 import 'models/android_notification_options.dart';
@@ -138,6 +140,37 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     });
 
     return stopState;
+  }
+
+  @override
+  Future<bool> notification({
+    required int notificationId,
+    String? notificationTitle,
+    String? notificationText,
+    NotificationIconData? iconData,
+    List<NotificationButton>? buttons,
+  }) async {
+    if (await isRunningService) {
+      final options = <String, dynamic>{
+        'notificationId': notificationId,
+        'notificationContentTitle': notificationTitle,
+        'notificationContentText': notificationText,
+        'iconData': iconData?.toJson(),
+        'buttons': buttons?.map((e) => e.toJson()).toList(),
+      };
+      return await methodChannel.invokeMethod('notification', options);
+    }
+    return false;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> sendMessage(
+    Map<String, dynamic> message,
+  ) async {
+    if (await isRunningService) {
+      return await methodChannel.invokeMapMethod<String, dynamic>('sendMessage', message);
+    }
+    return null;
   }
 
   @override

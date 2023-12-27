@@ -121,6 +121,12 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 				stopForegroundService()
 				return START_NOT_STICKY
 			}
+			ForegroundServiceAction.NOTIFY -> {
+				notifyService()
+			}
+			ForegroundServiceAction.MESSAGE -> {
+				handleSendMessage(intent!!.getSerializableExtra(DATA_FIELD_NAME) as Map<*, *>)
+			}
 		}
 
 		return if (notificationOptions.isSticky) START_STICKY else START_NOT_STICKY
@@ -156,8 +162,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 		when (call.method) {
 			"initialize" -> startForegroundTask()
-			"notification" -> notifyService(call)
-			"sendMessage" -> handleSendMessage(call)
 			else -> result.notImplemented()
 		}
 	}
@@ -283,11 +287,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		isRunningService = false
 	}
 
-	private fun notifyService(call: MethodCall) {
-		val argsMap = call.arguments as? Map<*, *>
-		NotificationOptions.notificationContent(applicationContext, argsMap)
-		notificationOptions = NotificationOptions.getData(applicationContext)
-
+	private fun notifyService() {
 		// channel info
 		val pm = applicationContext.packageManager
 		val channelId = notificationOptions.channelId
@@ -322,10 +322,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		isRunningService = true
 	}
 
-	private fun handleSendMessage(call: MethodCall) {
-		// Received a message from the main isolate. Pass it on to the task handler.
-		val argsMap = call.arguments as? Map<*, *>
-		backgroundChannel?.invokeMethod(ACTION_MESSAGE_RECEIVED, argsMap)
+	private fun handleSendMessage(args: Map<*, *>) {
+		backgroundChannel?.invokeMethod(ACTION_MESSAGE_RECEIVED, args)
 	}
 
 	@SuppressLint("WakelockTimeout")

@@ -60,7 +60,6 @@ class FlutterForegroundTask {
   static late IOSNotificationOptions _iosNotificationOptions;
   static late ForegroundTaskOptions _foregroundTaskOptions;
   static bool _initialized = false;
-  static MethodChannel? backgroundChannel;
 
   /// Initialize the [FlutterForegroundTask].
   static void init({
@@ -81,7 +80,8 @@ class FlutterForegroundTask {
     Function? callback,
   }) {
     if (_initialized == false) {
-      throw const ForegroundTaskException('Not initialized. Please call this function after calling the init function.');
+      throw const ForegroundTaskException(
+          'Not initialized. Please call this function after calling the init function.');
     }
 
     return FlutterForegroundTaskPlatform.instance.startService(
@@ -95,7 +95,8 @@ class FlutterForegroundTask {
   }
 
   /// Restart the foreground service.
-  static Future<bool> restartService() => FlutterForegroundTaskPlatform.instance.restartService();
+  static Future<bool> restartService() =>
+      FlutterForegroundTaskPlatform.instance.restartService();
 
   /// Update the foreground service.
   static Future<bool> updateService({
@@ -112,7 +113,8 @@ class FlutterForegroundTask {
       );
 
   /// Stop the foreground service.
-  static Future<bool> stopService() => FlutterForegroundTaskPlatform.instance.stopService();
+  static Future<bool> stopService() =>
+      FlutterForegroundTaskPlatform.instance.stopService();
 
   /// Notifies the foreground service.
   static Future<bool> notification({
@@ -121,27 +123,23 @@ class FlutterForegroundTask {
     String? notificationText,
     NotificationIconData? iconData,
     List<NotificationButton>? buttons,
-  }) async {
-    final options = <String, dynamic>{
-      'notificationId': notificationId,
-      'notificationContentTitle': notificationTitle,
-      'notificationContentText': notificationText,
-      'iconData': iconData?.toJson(),
-      'buttons': buttons?.map((e) => e.toJson()).toList(),
-    };
-
-    // Notifies the foreground service.
-    await backgroundChannel!.invokeMethod('notification', options);
-    return true;
-  }
+  }) =>
+      FlutterForegroundTaskPlatform.instance.notification(
+        notificationId: notificationId,
+        notificationTitle: notificationTitle,
+        notificationText: notificationText,
+        iconData: iconData,
+        buttons: buttons,
+      );
 
   /// Sends a message to the foreground service.
-  static Future<Map<String, dynamic>?> sendMessage(Map<String, dynamic> message) async {
-    return backgroundChannel!.invokeMapMethod<String, dynamic>('sendMessage', message);
-  }
+  static Future<Map<String, dynamic>?> sendMessage(
+      Map<String, dynamic> message) =>
+      FlutterForegroundTaskPlatform.instance.sendMessage(message);
 
   /// Returns whether the foreground service is running.
-  static Future<bool> get isRunningService => FlutterForegroundTaskPlatform.instance.isRunningService;
+  static Future<bool> get isRunningService =>
+      FlutterForegroundTaskPlatform.instance.isRunningService;
 
   /// Get the [ReceivePort].
   static ReceivePort? get receivePort => _registerPort();
@@ -215,60 +213,76 @@ class FlutterForegroundTask {
   }
 
   /// Minimize the app to the background.
-  static void minimizeApp() => FlutterForegroundTaskPlatform.instance.minimizeApp();
+  static void minimizeApp() =>
+      FlutterForegroundTaskPlatform.instance.minimizeApp();
 
   /// Launch the app at [route] if it is not running otherwise open it.
-  static void launchApp([String? route]) => FlutterForegroundTaskPlatform.instance.launchApp(route);
+  static void launchApp([String? route]) =>
+      FlutterForegroundTaskPlatform.instance.launchApp(route);
 
   /// Toggles lockScreen visibility
-  static void setOnLockScreenVisibility(bool isVisible) => FlutterForegroundTaskPlatform.instance.setOnLockScreenVisibility(isVisible);
+  static void setOnLockScreenVisibility(bool isVisible) =>
+      FlutterForegroundTaskPlatform.instance
+          .setOnLockScreenVisibility(isVisible);
 
   /// Returns whether the app is in the foreground.
-  static Future<bool> get isAppOnForeground => FlutterForegroundTaskPlatform.instance.isAppOnForeground;
+  static Future<bool> get isAppOnForeground =>
+      FlutterForegroundTaskPlatform.instance.isAppOnForeground;
 
   /// Wake up the screen of a device that is turned off.
-  static void wakeUpScreen() => FlutterForegroundTaskPlatform.instance.wakeUpScreen();
+  static void wakeUpScreen() =>
+      FlutterForegroundTaskPlatform.instance.wakeUpScreen();
 
   /// Returns whether the app has been excluded from battery optimization.
-  static Future<bool> get isIgnoringBatteryOptimizations => FlutterForegroundTaskPlatform.instance.isIgnoringBatteryOptimizations;
+  static Future<bool> get isIgnoringBatteryOptimizations =>
+      FlutterForegroundTaskPlatform.instance.isIgnoringBatteryOptimizations;
 
   /// Open the settings page where you can set ignore battery optimization.
-  static Future<bool> openIgnoreBatteryOptimizationSettings() => FlutterForegroundTaskPlatform.instance.openIgnoreBatteryOptimizationSettings();
+  static Future<bool> openIgnoreBatteryOptimizationSettings() =>
+      FlutterForegroundTaskPlatform.instance
+          .openIgnoreBatteryOptimizationSettings();
 
   /// Request to ignore battery optimization.
-  static Future<bool> requestIgnoreBatteryOptimization() => FlutterForegroundTaskPlatform.instance.requestIgnoreBatteryOptimization();
+  static Future<bool> requestIgnoreBatteryOptimization() =>
+      FlutterForegroundTaskPlatform.instance.requestIgnoreBatteryOptimization();
 
   /// Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
-  static Future<bool> get canDrawOverlays => FlutterForegroundTaskPlatform.instance.canDrawOverlays;
+  static Future<bool> get canDrawOverlays =>
+      FlutterForegroundTaskPlatform.instance.canDrawOverlays;
 
   /// Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
   ///
   /// Pass the `forceOpen` bool to open the permissions page even if granted.
-  static Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) => FlutterForegroundTaskPlatform.instance.openSystemAlertWindowSettings(forceOpen: forceOpen);
+  static Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) =>
+      FlutterForegroundTaskPlatform.instance
+          .openSystemAlertWindowSettings(forceOpen: forceOpen);
 
   /// Returns "android.permission.POST_NOTIFICATIONS" permission status.
   ///
   /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
-  static Future<NotificationPermission> checkNotificationPermission() => FlutterForegroundTaskPlatform.instance.checkNotificationPermission();
+  static Future<NotificationPermission> checkNotificationPermission() =>
+      FlutterForegroundTaskPlatform.instance.checkNotificationPermission();
 
   /// Request "android.permission.POST_NOTIFICATIONS" permission.
   ///
   /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
-  static Future<NotificationPermission> requestNotificationPermission() => FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
+  static Future<NotificationPermission> requestNotificationPermission() =>
+      FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
 
   /// Set up the task handler and start the foreground task.
   ///
   /// It must always be called from a top-level function, otherwise foreground task will not work.
   static void setTaskHandler(TaskHandler handler) {
     // Create a method channel to communicate with the platform.
-    backgroundChannel = const MethodChannel('flutter_foreground_task/background');
+    const backgroundChannel =
+        MethodChannel('flutter_foreground_task/background');
 
     // Binding the framework to the flutter engine.
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
 
     // Set the method call handler for the background channel.
-    backgroundChannel!.setMethodCallHandler((call) async {
+    backgroundChannel.setMethodCallHandler((call) async {
       await (await SharedPreferences.getInstance()).reload();
       final timestamp = DateTime.now();
       final sendPort = _lookupPort();
@@ -297,7 +311,7 @@ class FlutterForegroundTask {
     });
 
     // Initializes the plug-in background channel and starts a foreground task.
-    backgroundChannel!.invokeMethod('initialize');
+    backgroundChannel.invokeMethod('initialize');
   }
 
   static ReceivePort? _registerPort() {
