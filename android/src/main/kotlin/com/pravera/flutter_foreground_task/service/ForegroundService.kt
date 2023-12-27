@@ -40,6 +40,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private const val ACTION_TASK_DESTROY = "onDestroy"
         private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
+        private const val ACTION_MESSAGE_RECEIVED = "onReceivedMessage"
         private const val DATA_FIELD_NAME = "data"
 
 		/** Returns whether the foreground service is running. */
@@ -156,6 +157,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		when (call.method) {
 			"initialize" -> startForegroundTask()
 			"notification" -> notifyService(call)
+			"sendMessage" -> handleSendMessage(call)
 			else -> result.notImplemented()
 		}
 	}
@@ -318,6 +320,12 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 
 		isRunningService = true
+	}
+
+	private fun handleSendMessage(call: MethodCall) {
+		// Received a message from the main isolate. Pass it on to the task handler.
+		val argsMap = call.arguments as? Map<*, *>
+		backgroundChannel?.invokeMethod(ACTION_MESSAGE_RECEIVED, argsMap)
 	}
 
 	@SuppressLint("WakelockTimeout")
