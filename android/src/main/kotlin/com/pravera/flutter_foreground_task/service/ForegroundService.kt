@@ -319,7 +319,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			}
 			builder.setContentTitle(notificationOptions.contentTitle)
 			builder.setContentText(notificationOptions.contentText)
-			val actions = buildButtonActions().toTypedArray()
+			val actions = buildButtonActions(true).toTypedArray()
 			builder.setActions(*actions)
 			nm.notify(notificationOptions.id, builder.build())
 		}
@@ -557,18 +557,19 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	}
 
 	@SuppressLint("UnspecifiedImmutableFlag")
-    private fun buildButtonActions(): List<Notification.Action> {
+    private fun buildButtonActions(update: Boolean = false): List<Notification.Action> {
 		val actions = mutableListOf<Notification.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
-			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
-			}
+			var flag = 0
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+				flag = flag or PendingIntent.FLAG_IMMUTABLE
+			if (update)
+				flag = flag or PendingIntent.FLAG_CANCEL_CURRENT
+			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, flag)
 			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
 			val bText = getTextSpan(buttons[i].text, bTextColor)
 			val bAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -583,18 +584,19 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	}
 
 	@SuppressLint("UnspecifiedImmutableFlag")
-    private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
+    private fun buildButtonCompatActions(update: Boolean = false): List<NotificationCompat.Action> {
 		val actions = mutableListOf<NotificationCompat.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
-			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
-			}
+			var flag = 0
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+				flag = flag or PendingIntent.FLAG_IMMUTABLE
+			if (update)
+				flag = flag or PendingIntent.FLAG_CANCEL_CURRENT
+			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, flag)
 			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
 			val bText = getTextSpan(buttons[i].text, bTextColor)
 			val bAction = NotificationCompat.Action.Builder(0, bText, bPendingIntent).build()

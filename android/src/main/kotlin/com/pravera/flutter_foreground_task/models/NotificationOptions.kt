@@ -160,9 +160,14 @@ data class NotificationOptions(
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
-            val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int ?: 1000
-            val contentTitle = map?.get(PrefsKey.NOTIFICATION_CONTENT_TITLE) as? String ?: ""
-            val contentText = map?.get(PrefsKey.NOTIFICATION_CONTENT_TEXT) as? String ?: ""
+            val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int
+                ?: prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000);
+            val contentTitle = map?.get(PrefsKey.NOTIFICATION_CONTENT_TITLE) as? String
+                ?: prefs.getString(PrefsKey.NOTIFICATION_CONTENT_TITLE, null)
+                ?: ""
+            val contentText = map?.get(PrefsKey.NOTIFICATION_CONTENT_TEXT) as? String
+                ?: prefs.getString(PrefsKey.NOTIFICATION_CONTENT_TEXT, null)
+                ?: ""
 
             val iconData = map?.get(PrefsKey.ICON_DATA) as? Map<*, *>
             var iconDataJson: String? = null
