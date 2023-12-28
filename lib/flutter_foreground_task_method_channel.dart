@@ -164,13 +164,13 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   }
 
   @override
-  Future<Map<String, dynamic>?> sendMessage(
+  Future<bool> sendMessage(
     Map<String, dynamic> message,
   ) async {
     if (await isRunningService) {
-      return await methodChannel.invokeMapMethod<String, dynamic>('sendMessage', message);
+      return await methodChannel.invokeMethod('sendMessage', message);
     }
-    return null;
+    return false;
   }
 
   @override

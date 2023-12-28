@@ -68,7 +68,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('notification() has not been implemented.');
   }
 
-  Future<Map<String, dynamic>?> sendMessage(Map<String, dynamic> message) {
+  Future<bool> sendMessage(Map<String, dynamic> message) {
     throw UnimplementedError('sendMessage() has not been implemented.');
   }
 

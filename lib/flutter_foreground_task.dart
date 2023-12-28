@@ -51,7 +51,7 @@ abstract class TaskHandler {
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
 
   /// Called when a message is sent from the main program.
-  void onReceivedMessage(Map<String, dynamic> args) {}
+  void onReceivedMessage(dynamic args) {}
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -133,7 +133,7 @@ class FlutterForegroundTask {
       );
 
   /// Sends a message to the foreground service.
-  static Future<Map<String, dynamic>?> sendMessage(
+  static Future<bool> sendMessage(
       Map<String, dynamic> message) =>
       FlutterForegroundTaskPlatform.instance.sendMessage(message);
 

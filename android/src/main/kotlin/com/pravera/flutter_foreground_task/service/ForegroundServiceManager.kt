@@ -123,7 +123,7 @@ class ForegroundServiceManager {
 	 * @param context context
 	 * @param arguments arguments
 	 */
-	fun message(context: Context, arguments: Any?): Map<String, Any?> ?{
+	fun message(context: Context, arguments: Any?): Boolean {
 		try {
 			val argsMap = arguments as? HashMap<String, Any?>
 			val nIntent = Intent(context, ForegroundService::class.java).apply {
@@ -132,10 +132,10 @@ class ForegroundServiceManager {
 			ForegroundServiceStatus.putData(context, ForegroundServiceAction.MESSAGE)
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
-			return null
+			return false
 		}
 
-		return emptyMap()
+		return true
 	}
 
 	/** Returns whether the foreground service is running. */
