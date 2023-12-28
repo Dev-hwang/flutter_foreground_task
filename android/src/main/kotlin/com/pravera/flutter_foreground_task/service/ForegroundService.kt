@@ -42,10 +42,15 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
         private const val ACTION_MESSAGE_RECEIVED = "onReceivedMessage"
         private const val DATA_FIELD_NAME = "data"
+        private var engineListener : EngineListener? = null
 
 		/** Returns whether the foreground service is running. */
 		var isRunningService = false
 			private set
+
+		fun setEngineListener(listener: EngineListener?) {
+			engineListener = listener
+		}
 	}
 
 	private lateinit var foregroundServiceStatus: ForegroundServiceStatus
@@ -406,6 +411,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 
 		currFlutterEngine = FlutterEngine(this)
+		engineListener?.onEngineStarted(currFlutterEngine!!)
 
 		currFlutterLoader = FlutterInjector.instance().flutterLoader()
 		if (currFlutterLoader?.initialized() == false) {
