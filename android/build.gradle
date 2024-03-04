@@ -25,7 +25,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace "com.pravera.flutter_foreground_task"
     compileSdkVersion 33
 
     compileOptions {
@@ -43,6 +42,9 @@ android {
 
     defaultConfig {
         minSdkVersion 21
+         if (project.android.hasProperty('namespace')) {
+        namespace 'com.pravera.flutter_foreground_task'
+        }
     }
 }
 
