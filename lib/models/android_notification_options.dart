@@ -20,7 +20,7 @@ class AndroidNotificationOptions {
     this.showWhen = false,
     this.isSticky = true,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
-    this.notificationTypes = 0,
+    this.permissionTypes = 0,
     this.iconData,
     this.buttons,
   })  : assert(channelId.isNotEmpty),
@@ -80,7 +80,7 @@ class AndroidNotificationOptions {
 
   /// An integer representing the permission types to be invoked
   /// This is the sum of the bitmap
-  final int notificationTypes;
+  final int permissionTypes;
 
   /// Returns the data fields of [AndroidNotificationOptions] in JSON format.
   Map<String, dynamic> toJson() {
@@ -98,6 +98,7 @@ class AndroidNotificationOptions {
       'visibility': visibility.rawValue,
       'iconData': iconData?.toJson(),
       'buttons': buttons?.map((e) => e.toJson()).toList(),
+      'permissionTypes': permissionTypes
     };
   }
 }
