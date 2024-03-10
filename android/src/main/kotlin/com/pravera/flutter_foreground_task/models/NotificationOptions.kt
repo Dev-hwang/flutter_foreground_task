@@ -139,7 +139,7 @@ data class NotificationOptions(
                 putInt(PrefsKey.VISIBILITY, visibility)
                 putString(PrefsKey.ICON_DATA, iconDataJson)
                 putString(PrefsKey.BUTTONS, buttonsJson)
-                pintInt(PrefsKey.PERMISSION_TYPES, permissionTypes)
+                putInt(PrefsKey.PERMISSION_TYPES, permissionTypes)
                 commit()
             }
         }
