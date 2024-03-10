@@ -317,6 +317,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			if (iconBackgroundColor != null) {
 				builder.setColor(iconBackgroundColor)
 			}
+			builder.setContentIntent(getPendingIntent(pm))
 			builder.setContentTitle(notificationOptions.contentTitle)
 			builder.setContentText(notificationOptions.contentText)
 			val actions = buildButtonActions(true).toTypedArray()
