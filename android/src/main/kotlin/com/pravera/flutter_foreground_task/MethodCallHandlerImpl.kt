@@ -60,6 +60,10 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                 result.success(provider.getForegroundServiceManager().update(context, args))
             "stopService" ->
                 result.success(provider.getForegroundServiceManager().stop(context))
+            "notification" ->
+                result.success(provider.getForegroundServiceManager().notify(context, args))
+            "sendMessage" ->
+                result.success(provider.getForegroundServiceManager().message(context, args))
             "isRunningService" ->
                 result.success(provider.getForegroundServiceManager().isRunningService())
             "attachedActivity" -> result.success(activity != null)

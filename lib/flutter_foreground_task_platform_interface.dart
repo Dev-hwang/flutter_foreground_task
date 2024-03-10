@@ -1,3 +1,5 @@
+import 'package:flutter_foreground_task/models/notification_button.dart';
+import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_foreground_task_method_channel.dart';
@@ -54,6 +56,20 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
 
   Future<bool> stopService() {
     throw UnimplementedError('stopService() has not been implemented.');
+  }
+
+  Future<bool> notification({
+    required int notificationId,
+    String? notificationTitle,
+    String? notificationText,
+    NotificationIconData? iconData,
+    List<NotificationButton>? buttons,
+  }) {
+    throw UnimplementedError('notification() has not been implemented.');
+  }
+
+  Future<bool> sendMessage(Map<String, dynamic> message) {
+    throw UnimplementedError('sendMessage() has not been implemented.');
   }
 
   Future<bool> get isRunningService {

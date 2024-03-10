@@ -14,4 +14,6 @@ object ForegroundServiceAction {
 	const val REBOOT = prefix + "reboot"
 	const val RESTART = prefix + "restart"
 	const val STOP = prefix + "stop"
+	const val NOTIFY = prefix + "notify"
+	const val MESSAGE = prefix + "message"
 }
