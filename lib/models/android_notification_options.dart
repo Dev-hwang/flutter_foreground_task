@@ -6,6 +6,7 @@ import 'package:flutter_foreground_task/models/notification_visibility.dart';
 
 /// Notification options for Android platform.
 class AndroidNotificationOptions {
+
   /// Constructs an instance of [AndroidNotificationOptions].
   AndroidNotificationOptions({
     this.id,
@@ -19,6 +20,7 @@ class AndroidNotificationOptions {
     this.showWhen = false,
     this.isSticky = true,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
+    this.notificationTypes = 0,
     this.iconData,
     this.buttons,
   })  : assert(channelId.isNotEmpty),
@@ -75,6 +77,10 @@ class AndroidNotificationOptions {
   /// A list of buttons to display in the notification.
   /// A maximum of 3 is allowed.
   final List<NotificationButton>? buttons;
+
+  /// An integer representing the permission types to be invoked
+  /// This is the sum of the bitmap
+  final int notificationTypes;
 
   /// Returns the data fields of [AndroidNotificationOptions] in JSON format.
   Map<String, dynamic> toJson() {

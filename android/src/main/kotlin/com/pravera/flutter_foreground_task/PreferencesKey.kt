@@ -30,6 +30,7 @@ object PreferencesKey {
     const val VISIBILITY = "visibility"
     const val ICON_DATA = "iconData"
     const val BUTTONS = "buttons"
+    const val PERMISSION_TYPES = "permissionTypes"
 
     const val FOREGROUND_TASK_OPTIONS_PREFS = prefix + "FOREGROUND_TASK_OPTIONS"
     const val TASK_INTERVAL = "interval"

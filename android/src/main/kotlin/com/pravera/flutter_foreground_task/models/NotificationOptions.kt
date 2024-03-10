@@ -18,6 +18,7 @@ data class NotificationOptions(
     val playSound: Boolean,
     val showWhen: Boolean,
     val isSticky: Boolean,
+    val permissionTypes: Int,
     val visibility: Int,
     val iconData: NotificationIconData?,
     val buttons: List<NotificationButton>
@@ -28,6 +29,7 @@ data class NotificationOptions(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
             val id = prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000)
+            val permissionTypes = prefs.getInt(PrefsKey.PERMISSION_TYPES, 0)
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: "foreground_service"
             val channelName = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, null) ?: "Foreground Service"
             val channelDesc = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_DESC, null)
@@ -84,7 +86,8 @@ data class NotificationOptions(
                 isSticky = isSticky,
                 visibility = visibility,
                 iconData = iconData,
-                buttons = buttons
+                buttons = buttons,
+                permissionTypes = permissionTypes
             )
         }
 
@@ -118,6 +121,8 @@ data class NotificationOptions(
                 buttonsJson = JSONArray(buttons).toString()
             }
 
+            val permissionTypes = map?.get(PrefsKey.PERMISSION_TYPES) as? Int ?: 0
+
             with(prefs.edit()) {
                 putInt(PrefsKey.NOTIFICATION_ID, id)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_ID, channelId)
@@ -134,6 +139,7 @@ data class NotificationOptions(
                 putInt(PrefsKey.VISIBILITY, visibility)
                 putString(PrefsKey.ICON_DATA, iconDataJson)
                 putString(PrefsKey.BUTTONS, buttonsJson)
+                pintInt(PrefsKey.PERMISSION_TYPES, permissionTypes)
                 commit()
             }
         }

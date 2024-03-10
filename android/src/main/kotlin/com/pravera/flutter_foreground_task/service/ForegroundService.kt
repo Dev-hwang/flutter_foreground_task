@@ -12,7 +12,9 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import io.flutter.FlutterInjector
@@ -197,7 +199,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		val iconData = notificationOptions.iconData
 		val iconBackgroundColor: Int?
         val iconResId: Int
-        if (iconData != null) {
+		if (iconData != null) {
             iconBackgroundColor = iconData.backgroundColorRgb?.let(::getRgbColor)
             iconResId = getIconResIdFromIconData(iconData)
         } else {
@@ -241,7 +243,18 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 				builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
 			}
-			startForeground(notificationOptions.id, builder.build())
+
+			if(notificationOptions.permissionTypes > 0) {
+				ServiceCompat.startForeground(
+					this,
+					notificationOptions.id,
+					builder.build(),
+					notificationOptions.permissionTypes
+				)
+			} else {
+				startForeground(notificationOptions.id, builder.build())
+			}
+
 		} else {
 			val builder = NotificationCompat.Builder(this, channelId)
 			builder.setOngoing(true)
