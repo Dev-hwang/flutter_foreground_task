@@ -1,3 +1,9 @@
+## 6.1.3
+
+* [**DOCS**] Update readme [#192](https://github.com/Dev-hwang/flutter_foreground_task/issues/192)
+* [**CHORE**] Remove platform dependency
+* [**CHORE**] Update dependencies
+
 ## 6.1.2
 
 * [**FIX**] Fix issue where SecurityException occurred when registering runtime receiver [#175](https://github.com/Dev-hwang/flutter_foreground_task/issues/175)
