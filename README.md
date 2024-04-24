@@ -42,7 +42,7 @@ Change the type with your type (all types are listed in the link above). Beware,
 <service 
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
     android:stopWithTask="true"
-    android:foregroundServiceType="mediaPlayback" <!-- Here, chose the type according to your app -->
+    android:foregroundServiceType="shortService" <!-- Here, chose the type according to your app -->
     android:exported="false" />
 
 ```
