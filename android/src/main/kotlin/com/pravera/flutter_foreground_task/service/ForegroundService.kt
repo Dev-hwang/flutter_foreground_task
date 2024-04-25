@@ -13,6 +13,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import io.flutter.FlutterInjector
@@ -241,7 +242,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 				builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
 			}
-			startForeground(notificationOptions.id, builder.build())
+
+			ServiceCompat.startForeground(
+				this,
+				notificationOptions.id,
+				builder.build(),
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					notificationOptions.foregroundServiceType
+				} else {
+					0
+				}
+			)
 		} else {
 			val builder = NotificationCompat.Builder(this, channelId)
 			builder.setOngoing(true)

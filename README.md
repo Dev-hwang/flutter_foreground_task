@@ -25,24 +25,23 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
 
-As it is mentionned in the Android Guidelines, in Android 14, to start a FG service, you need to specify its type.
+As it is mentioned in the Android Guidelines, in Android 14, to start a FG service, you need to specify its type.
 
-You can read all the details in the Android Developper Page : https://developer.android.com/about/versions/14/changes/fgs-types-required
+You can read all the details in the Android Developer Page : https://developer.android.com/about/versions/14/changes/fgs-types-required
 
 If you want to target Android 14 phones, you need to add a few lines to your manifest. 
-Change the type with your type (all types are listed in the link above). Beware, certzin type have some requirements to be met to work.
+Change the type with your type (all types are listed in the link above).
 
 
 ```
 <!-- In the permission part of your manifest, these permission are needed if you target Android 14 phones -->
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" /> <!-- Here, chose the type according to your app -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" /> <!-- Here, chose the type according to your app -->
 
 <!-- Add android:stopWithTask option only when necessary. -->
 <service 
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-    android:stopWithTask="true"
-    android:foregroundServiceType="shortService" <!-- Here, chose the type according to your app -->
+    android:foregroundServiceType="dataSync" <!-- Here, chose the type according to your app -->
     android:exported="false" />
 
 ```
@@ -147,6 +146,7 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 void _initForegroundTask() {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
+      foregroundServiceType: AndroidForegroundServiceType.DATA_SYNC,
       channelId: 'foreground_service',
       channelName: 'Foreground Service Notification',
       channelDescription: 'This notification appears when the foreground service is running.',
@@ -616,6 +616,7 @@ Widget build(BuildContext context) {
         return true;
       },
       androidNotificationOptions: AndroidNotificationOptions(
+        foregroundServiceType: AndroidForegroundServiceType.DATA_SYNC,
         channelId: 'foreground_service',
         channelName: 'Foreground Service Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
@@ -664,21 +665,44 @@ Widget build(BuildContext context) {
 
 Notification options for Android platform.
 
-| Property             | Description                                                                                                                           |
-|----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `id`                 | Unique ID of the notification.                                                                                                        |
-| `channelId`          | Unique ID of the notification channel.                                                                                                |
-| `channelName`        | The name of the notification channel. This value is displayed to the user in the notification settings.                               |
-| `channelDescription` | The description of the notification channel. This value is displayed to the user in the notification settings.                        |
-| `channelImportance`  | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.                                   |
-| `priority`           | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.                                   |
-| `enableVibration`    | Whether to enable vibration when creating notifications. The default is `false`.                                                      |
-| `playSound`          | Whether to play sound when creating notifications. The default is `false`.                                                            |
-| `showWhen`           | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                          |
-| `isSticky`           | Whether the system will restart the service if the service is killed. The default is `true`.                                          |
-| `visibility`         | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
-| `iconData`           | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
-| `buttons`            | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
+| Property                | Description                                                                                                                           |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `foregroundServiceType` | Type of foreground service.                                                                                                           |
+| `id`                    | Unique ID of the notification.                                                                                                        |
+| `channelId`             | Unique ID of the notification channel.                                                                                                |
+| `channelName`           | The name of the notification channel. This value is displayed to the user in the notification settings.                               |
+| `channelDescription`    | The description of the notification channel. This value is displayed to the user in the notification settings.                        |
+| `channelImportance`     | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.                                   |
+| `priority`              | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.                                   |
+| `enableVibration`       | Whether to enable vibration when creating notifications. The default is `false`.                                                      |
+| `playSound`             | Whether to play sound when creating notifications. The default is `false`.                                                            |
+| `showWhen`              | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                          |
+| `isSticky`              | Whether the system will restart the service if the service is killed. The default is `true`.                                          |
+| `visibility`            | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
+| `iconData`              | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
+| `buttons`               | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
+
+### :chicken: AndroidForegroundServiceType
+
+Constant to specify the foreground service type on Android 14 and higher.
+
+| Property           | Description                                                                                                                                                                                                         |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CAMERA`           | Constant corresponding to camera in the R.attr.foregroundServiceType attribute. Use the camera device or record video.                                                                                              |
+| `CONNECTED_DEVICE` | Constant corresponding to connectedDevice in the R.attr.foregroundServiceType attribute. Auto, bluetooth, TV or other devices connection, monitoring and interaction.                                               |
+| `DATA_SYNC`        | Constant corresponding to dataSync in the R.attr.foregroundServiceType attribute. Data(photo, file, account) upload/download, backup/restore, import/export, fetch, transfer over network between device and cloud. |
+| `HEALTH`           | Constant corresponding to health in the R.attr.foregroundServiceType attribute. Health, wellness and fitness.                                                                                                       |
+| `LOCATION`         | Constant corresponding to location in the R.attr.foregroundServiceType attribute. GPS, map, navigation location update.                                                                                             |
+| `MANIFEST`         | A special value indicates to use all types set in manifest file. Constant corresponding to mediaPlayback in the R.attr.foregroundServiceType attribute. Music, video, news or other media playback.                 |
+| `MEDIA_PLAYBACK`   | Constant corresponding to mediaPlayback in the R.attr.foregroundServiceType attribute. Music, video, news or other media playback.                                                                                  |
+| `MEDIA_PROJECTION` | Constant corresponding to mediaProjection in the foregroundServiceType attribute.                                                                                                                                   |
+| `MICROPHONE`       | Constant corresponding to microphone in the R.attr.foregroundServiceType attribute. Use the microphone device or record audio.                                                                                      |
+| `NONE`             | The default foreground service type if not been set in manifest file.                                                                                                                                               |
+| `PHONE_CALL`       | Constant corresponding to phoneCall in the R.attr.foregroundServiceType attribute. Ongoing operations related to phone calls, video conferencing, or similar interactive communication.                             |
+| `REMOTE_MESSAGING` | Constant corresponding to remoteMessaging in the R.attr.foregroundServiceType attribute. Messaging use cases which host local server to relay messages across devices.                                              |
+| `SHORT_SERVICE`    | A foreground service type for "short-lived" services, which corresponds to shortService in the R.attr.foregroundServiceType attribute in the manifest.                                                              |
+| `SPECIAL_USE`      | Constant corresponding to specialUse in the R.attr.foregroundServiceType attribute. Use cases that can't be categorized into any other foreground service types, but also can't use JobInfo.Builder APIs.           |
+| `SYSTEM_EXEMPTED`  | Constant corresponding to systemExempted in the R.attr.foregroundServiceType attribute. The system exempted foreground service use cases.                                                                           |
 
 ### :chicken: NotificationIconData
 

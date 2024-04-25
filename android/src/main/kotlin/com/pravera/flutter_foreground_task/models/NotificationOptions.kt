@@ -6,6 +6,7 @@ import org.json.JSONObject
 import com.pravera.flutter_foreground_task.PreferencesKey as PrefsKey
 
 data class NotificationOptions(
+    val foregroundServiceType: Int,
     val id: Int,
     val channelId: String,
     val channelName: String,
@@ -27,6 +28,7 @@ data class NotificationOptions(
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
+            val foregroundServiceType = prefs.getInt(PrefsKey.FOREGROUND_SERVICE_TYPE, 0)
             val id = prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000)
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: "foreground_service"
             val channelName = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, null) ?: "Foreground Service"
@@ -70,6 +72,7 @@ data class NotificationOptions(
             }
 
             return NotificationOptions(
+                foregroundServiceType = foregroundServiceType,
                 id = id,
                 channelId = channelId,
                 channelName = channelName,
@@ -92,6 +95,7 @@ data class NotificationOptions(
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
+            val foregroundServiceType = map?.get(PrefsKey.FOREGROUND_SERVICE_TYPE) as? Int ?: 0
             val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int ?: 1000
             val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String
             val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String
@@ -119,6 +123,7 @@ data class NotificationOptions(
             }
 
             with(prefs.edit()) {
+                putInt(PrefsKey.FOREGROUND_SERVICE_TYPE, foregroundServiceType)
                 putInt(PrefsKey.NOTIFICATION_ID, id)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_ID, channelId)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_NAME, channelName)
