@@ -1,3 +1,8 @@
+## 6.2.0
+
+* [**FEAT**] Support AGP 8
+* [**FEAT**] Add `foregroundServiceType` option to specify foreground service type on Android 14 and higher
+
 ## 6.1.3
 
 * [**DOCS**] Update readme [#192](https://github.com/Dev-hwang/flutter_foreground_task/issues/192)
