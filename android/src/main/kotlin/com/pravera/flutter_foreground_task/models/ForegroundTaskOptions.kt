@@ -7,6 +7,7 @@ data class ForegroundTaskOptions(
     val interval: Long,
     val isOnceEvent: Boolean,
     val autoRunOnBoot: Boolean,
+    val autoRunOnMyPackageReplaced: Boolean,
     val allowWakeLock: Boolean,
     val allowWifiLock: Boolean,
     val callbackHandle: Long?
@@ -19,6 +20,7 @@ data class ForegroundTaskOptions(
             val interval = prefs.getLong(PrefsKey.TASK_INTERVAL, 5000L)
             val isOnceEvent = prefs.getBoolean(PrefsKey.IS_ONCE_EVENT, false)
             val autoRunOnBoot = prefs.getBoolean(PrefsKey.AUTO_RUN_ON_BOOT, false)
+            val autoRunOnMyPackageReplaced = prefs.getBoolean(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED, false)
             val allowWakeLock = prefs.getBoolean(PrefsKey.ALLOW_WAKE_LOCK, true)
             val allowWifiLock = prefs.getBoolean(PrefsKey.ALLOW_WIFI_LOCK, false)
             val callbackHandle = if (prefs.contains(PrefsKey.CALLBACK_HANDLE)) {
@@ -31,6 +33,7 @@ data class ForegroundTaskOptions(
                 interval = interval,
                 isOnceEvent = isOnceEvent,
                 autoRunOnBoot = autoRunOnBoot,
+                autoRunOnMyPackageReplaced = autoRunOnMyPackageReplaced,
                 allowWakeLock = allowWakeLock,
                 allowWifiLock = allowWifiLock,
                 callbackHandle = callbackHandle
@@ -44,6 +47,7 @@ data class ForegroundTaskOptions(
             val interval = "${map?.get(PrefsKey.TASK_INTERVAL)}".toLongOrNull() ?: 5000L
             val isOnceEvent = map?.get(PrefsKey.IS_ONCE_EVENT) as? Boolean ?: false
             val autoRunOnBoot = map?.get(PrefsKey.AUTO_RUN_ON_BOOT) as? Boolean ?: false
+            val autoRunOnMyPackageReplaced = map?.get(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED) as? Boolean ?: false
             val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean ?: true
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean ?: false
             val callbackHandle = "${map?.get(PrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
@@ -52,6 +56,7 @@ data class ForegroundTaskOptions(
                 putLong(PrefsKey.TASK_INTERVAL, interval)
                 putBoolean(PrefsKey.IS_ONCE_EVENT, isOnceEvent)
                 putBoolean(PrefsKey.AUTO_RUN_ON_BOOT, autoRunOnBoot)
+                putBoolean(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED, autoRunOnMyPackageReplaced)
                 putBoolean(PrefsKey.ALLOW_WAKE_LOCK, allowWakeLock)
                 putBoolean(PrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
                 remove(PrefsKey.CALLBACK_HANDLE)
@@ -67,6 +72,7 @@ data class ForegroundTaskOptions(
             val interval = "${map?.get(PrefsKey.TASK_INTERVAL)}".toLongOrNull()
             val isOnceEvent = map?.get(PrefsKey.IS_ONCE_EVENT) as? Boolean
             val autoRunOnBoot = map?.get(PrefsKey.AUTO_RUN_ON_BOOT) as? Boolean
+            val autoRunOnMyPackageReplaced = map?.get(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED) as? Boolean ?: false
             val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean
             val callbackHandle = "${map?.get(PrefsKey.CALLBACK_HANDLE)}".toLongOrNull()
@@ -75,6 +81,7 @@ data class ForegroundTaskOptions(
                 interval?.let { putLong(PrefsKey.TASK_INTERVAL, it) }
                 isOnceEvent?.let { putBoolean(PrefsKey.IS_ONCE_EVENT, it) }
                 autoRunOnBoot?.let { putBoolean(PrefsKey.AUTO_RUN_ON_BOOT, it) }
+                autoRunOnMyPackageReplaced?.let { putBoolean(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED, it) }
                 allowWakeLock?.let { putBoolean(PrefsKey.ALLOW_WAKE_LOCK, it) }
                 allowWifiLock?.let { putBoolean(PrefsKey.ALLOW_WIFI_LOCK, it) }
                 callbackHandle?.let { putLong(PrefsKey.CALLBACK_HANDLE, it) }

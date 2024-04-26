@@ -1,3 +1,7 @@
+## 6.2.1
+
+* Add `autoRunOnMyPackageReplaced` field to `ForegroundTaskOptions`. Check the readme for more details.
+
 ## 6.2.0
 
 * [**FEAT**] Support AGP 8

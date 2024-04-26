@@ -164,6 +164,7 @@ class _ExamplePageState extends State<ExamplePage> {
         interval: 5000,
         isOnceEvent: false,
         autoRunOnBoot: true,
+        autoRunOnMyPackageReplaced: true,
         allowWakeLock: true,
         allowWifiLock: true,
       ),

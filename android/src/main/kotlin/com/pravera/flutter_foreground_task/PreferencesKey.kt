@@ -36,6 +36,7 @@ object PreferencesKey {
     const val TASK_INTERVAL = "interval"
     const val IS_ONCE_EVENT = "isOnceEvent"
     const val AUTO_RUN_ON_BOOT = "autoRunOnBoot"
+    const val AUTO_RUN_ON_MY_PACKAGE_REPLACED = "autoRunOnMyPackageReplaced"
     const val ALLOW_WAKE_LOCK = "allowWakeLock"
     const val ALLOW_WIFI_LOCK = "allowWifiLock"
     const val CALLBACK_HANDLE = "callbackHandle"

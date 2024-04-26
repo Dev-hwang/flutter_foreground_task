@@ -5,6 +5,7 @@ class ForegroundTaskOptions {
     this.interval = 5000,
     this.isOnceEvent = false,
     this.autoRunOnBoot = false,
+    this.autoRunOnMyPackageReplaced = false,
     this.allowWakeLock = true,
     this.allowWifiLock = false,
   }) : assert(interval > 0);
@@ -20,6 +21,10 @@ class ForegroundTaskOptions {
   /// Whether to automatically run foreground task on boot.
   /// The default is `false`.
   final bool autoRunOnBoot;
+
+  /// Whether to automatically run foreground task when the my package replaced intent is received.
+  // The default is `false`.
+  final bool autoRunOnMyPackageReplaced;
 
   /// Whether to keep the CPU turned on.
   /// The default is `true`.
@@ -37,6 +42,7 @@ class ForegroundTaskOptions {
       'interval': interval,
       'isOnceEvent': isOnceEvent,
       'autoRunOnBoot': autoRunOnBoot,
+      'autoRunOnMyPackageReplaced': autoRunOnMyPackageReplaced,
       'allowWakeLock': allowWakeLock,
       'allowWifiLock': allowWifiLock,
     };
