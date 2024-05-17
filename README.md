@@ -46,6 +46,17 @@ Change the type with your type (all types are listed in the link above).
 
 ```
 
+Additionally, when you declare your **AndroidNotificationOptions**, you need to specify the ***foregroundServiceType***.
+
+```dart
+androidNotificationOptions: AndroidNotificationOptions(
+              foregroundServiceType: AndroidForegroundServiceType.DATA_SYNC,
+              channelId: 'channelId',
+              channelName: 'channelName',
+              channelDescription: 'channelDescription',
+            ),
+```
+
 
 ### :baby_chick: iOS
 
