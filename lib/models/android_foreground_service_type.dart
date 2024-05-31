@@ -37,9 +37,6 @@ class AndroidForegroundServiceType {
   /// Use the microphone device or record audio.
   static const int MICROPHONE = 128;
 
-  /// The default foreground service type if not been set in manifest file.
-  static const int NONE = 0;
-
   /// Constant corresponding to phoneCall in the R.attr.foregroundServiceType attribute.
   /// Ongoing operations related to phone calls, video conferencing, or similar interactive communication.
   static const int PHONE_CALL = 4;

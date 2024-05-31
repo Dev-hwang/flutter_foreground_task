@@ -15,7 +15,7 @@ object PreferencesKey {
     const val FOREGROUND_SERVICE_ACTION = "foregroundServiceAction"
 
     const val NOTIFICATION_OPTIONS_PREFS = prefix + "NOTIFICATION_OPTIONS"
-    const val FOREGROUND_SERVICE_TYPE = "foregroundServiceType"
+    const val FOREGROUND_SERVICE_TYPES = "foregroundServiceTypes"
     const val NOTIFICATION_ID = "notificationId"
     const val NOTIFICATION_CHANNEL_ID = "notificationChannelId"
     const val NOTIFICATION_CHANNEL_NAME = "notificationChannelName"
