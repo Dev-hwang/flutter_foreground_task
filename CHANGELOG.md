@@ -1,6 +1,7 @@
-## 6.2.1
+## 6.3.0
 
-* Add `autoRunOnMyPackageReplaced` field to `ForegroundTaskOptions`. Check the readme for more details.
+* [**FEAT**] Add option to allow multiple foregroundServiceType
+* [**DOCS**] Update readme
 
 ## 6.2.0
 

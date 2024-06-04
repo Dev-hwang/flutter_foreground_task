@@ -16,10 +16,10 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^6.2.0
+  flutter_foreground_task: ^6.3.0
 ```
 
-After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and services to use for this plugin to work properly.
+After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
 
 ### :baby_chick: Android
 
@@ -32,20 +32,39 @@ You can read all the details in the Android Developer Page : https://developer.a
 If you want to target Android 14 phones, you need to add a few lines to your manifest. 
 Change the type with your type (all types are listed in the link above).
 
-
 ```
-<!-- In the permission part of your manifest, these permission are needed if you target Android 14 phones -->
+<!-- required -->
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" /> <!-- Here, chose the type according to your app -->
+
+<!-- foregroundServiceType: dataSync -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+<!-- foregroundServiceType: remoteMessaging -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
 
 <!-- Add android:stopWithTask option only when necessary. -->
 <service 
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-    android:foregroundServiceType="dataSync" <!-- Here, chose the type according to your app -->
+    android:foregroundServiceType="dataSync|remoteMessaging" <!-- Here, chose the type according to your app -->
     android:exported="false" />
-
 ```
 
+Additionally, when you declare your **AndroidNotificationOptions**, you need to specify the ***foregroundServiceType***.
+
+```dart
+androidNotificationOptions: AndroidNotificationOptions(
+  foregroundServiceTypes: [
+    AndroidForegroundServiceType.DATA_SYNC,
+    AndroidForegroundServiceType.REMOTE_MESSAGING,
+  ],
+),
+```
+
+Check runtime requirements before starting the service. If this requirement is not met, the foreground service cannot be started.
+
+<img src="https://github.com/Dev-hwang/flutter_foreground_task/assets/47127353/2a35dada-2c82-41f4-8a45-56776c88e9d3" width="720">
+
+Runtime requirements are listed in the link above.
 
 ### :baby_chick: iOS
 
@@ -146,7 +165,10 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 void _initForegroundTask() {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
-      foregroundServiceType: AndroidForegroundServiceType.DATA_SYNC,
+      foregroundServiceTypes: [
+        AndroidForegroundServiceType.DATA_SYNC,
+        AndroidForegroundServiceType.REMOTE_MESSAGING,
+      ],
       channelId: 'foreground_service',
       channelName: 'Foreground Service Notification',
       channelDescription: 'This notification appears when the foreground service is running.',
@@ -616,7 +638,10 @@ Widget build(BuildContext context) {
         return true;
       },
       androidNotificationOptions: AndroidNotificationOptions(
-        foregroundServiceType: AndroidForegroundServiceType.DATA_SYNC,
+        foregroundServiceTypes: [
+          AndroidForegroundServiceType.DATA_SYNC,
+          AndroidForegroundServiceType.REMOTE_MESSAGING,
+        ],
         channelId: 'foreground_service',
         channelName: 'Foreground Service Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
@@ -665,22 +690,22 @@ Widget build(BuildContext context) {
 
 Notification options for Android platform.
 
-| Property                | Description                                                                                                                           |
-|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `foregroundServiceType` | Type of foreground service.                                                                                                           |
-| `id`                    | Unique ID of the notification.                                                                                                        |
-| `channelId`             | Unique ID of the notification channel.                                                                                                |
-| `channelName`           | The name of the notification channel. This value is displayed to the user in the notification settings.                               |
-| `channelDescription`    | The description of the notification channel. This value is displayed to the user in the notification settings.                        |
-| `channelImportance`     | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.                                   |
-| `priority`              | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.                                   |
-| `enableVibration`       | Whether to enable vibration when creating notifications. The default is `false`.                                                      |
-| `playSound`             | Whether to play sound when creating notifications. The default is `false`.                                                            |
-| `showWhen`              | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                          |
-| `isSticky`              | Whether the system will restart the service if the service is killed. The default is `true`.                                          |
-| `visibility`            | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
-| `iconData`              | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
-| `buttons`               | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
+| Property                 | Description                                                                                                                           |
+|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `foregroundServiceTypes` | Type of foreground service.                                                                                                           |
+| `id`                     | Unique ID of the notification.                                                                                                        |
+| `channelId`              | Unique ID of the notification channel.                                                                                                |
+| `channelName`            | The name of the notification channel. This value is displayed to the user in the notification settings.                               |
+| `channelDescription`     | The description of the notification channel. This value is displayed to the user in the notification settings.                        |
+| `channelImportance`      | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`.                                   |
+| `priority`               | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.                                   |
+| `enableVibration`        | Whether to enable vibration when creating notifications. The default is `false`.                                                      |
+| `playSound`              | Whether to play sound when creating notifications. The default is `false`.                                                            |
+| `showWhen`               | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                          |
+| `isSticky`               | Whether the system will restart the service if the service is killed. The default is `true`.                                          |
+| `visibility`             | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
+| `iconData`               | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
+| `buttons`                | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
 
 ### :chicken: AndroidForegroundServiceType
 
