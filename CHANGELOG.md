@@ -1,3 +1,8 @@
+## 6.3.0
+
+* [**FEAT**] Add option to allow multiple foregroundServiceType
+* [**DOCS**] Update readme
+
 ## 6.2.0
 
 * [**FEAT**] Support AGP 8
