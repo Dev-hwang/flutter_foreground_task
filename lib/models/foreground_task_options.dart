@@ -22,8 +22,8 @@ class ForegroundTaskOptions {
   /// The default is `false`.
   final bool autoRunOnBoot;
 
-  /// Whether to automatically run foreground task when the my package replaced intent is received.
-  // The default is `false`.
+  /// Whether to automatically run foreground task when the app is updated to a new version.
+  /// The default is `false`.
   final bool autoRunOnMyPackageReplaced;
 
   /// Whether to keep the CPU turned on.

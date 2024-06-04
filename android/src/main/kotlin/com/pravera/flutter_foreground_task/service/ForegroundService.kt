@@ -243,13 +243,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 				builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
 			}
 
-			val foregroundServiceTypes = notificationOptions.foregroundServiceTypes
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && foregroundServiceTypes.isNotEmpty()) {
-				var foregroundServiceType = 0
-				for (e in foregroundServiceTypes) {
-					foregroundServiceType = foregroundServiceType or e;
-				}
-				startForeground(notificationOptions.id, builder.build(), foregroundServiceType)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				startForeground(notificationOptions.id, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST)
 			} else {
 				startForeground(notificationOptions.id, builder.build())
 			}

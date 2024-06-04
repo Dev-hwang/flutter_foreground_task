@@ -40,7 +40,7 @@ data class ForegroundTaskOptions(
             )
         }
 
-        fun putData(context: Context, map: Map<*, *>?) {
+        fun setData(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
                 PrefsKey.FOREGROUND_TASK_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
@@ -72,7 +72,7 @@ data class ForegroundTaskOptions(
             val interval = "${map?.get(PrefsKey.TASK_INTERVAL)}".toLongOrNull()
             val isOnceEvent = map?.get(PrefsKey.IS_ONCE_EVENT) as? Boolean
             val autoRunOnBoot = map?.get(PrefsKey.AUTO_RUN_ON_BOOT) as? Boolean
-            val autoRunOnMyPackageReplaced = map?.get(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED) as? Boolean ?: false
+            val autoRunOnMyPackageReplaced = map?.get(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED) as? Boolean
             val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean
             val callbackHandle = "${map?.get(PrefsKey.CALLBACK_HANDLE)}".toLongOrNull()

@@ -130,10 +130,6 @@ class _ExamplePageState extends State<ExamplePage> {
   void _initForegroundTask() {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
-        foregroundServiceTypes: [
-          AndroidForegroundServiceType.DATA_SYNC,
-          AndroidForegroundServiceType.REMOTE_MESSAGING,
-        ],
         channelId: 'foreground_service',
         channelName: 'Foreground Service Notification',
         channelDescription:

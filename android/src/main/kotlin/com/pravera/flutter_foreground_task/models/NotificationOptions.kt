@@ -6,7 +6,6 @@ import org.json.JSONObject
 import com.pravera.flutter_foreground_task.PreferencesKey as PrefsKey
 
 data class NotificationOptions(
-    val foregroundServiceTypes: List<Int>,
     val id: Int,
     val channelId: String,
     val channelName: String,
@@ -27,16 +26,6 @@ data class NotificationOptions(
         fun getData(context: Context): NotificationOptions {
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
-
-            val foregroundServiceTypesJson = prefs.getString(PrefsKey.FOREGROUND_SERVICE_TYPES, null)
-            val foregroundServiceTypes: MutableList<Int> = mutableListOf()
-            if (foregroundServiceTypesJson != null) {
-                val jsonArr = JSONArray(foregroundServiceTypesJson)
-                for (i in 0 until jsonArr.length()) {
-                    val foregroundServiceType = jsonArr.getInt(i)
-                    foregroundServiceTypes.add(foregroundServiceType)
-                }
-            }
 
             val id = prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000)
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: "foreground_service"
@@ -81,7 +70,6 @@ data class NotificationOptions(
             }
 
             return NotificationOptions(
-                foregroundServiceTypes = foregroundServiceTypes,
                 id = id,
                 channelId = channelId,
                 channelName = channelName,
@@ -100,15 +88,9 @@ data class NotificationOptions(
             )
         }
 
-        fun putData(context: Context, map: Map<*, *>?) {
+        fun setData(context: Context, map: Map<*, *>?) {
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
-
-            val foregroundServiceTypes = map?.get(PrefsKey.FOREGROUND_SERVICE_TYPES) as? List<*>
-            var foregroundServiceTypesJson: String? = null
-            if (foregroundServiceTypes != null) {
-                foregroundServiceTypesJson = JSONArray(foregroundServiceTypes).toString()
-            }
 
             val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int ?: 1000
             val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String
@@ -137,7 +119,6 @@ data class NotificationOptions(
             }
 
             with(prefs.edit()) {
-                putString(PrefsKey.FOREGROUND_SERVICE_TYPES, foregroundServiceTypesJson)
                 putInt(PrefsKey.NOTIFICATION_ID, id)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_ID, channelId)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_NAME, channelName)

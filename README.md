@@ -49,17 +49,6 @@ Change the type with your type (all types are listed in the link above).
     android:exported="false" />
 ```
 
-Additionally, when you declare your **AndroidNotificationOptions**, you need to specify the ***foregroundServiceType***.
-
-```dart
-androidNotificationOptions: AndroidNotificationOptions(
-  foregroundServiceTypes: [
-    AndroidForegroundServiceType.DATA_SYNC,
-    AndroidForegroundServiceType.REMOTE_MESSAGING,
-  ],
-),
-```
-
 Check runtime requirements before starting the service. If this requirement is not met, the foreground service cannot be started.
 
 <img src="https://github.com/Dev-hwang/flutter_foreground_task/assets/47127353/2a35dada-2c82-41f4-8a45-56776c88e9d3" width="720">
@@ -165,10 +154,6 @@ This plugin has two ways to start a foreground task. There is a way to manually 
 void _initForegroundTask() {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
-      foregroundServiceTypes: [
-        AndroidForegroundServiceType.DATA_SYNC,
-        AndroidForegroundServiceType.REMOTE_MESSAGING,
-      ],
       channelId: 'foreground_service',
       channelName: 'Foreground Service Notification',
       channelDescription: 'This notification appears when the foreground service is running.',
@@ -638,10 +623,6 @@ Widget build(BuildContext context) {
         return true;
       },
       androidNotificationOptions: AndroidNotificationOptions(
-        foregroundServiceTypes: [
-          AndroidForegroundServiceType.DATA_SYNC,
-          AndroidForegroundServiceType.REMOTE_MESSAGING,
-        ],
         channelId: 'foreground_service',
         channelName: 'Foreground Service Notification',
         channelDescription: 'This notification appears when the foreground service is running.',
@@ -692,7 +673,6 @@ Notification options for Android platform.
 
 | Property                 | Description                                                                                                                           |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `foregroundServiceTypes` | Type of foreground service.                                                                                                           |
 | `id`                     | Unique ID of the notification.                                                                                                        |
 | `channelId`              | Unique ID of the notification channel.                                                                                                |
 | `channelName`            | The name of the notification channel. This value is displayed to the user in the notification settings.                               |
@@ -706,28 +686,6 @@ Notification options for Android platform.
 | `visibility`             | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
 | `iconData`               | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
 | `buttons`                | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
-
-### :chicken: AndroidForegroundServiceType
-
-Constant to specify the foreground service type on Android 14 and higher.
-
-| Property           | Description                                                                                                                                                                                                         |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `CAMERA`           | Constant corresponding to camera in the R.attr.foregroundServiceType attribute. Use the camera device or record video.                                                                                              |
-| `CONNECTED_DEVICE` | Constant corresponding to connectedDevice in the R.attr.foregroundServiceType attribute. Auto, bluetooth, TV or other devices connection, monitoring and interaction.                                               |
-| `DATA_SYNC`        | Constant corresponding to dataSync in the R.attr.foregroundServiceType attribute. Data(photo, file, account) upload/download, backup/restore, import/export, fetch, transfer over network between device and cloud. |
-| `HEALTH`           | Constant corresponding to health in the R.attr.foregroundServiceType attribute. Health, wellness and fitness.                                                                                                       |
-| `LOCATION`         | Constant corresponding to location in the R.attr.foregroundServiceType attribute. GPS, map, navigation location update.                                                                                             |
-| `MANIFEST`         | A special value indicates to use all types set in manifest file. Constant corresponding to mediaPlayback in the R.attr.foregroundServiceType attribute. Music, video, news or other media playback.                 |
-| `MEDIA_PLAYBACK`   | Constant corresponding to mediaPlayback in the R.attr.foregroundServiceType attribute. Music, video, news or other media playback.                                                                                  |
-| `MEDIA_PROJECTION` | Constant corresponding to mediaProjection in the foregroundServiceType attribute.                                                                                                                                   |
-| `MICROPHONE`       | Constant corresponding to microphone in the R.attr.foregroundServiceType attribute. Use the microphone device or record audio.                                                                                      |
-| `NONE`             | The default foreground service type if not been set in manifest file.                                                                                                                                               |
-| `PHONE_CALL`       | Constant corresponding to phoneCall in the R.attr.foregroundServiceType attribute. Ongoing operations related to phone calls, video conferencing, or similar interactive communication.                             |
-| `REMOTE_MESSAGING` | Constant corresponding to remoteMessaging in the R.attr.foregroundServiceType attribute. Messaging use cases which host local server to relay messages across devices.                                              |
-| `SHORT_SERVICE`    | A foreground service type for "short-lived" services, which corresponds to shortService in the R.attr.foregroundServiceType attribute in the manifest.                                                              |
-| `SPECIAL_USE`      | Constant corresponding to specialUse in the R.attr.foregroundServiceType attribute. Use cases that can't be categorized into any other foreground service types, but also can't use JobInfo.Builder APIs.           |
-| `SYSTEM_EXEMPTED`  | Constant corresponding to systemExempted in the R.attr.foregroundServiceType attribute. The system exempted foreground service use cases.                                                                           |
 
 ### :chicken: NotificationIconData
 
@@ -780,14 +738,14 @@ Notification options for iOS platform.
 
 Data class with foreground task options.
 
-| Property                     | Description                                                                                                  |
-|------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `interval`                   | The task call interval in milliseconds. The default is `5000`.                                               |
-| `isOnceEvent`                | Whether to invoke the onRepeatEvent of `TaskHandler` only once. The default is `false`.                      |
-| `autoRunOnBoot`              | Whether to automatically run foreground task on boot. The default is `false`.                                |
-| `autoRunOnMyPackageReplaced` | Whether to automatically run foreground task on my package replaced intent received. The default is `false`. |
-| `allowWakeLock`              | Whether to keep the CPU turned on. The default is `true`.                                                    |
-| `allowWifiLock`              | Allows an application to keep the Wi-Fi radio awake. The default is `false`.                                 |
+| Property                     | Description                                                                                                    |
+|------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `interval`                   | The task call interval in milliseconds. The default is `5000`.                                                 |
+| `isOnceEvent`                | Whether to invoke the onRepeatEvent of `TaskHandler` only once. The default is `false`.                        |
+| `autoRunOnBoot`              | Whether to automatically run foreground task on boot. The default is `false`.                                  |
+| `autoRunOnMyPackageReplaced` | Whether to automatically run foreground task when the app is updated to a new version. The default is `false`. |
+| `allowWakeLock`              | Whether to keep the CPU turned on. The default is `true`.                                                      |
+| `allowWifiLock`              | Allows an application to keep the Wi-Fi radio awake. The default is `false`.                                   |
 
 ### :chicken: NotificationChannelImportance
 

@@ -15,7 +15,7 @@ data class ForegroundServiceStatus(val action: String) {
             return ForegroundServiceStatus(action = action)
         }
 
-        fun putData(context: Context, action: String) {
+        fun setData(context: Context, action: String) {
             val prefs = context.getSharedPreferences(
                 PrefsKey.FOREGROUND_SERVICE_STATUS_PREFS, Context.MODE_PRIVATE)
 

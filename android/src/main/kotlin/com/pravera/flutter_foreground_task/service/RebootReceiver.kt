@@ -14,19 +14,19 @@ import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
  * @author Dev-hwang
  * @version 1.0
  */
-class IntentReceiver : BroadcastReceiver() {
+class RebootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        if(context == null) return
+        if (context == null || intent == null) return
 
         val options = ForegroundTaskOptions.getData(context)
 
         // Check whether to start the service at boot intent.
-        if(intent?.action == Intent.ACTION_BOOT_COMPLETED && options.autoRunOnBoot) {
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED && options.autoRunOnBoot) {
             return startForegroundService(context)
         }
 
-        //Check whether to start the service on my package replaced intent.
-        if(intent?.action == Intent.ACTION_MY_PACKAGE_REPLACED && options.autoRunOnMyPackageReplaced) {
+        // Check whether to start the service on my package replaced intent.
+        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED && options.autoRunOnMyPackageReplaced) {
             return startForegroundService(context)
         }
     }
@@ -34,7 +34,7 @@ class IntentReceiver : BroadcastReceiver() {
     private fun startForegroundService(context: Context) {
         // Create an intent for calling the service and store the action to be executed
         val nIntent = Intent(context, ForegroundService::class.java)
-        ForegroundServiceStatus.putData(context, ForegroundServiceAction.REBOOT)
+        ForegroundServiceStatus.setData(context, ForegroundServiceAction.REBOOT)
         ContextCompat.startForegroundService(context, nIntent)
     }
 }

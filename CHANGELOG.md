@@ -1,12 +1,17 @@
+## 6.4.0
+
+* [**REMOVE**] Remove foregroundServiceType option
+* [**FEAT**] Add autoRunOnMyPackageReplaced option
+
 ## 6.3.0
 
-* [**FEAT**] Add option to allow multiple foregroundServiceType
+* [**FEAT**] ~~Add option to allow multiple foregroundServiceType~~
 * [**DOCS**] Update readme
 
 ## 6.2.0
 
 * [**FEAT**] Support AGP 8
-* [**FEAT**] Add `foregroundServiceType` option to specify foreground service type on Android 14 and higher
+* [**FEAT**] ~~Add `foregroundServiceType` option to specify foreground service type on Android 14 and higher~~
 
 ## 6.1.3
 

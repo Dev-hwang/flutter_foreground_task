@@ -25,9 +25,9 @@ class ForegroundServiceManager {
 		try {
 			val nIntent = Intent(context, ForegroundService::class.java)
 			val argsMap = arguments as? Map<*, *>
-			ForegroundServiceStatus.putData(context, ForegroundServiceAction.START)
-			ForegroundTaskOptions.putData(context, argsMap)
-			NotificationOptions.putData(context, argsMap)
+			ForegroundServiceStatus.setData(context, ForegroundServiceAction.START)
+			ForegroundTaskOptions.setData(context, argsMap)
+			NotificationOptions.setData(context, argsMap)
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
@@ -45,7 +45,7 @@ class ForegroundServiceManager {
 	fun restart(context: Context, arguments: Any?): Boolean {
 		try {
 			val nIntent = Intent(context, ForegroundService::class.java)
-			ForegroundServiceStatus.putData(context, ForegroundServiceAction.RESTART)
+			ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
@@ -64,7 +64,7 @@ class ForegroundServiceManager {
 		try {
 			val nIntent = Intent(context, ForegroundService::class.java)
 			val argsMap = arguments as? Map<*, *>
-			ForegroundServiceStatus.putData(context, ForegroundServiceAction.UPDATE)
+			ForegroundServiceStatus.setData(context, ForegroundServiceAction.UPDATE)
 			ForegroundTaskOptions.updateData(context, argsMap)
 			NotificationOptions.updateContent(context, argsMap)
 			ContextCompat.startForegroundService(context, nIntent)
@@ -86,7 +86,7 @@ class ForegroundServiceManager {
 
 		try {
 			val nIntent = Intent(context, ForegroundService::class.java)
-			ForegroundServiceStatus.putData(context, ForegroundServiceAction.STOP)
+			ForegroundServiceStatus.setData(context, ForegroundServiceAction.STOP)
 			ForegroundTaskOptions.clearData(context)
 			NotificationOptions.clearData(context)
 			ContextCompat.startForegroundService(context, nIntent)

@@ -18,7 +18,7 @@ class RestartReceiver : BroadcastReceiver() {
 		if (context == null) return
 
 		val nIntent = Intent(context, ForegroundService::class.java)
-		ForegroundServiceStatus.putData(context, ForegroundServiceAction.RESTART)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			context.startForegroundService(nIntent)
