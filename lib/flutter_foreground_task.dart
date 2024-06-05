@@ -8,6 +8,8 @@ import 'package:flutter_foreground_task/exception/foreground_task_exception.dart
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/android_notification_options.dart';
+import 'package:flutter_foreground_task/models/notification_button.dart';
+import 'package:flutter_foreground_task/models/notification_icon_data.dart';
 import 'package:flutter_foreground_task/models/notification_permission.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_foreground_task_platform_interface.dart';
@@ -47,6 +49,9 @@ abstract class TaskHandler {
   /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
   /// this function to be called.
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
+
+  /// Called when a message is sent from the main program.
+  void onReceivedMessage(dynamic args) {}
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -110,6 +115,27 @@ class FlutterForegroundTask {
   /// Stop the foreground service.
   static Future<bool> stopService() =>
       FlutterForegroundTaskPlatform.instance.stopService();
+
+  /// Notifies the foreground service.
+  static Future<bool> notification({
+    required int notificationId,
+    String? notificationTitle,
+    String? notificationText,
+    NotificationIconData? iconData,
+    List<NotificationButton>? buttons,
+  }) =>
+      FlutterForegroundTaskPlatform.instance.notification(
+        notificationId: notificationId,
+        notificationTitle: notificationTitle,
+        notificationText: notificationText,
+        iconData: iconData,
+        buttons: buttons,
+      );
+
+  /// Sends a message to the foreground service.
+  static Future<bool> sendMessage(
+      Map<String, dynamic> message) =>
+      FlutterForegroundTaskPlatform.instance.sendMessage(message);
 
   /// Returns whether the foreground service is running.
   static Future<bool> get isRunningService =>
@@ -277,6 +303,10 @@ class FlutterForegroundTask {
           break;
         case 'onNotificationPressed':
           handler.onNotificationPressed();
+          break;
+        case 'onReceivedMessage':
+          handler.onReceivedMessage(call.arguments);
+          break;
       }
     });
 

@@ -97,6 +97,47 @@ class ForegroundServiceManager {
 		return true
 	}
 
+	/**
+	 * Notify the foreground service.
+	 *
+	 * @param context context
+	 * @param arguments arguments
+	 */
+	fun notify(context: Context, arguments: Any?): Boolean {
+		try {
+			val nIntent = Intent(context, ForegroundService::class.java)
+			val argsMap = arguments as? Map<*, *>
+			ForegroundServiceStatus.putData(context, ForegroundServiceAction.NOTIFY)
+			NotificationOptions.notificationContent(context, argsMap)
+			ContextCompat.startForegroundService(context, nIntent)
+		} catch (e: Exception) {
+			return false
+		}
+
+		return true
+	}
+
+	/**
+	 * Send message to the foreground service.
+	 *
+	 * @param context context
+	 * @param arguments arguments
+	 */
+	fun message(context: Context, arguments: Any?): Boolean {
+		try {
+			val argsMap = arguments as? HashMap<String, Any?>
+			val nIntent = Intent(context, ForegroundService::class.java).apply {
+				putExtra("data", argsMap)
+			}
+			ForegroundServiceStatus.putData(context, ForegroundServiceAction.MESSAGE)
+			ContextCompat.startForegroundService(context, nIntent)
+		} catch (e: Exception) {
+			return false
+		}
+
+		return true
+	}
+
 	/** Returns whether the foreground service is running. */
 	fun isRunningService(): Boolean = ForegroundService.isRunningService
 }

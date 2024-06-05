@@ -41,11 +41,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private const val ACTION_TASK_DESTROY = "onDestroy"
         private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
+        private const val ACTION_MESSAGE_RECEIVED = "onReceivedMessage"
         private const val DATA_FIELD_NAME = "data"
+        private var engineListener : EngineListener? = null
 
 		/** Returns whether the foreground service is running. */
 		var isRunningService = false
 			private set
+
+		fun setEngineListener(listener: EngineListener?) {
+			engineListener = listener
+		}
 	}
 
 	private lateinit var foregroundServiceStatus: ForegroundServiceStatus
@@ -120,6 +126,12 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			ForegroundServiceAction.STOP -> {
 				stopForegroundService()
 				return START_NOT_STICKY
+			}
+			ForegroundServiceAction.NOTIFY -> {
+				notifyService()
+			}
+			ForegroundServiceAction.MESSAGE -> {
+				handleSendMessage(intent!!.getSerializableExtra(DATA_FIELD_NAME) as Map<*, *>)
 			}
 		}
 
@@ -286,6 +298,46 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		isRunningService = false
 	}
 
+	private fun notifyService() {
+		// channel info
+		val pm = applicationContext.packageManager
+		val channelId = notificationOptions.channelId
+
+		// notification icon
+		val iconData = notificationOptions.iconData
+		val iconBackgroundColor: Int?
+		val iconResId: Int
+		if (iconData != null) {
+			iconBackgroundColor = iconData.backgroundColorRgb?.let(::getRgbColor)
+			iconResId = getIconResIdFromIconData(iconData)
+		} else {
+			iconBackgroundColor = null
+			iconResId = getIconResIdFromAppInfo(pm)
+		}
+
+		// Modify notification
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			val nm = getSystemService(NotificationManager::class.java)
+			val builder = Notification.Builder(this, channelId)
+			builder.setSmallIcon(iconResId)
+			if (iconBackgroundColor != null) {
+				builder.setColor(iconBackgroundColor)
+			}
+			builder.setContentIntent(getPendingIntent(pm))
+			builder.setContentTitle(notificationOptions.contentTitle)
+			builder.setContentText(notificationOptions.contentText)
+			val actions = buildButtonActions(true).toTypedArray()
+			builder.setActions(*actions)
+			nm.notify(notificationOptions.id, builder.build())
+		}
+
+		isRunningService = true
+	}
+
+	private fun handleSendMessage(args: Map<*, *>) {
+		backgroundChannel?.invokeMethod(ACTION_MESSAGE_RECEIVED, args)
+	}
+
 	@SuppressLint("WakelockTimeout")
 	private fun acquireLockMode() {
 		if (foregroundTaskOptions.allowWakeLock && (wakeLock == null || wakeLock?.isHeld == false)) {
@@ -366,6 +418,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 
 		currFlutterEngine = FlutterEngine(this)
+		engineListener?.onEngineStarted(currFlutterEngine!!)
 
 		currFlutterLoader = FlutterInjector.instance().flutterLoader()
 		if (currFlutterLoader?.initialized() == false) {
@@ -511,18 +564,19 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	}
 
 	@SuppressLint("UnspecifiedImmutableFlag")
-    private fun buildButtonActions(): List<Notification.Action> {
+    private fun buildButtonActions(update: Boolean = false): List<Notification.Action> {
 		val actions = mutableListOf<Notification.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
-			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
-			}
+			var flag = 0
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+				flag = flag or PendingIntent.FLAG_IMMUTABLE
+			if (update)
+				flag = flag or PendingIntent.FLAG_CANCEL_CURRENT
+			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, flag)
 			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
 			val bText = getTextSpan(buttons[i].text, bTextColor)
 			val bAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -537,18 +591,19 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 	}
 
 	@SuppressLint("UnspecifiedImmutableFlag")
-    private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
+    private fun buildButtonCompatActions(update: Boolean = false): List<NotificationCompat.Action> {
 		val actions = mutableListOf<NotificationCompat.Action>()
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
-			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
-			}
+			var flag = 0
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+				flag = flag or PendingIntent.FLAG_IMMUTABLE
+			if (update)
+				flag = flag or PendingIntent.FLAG_CANCEL_CURRENT
+			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, flag)
 			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
 			val bText = getTextSpan(buttons[i].text, bTextColor)
 			val bAction = NotificationCompat.Action.Builder(0, bText, bPendingIntent).build()
