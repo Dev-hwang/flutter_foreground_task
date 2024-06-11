@@ -27,13 +27,11 @@ class NotificationPermissionManager : PluginRegistry.RequestPermissionsResultLis
         if (activity.isPermissionGranted(permission)) {
             return NotificationPermission.GRANTED
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val prevPermissionStatus = activity.getPrevPermissionStatus(permission)
-                if (prevPermissionStatus != null
-                        && prevPermissionStatus == NotificationPermission.PERMANENTLY_DENIED
-                        && !activity.shouldShowRequestPermissionRationale(permission)) {
-                    return NotificationPermission.PERMANENTLY_DENIED
-                }
+            val prevPermissionStatus = activity.getPrevPermissionStatus(permission)
+            if (prevPermissionStatus != null
+                && prevPermissionStatus == NotificationPermission.PERMANENTLY_DENIED
+                && !activity.shouldShowRequestPermissionRationale(permission)) {
+                return NotificationPermission.PERMANENTLY_DENIED
             }
             return NotificationPermission.DENIED
         }

@@ -29,7 +29,7 @@ As it is mentioned in the Android Guidelines, in Android 14, to start a FG servi
 
 You can read all the details in the Android Developer Page : https://developer.android.com/about/versions/14/changes/fgs-types-required
 
-If you want to target Android 14 phones, you need to add a few lines to your manifest. 
+If you want to target Android 14 phones, you need to add a few lines to your manifest.
 Change the type with your type (all types are listed in the link above).
 
 ```
@@ -387,7 +387,7 @@ class _ExamplePageState extends State<ExamplePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _requestPermissionForAndroid();
       _initForegroundTask();
-      
+
       // You can get the previous ReceivePort without restarting the service.
       if (await FlutterForegroundTask.isRunningService) {
         final newReceivePort = FlutterForegroundTask.receivePort;

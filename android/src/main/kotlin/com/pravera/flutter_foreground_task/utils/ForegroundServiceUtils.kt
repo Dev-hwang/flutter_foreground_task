@@ -107,12 +107,8 @@ class ForegroundServiceUtils {
 		 * @return whether the app has been excluded from battery optimization.
 		 */
 		fun isIgnoringBatteryOptimizations(context: Context): Boolean {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-				return powerManager.isIgnoringBatteryOptimizations(context.packageName)
-			}
-
-			return true
+			val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+			return powerManager.isIgnoringBatteryOptimizations(context.packageName)
 		}
 
 		/**
@@ -122,10 +118,8 @@ class ForegroundServiceUtils {
 		 * @param requestCode the intent action request code.
 		 */
 		fun openIgnoreBatteryOptimizationSettings(activity: Activity?, requestCode: Int) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-				activity?.startActivityForResult(intent, requestCode)
-			}
+			val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+			activity?.startActivityForResult(intent, requestCode)
 		}
 
 		/**
@@ -135,7 +129,7 @@ class ForegroundServiceUtils {
 		 * @param requestCode the intent action request code.
 		 */
 		fun requestIgnoreBatteryOptimization(activity: Activity?, requestCode: Int) {
-			if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (activity != null) {
 				val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
 				intent.data = Uri.parse("package:" + activity.packageName)
 				activity.startActivityForResult(intent, requestCode)
@@ -148,10 +142,6 @@ class ForegroundServiceUtils {
 		 * @param context context
 		 */
 		fun canDrawOverlays(context: Context): Boolean {
-			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-				return true
-			}
-
 			return Settings.canDrawOverlays(context)
 		}
 
@@ -162,7 +152,7 @@ class ForegroundServiceUtils {
 		 * @param requestCode the intent action request code
 		 */
 		fun openSystemAlertWindowSettings(activity: Activity?, requestCode: Int, forceOpen: Boolean) {
-			if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (activity != null) {
 				if (!canDrawOverlays(activity.applicationContext) || forceOpen) {
 					val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
 					intent.data = Uri.parse("package:" + activity.packageName)

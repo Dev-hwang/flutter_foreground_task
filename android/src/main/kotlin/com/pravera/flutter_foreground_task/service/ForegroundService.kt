@@ -13,7 +13,6 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.app.ServiceCompat
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import io.flutter.FlutterInjector
@@ -77,7 +76,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
 	override fun onCreate() {
 		super.onCreate()
-		fetchDataFromPreferences()
+		loadDataFromPreferences()
 		registerBroadcastReceiver()
 
 		when (foregroundServiceStatus.action) {
@@ -94,7 +93,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		super.onStartCommand(intent, flags, startId)
-		fetchDataFromPreferences()
+		loadDataFromPreferences()
 
 		when (foregroundServiceStatus.action) {
 			ForegroundServiceAction.UPDATE -> {
@@ -135,22 +134,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		stopForegroundTask()
 		stopForegroundService()
 		unregisterBroadcastReceiver()
-		if (foregroundServiceStatus.action != ForegroundServiceAction.STOP) {
-			if (isSetStopWithTaskFlag()) {
-				exitProcess(0)
-			} else {
-				Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
-				if (notificationOptions.isSticky) {
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-						if (!ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)) {
-							Log.i(TAG, "Turn off battery optimization to restart service in the background.")
-							return
-						}
-					}
-					setRestartAlarm()
-				}
-			}
-		}
+		setRestartAlarm()
 	}
 
 	override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -160,7 +144,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	private fun fetchDataFromPreferences() {
+	private fun loadDataFromPreferences() {
 		foregroundServiceStatus = ForegroundServiceStatus.getData(applicationContext)
 		if (::foregroundTaskOptions.isInitialized) {
 			prevForegroundTaskOptions = foregroundTaskOptions
@@ -185,7 +169,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		unregisterReceiver(broadcastReceiver)
 	}
 
-	@SuppressLint("WrongConstant")
+	@SuppressLint("WrongConstant", "SuspiciousIndentation")
 	private fun startForegroundService() {
 		// channel info
 		val pm = applicationContext.packageManager
@@ -196,15 +180,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
 		// notification icon
 		val iconData = notificationOptions.iconData
-		val iconBackgroundColor: Int?
-        val iconResId: Int
-        if (iconData != null) {
-            iconBackgroundColor = iconData.backgroundColorRgb?.let(::getRgbColor)
-            iconResId = getIconResIdFromIconData(iconData)
-        } else {
-            iconBackgroundColor = null
-            iconResId = getIconResIdFromAppInfo(pm)
-        }
+		val iconBackgroundColor = iconData?.backgroundColorRgb?.let(::getRgbColor)
+        val iconResId = if (iconData != null) getIconResId(iconData) else getIconResId(pm)
 
 		// notification intent
 		val pendingIntent = getPendingIntent(pm)
@@ -270,6 +247,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			for (action in buildButtonCompatActions()) {
 				builder.addAction(action)
 			}
+
 			startForeground(notificationOptions.id, builder.build())
 		}
 
@@ -323,29 +301,41 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	@SuppressLint("UnspecifiedImmutableFlag")
-    private fun setRestartAlarm() {
+	private fun isSetStopWithTaskFlag(): Boolean {
+		val pm = applicationContext.packageManager
+		val cName = ComponentName(this, this.javaClass)
+		val flags = pm.getServiceInfo(cName, PackageManager.GET_META_DATA).flags
+		return (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
+	}
+
+	private fun setRestartAlarm() {
+		val isStopStatus = foregroundServiceStatus.action == ForegroundServiceAction.STOP
+		if (isStopStatus || isSetStopWithTaskFlag()) {
+			return
+		}
+
+		Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
+
+		if (!notificationOptions.isSticky) {
+			return
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            && !ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)) {
+			Log.i(TAG, "Turn off battery optimization to restart service in the background.")
+			return
+		}
+
 		val calendar = Calendar.getInstance().apply {
 			timeInMillis = System.currentTimeMillis()
 			add(Calendar.SECOND, 1)
 		}
 
 		val intent = Intent(this, RestartReceiver::class.java)
-		val sender = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-		} else {
-			PendingIntent.getBroadcast(this, 0, intent, 0)
-		}
+		val sender = PendingIntent.getBroadcast(this, 100, intent, PendingIntent.FLAG_IMMUTABLE)
 
 		val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 		alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
-	}
-
-	private fun isSetStopWithTaskFlag(): Boolean {
-		val pm = applicationContext.packageManager
-		val cName = ComponentName(this, this.javaClass)
-		val flags = pm.getServiceInfo(cName, PackageManager.GET_META_DATA).flags
-		return (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
 	}
 
 	private fun executeDartCallback(callbackHandle: Long?) {
@@ -444,7 +434,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		backgroundChannel = null
 	}
 
-	private fun getIconResIdFromIconData(iconData: NotificationIconData): Int {
+	private fun getIconResId(iconData: NotificationIconData): Int {
 		val resType = iconData.resType
 		val resPrefix = iconData.resPrefix
 		val name = iconData.name
@@ -461,7 +451,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		return applicationContext.resources.getIdentifier(resName, resType, applicationContext.packageName)
 	}
 
-	private fun getIconResIdFromAppInfo(pm: PackageManager): Int {
+	private fun getIconResId(pm: PackageManager): Int {
 		return try {
 			val appInfo = pm.getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA)
 			appInfo.icon
@@ -471,23 +461,14 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	@SuppressLint("UnspecifiedImmutableFlag")
     private fun getPendingIntent(pm: PackageManager): PendingIntent {
 		return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
             || ForegroundServiceUtils.canDrawOverlays(applicationContext)) {
 			val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED)
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, 20000, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, 20000, pressedIntent, 0)
-			}
+			PendingIntent.getBroadcast(this, 200, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
 		} else {
 			val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getActivity(this, 20000, launchIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getActivity(this, 20000, launchIntent, 0)
-			}
+			PendingIntent.getActivity(this, 200, launchIntent, PendingIntent.FLAG_IMMUTABLE)
 		}
 	}
 
@@ -510,7 +491,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		}
 	}
 
-	@SuppressLint("UnspecifiedImmutableFlag")
     private fun buildButtonActions(): List<Notification.Action> {
 		val actions = mutableListOf<Notification.Action>()
 		val buttons = notificationOptions.buttons
@@ -518,25 +498,16 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
-			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
-			}
+			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
 			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
 			val bText = getTextSpan(buttons[i].text, bTextColor)
-			val bAction = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				Notification.Action.Builder(null, bText, bPendingIntent).build()
-			} else {
-				Notification.Action.Builder(0, bText, bPendingIntent).build()
-			}
+			val bAction = Notification.Action.Builder(null, bText, bPendingIntent).build()
 			actions.add(bAction)
 		}
 
 		return actions
 	}
 
-	@SuppressLint("UnspecifiedImmutableFlag")
     private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
 		val actions = mutableListOf<NotificationCompat.Action>()
 		val buttons = notificationOptions.buttons
@@ -544,11 +515,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
-			val bPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-			} else {
-				PendingIntent.getBroadcast(this, i + 1, bIntent, 0)
-			}
+			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
 			val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
 			val bText = getTextSpan(buttons[i].text, bTextColor)
 			val bAction = NotificationCompat.Action.Builder(0, bText, bPendingIntent).build()
