@@ -1,7 +1,12 @@
+## 6.5.0
+
+* [**CHORE**] Bump Android minSdkVersion to 23
+* [**FIX**] Fixed an issue where notification actions did not work on Android 14
+
 ## 6.4.0
 
-* [**REMOVE**] Remove foregroundServiceType option
-* [**FEAT**] Add autoRunOnMyPackageReplaced option
+* [**REMOVE**] Remove `foregroundServiceType` option
+* [**FEAT**] Add `autoRunOnMyPackageReplaced` option
 
 ## 6.3.0
 
