@@ -464,7 +464,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private fun getPendingIntent(pm: PackageManager): PendingIntent {
 		return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
             || ForegroundServiceUtils.canDrawOverlays(applicationContext)) {
-			val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED)
+			val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
+				setPackage(packageName)
+			}
 			PendingIntent.getBroadcast(this, 200, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
 		} else {
 			val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
@@ -496,6 +498,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
+				setPackage(packageName)
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
 			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -513,6 +516,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 		val buttons = notificationOptions.buttons
 		for (i in buttons.indices) {
 			val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
+				setPackage(packageName)
 				putExtra(DATA_FIELD_NAME, buttons[i].id)
 			}
 			val bPendingIntent = PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
