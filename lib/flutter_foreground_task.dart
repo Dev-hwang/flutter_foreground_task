@@ -248,7 +248,7 @@ class FlutterForegroundTask {
   /// It must always be called from a top-level function, otherwise foreground task will not work.
   static void setTaskHandler(TaskHandler handler) {
     // Create a method channel to communicate with the platform.
-    const backgroundChannel =
+    const MethodChannel backgroundChannel =
         MethodChannel('flutter_foreground_task/background');
 
     // Binding the framework to the flutter engine.
@@ -258,8 +258,8 @@ class FlutterForegroundTask {
     // Set the method call handler for the background channel.
     backgroundChannel.setMethodCallHandler((call) async {
       await (await SharedPreferences.getInstance()).reload();
-      final timestamp = DateTime.now();
-      final sendPort = _lookupPort();
+      final DateTime timestamp = DateTime.timestamp();
+      final SendPort? sendPort = _lookupPort();
 
       switch (call.method) {
         case 'onStart':
@@ -272,8 +272,8 @@ class FlutterForegroundTask {
           handler.onDestroy(timestamp, sendPort);
           break;
         case 'onNotificationButtonPressed':
-          final String id = call.arguments.toString();
-          handler.onNotificationButtonPressed(id);
+          final String notificationButtonId = call.arguments.toString();
+          handler.onNotificationButtonPressed(notificationButtonId);
           break;
         case 'onNotificationPressed':
           handler.onNotificationPressed();
