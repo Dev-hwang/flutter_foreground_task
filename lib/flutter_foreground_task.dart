@@ -47,6 +47,9 @@ abstract class TaskHandler {
   /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
   /// this function to be called.
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
+
+  /// Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
+  void onNotificationDismissed() {}
 }
 
 /// A class that implements foreground task and provides useful utilities.
@@ -274,6 +277,9 @@ class FlutterForegroundTask {
         case 'onNotificationButtonPressed':
           final String notificationButtonId = call.arguments.toString();
           handler.onNotificationButtonPressed(notificationButtonId);
+          break;
+        case 'onNotificationDismissed':
+          handler.onNotificationDismissed();
           break;
         case 'onNotificationPressed':
           handler.onNotificationPressed();
