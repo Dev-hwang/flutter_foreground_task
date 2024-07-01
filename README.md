@@ -255,6 +255,12 @@ class FirstTaskHandler extends TaskHandler {
     print('onNotificationButtonPressed >> $id');
   }
 
+  // Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
+  @override
+  void onNotificationDismissed() {
+    print('onNotificationButtonDismissed');
+  }
+
   // Called when the notification itself on the Android platform is pressed.
   //
   // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
