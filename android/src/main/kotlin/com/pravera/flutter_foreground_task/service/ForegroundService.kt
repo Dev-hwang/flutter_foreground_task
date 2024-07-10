@@ -528,41 +528,98 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
     }
 
-    private fun buildButtonActions(): List<Notification.Action> {
-        val actions = mutableListOf<Notification.Action>()
-        val buttons = notificationOptions.buttons
-        for (i in buttons.indices) {
-            val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
-                setPackage(packageName)
-                putExtra(DATA_FIELD_NAME, buttons[i].id)
-            }
-            val bPendingIntent =
-                PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-            val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
-            val bText = getTextSpan(buttons[i].text, bTextColor)
-            val bAction = Notification.Action.Builder(null, bText, bPendingIntent).build()
-            actions.add(bAction)
-        }
+	private fun buildButtonActions(): List<Notification.Action> {
+		val actions = mutableListOf<Notification.Action>()
+		val buttons = notificationOptions.buttons
+		buttons.forEachIndexed { index, button ->
+			actions.add(buildButtonAction(button, index))
+		}
+		return actions
+	}
 
-        return actions
-    }
+	private fun buildButtonAction(
+		notificationButton: NotificationButton,
+		index: Int
+	): Notification.Action {
+		val bPendingIntent: PendingIntent? = getPendingIntent(notificationButton, index)
+		val bTextColor = notificationButton.textColorRgb?.let(::getRgbColor)
+		val bText = getTextSpan(notificationButton.text, bTextColor)
+		val bAction = Notification.Action.Builder(null, bText, bPendingIntent).build()
+		return bAction
+	}
 
-    private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
-        val actions = mutableListOf<NotificationCompat.Action>()
-        val buttons = notificationOptions.buttons
-        for (i in buttons.indices) {
-            val bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
-                setPackage(packageName)
-                putExtra(DATA_FIELD_NAME, buttons[i].id)
-            }
-            val bPendingIntent =
-                PendingIntent.getBroadcast(this, i + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
-            val bTextColor = buttons[i].textColorRgb?.let(::getRgbColor)
-            val bText = getTextSpan(buttons[i].text, bTextColor)
-            val bAction = NotificationCompat.Action.Builder(0, bText, bPendingIntent).build()
-            actions.add(bAction)
-        }
+	private fun buildButtonCompatActions(): List<NotificationCompat.Action> {
+		val actions = mutableListOf<NotificationCompat.Action>()
+		val buttons = notificationOptions.buttons
+		buttons.forEachIndexed { index, button ->
+			actions.add(buildCompatButtonAction(button, index))
+		}
+		return actions
+	}
 
-        return actions
-    }
+	private fun buildCompatButtonAction(
+		notificationButton: NotificationButton,
+		index: Int
+	): NotificationCompat.Action {
+		val bPendingIntent: PendingIntent? = getPendingIntent(notificationButton, index)
+		val bTextColor = notificationButton.textColorRgb?.let(::getRgbColor)
+		val bText = getTextSpan(notificationButton.text, bTextColor)
+		val bAction = NotificationCompat.Action.Builder(0, bText, bPendingIntent).build()
+		return bAction
+	}
+
+	private fun getPendingIntent(
+		notificationButton: NotificationButton,
+		index: Int
+	): PendingIntent? {
+		var bPendingIntent: PendingIntent? = null
+		val bIntent: Intent?
+		when (notificationButton.launchType) {
+			NotificationButton.SERVICE -> {
+				bIntent = Intent().apply {
+					action = notificationButton.action
+				}
+				bPendingIntent =
+					PendingIntent.getService(this, index + 1, bIntent, PendingIntent.FLAG_IMMUTABLE)
+			}
+
+			NotificationButton.BROADCAST -> {
+				bIntent = Intent(notificationButton.action).apply { setPackage(packageName) }
+				bPendingIntent =
+					PendingIntent.getBroadcast(
+						this,
+						index + 1,
+						bIntent,
+						PendingIntent.FLAG_IMMUTABLE
+					)
+			}
+
+			NotificationButton.ACTIVITY -> {
+				bIntent = Intent().apply {
+					action = notificationButton.action
+				}
+				bPendingIntent = PendingIntent.getActivity(
+					this,
+					index + 1,
+					bIntent,
+					PendingIntent.FLAG_IMMUTABLE
+				)
+			}
+
+			else -> {
+				bIntent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
+					setPackage(packageName)
+					putExtra(DATA_FIELD_NAME, notificationButton.id)
+				}
+				bPendingIntent =
+					PendingIntent.getBroadcast(
+						this,
+						index + 1,
+						bIntent,
+						PendingIntent.FLAG_IMMUTABLE
+					)
+			}
+		}
+		return bPendingIntent
+	}
 }

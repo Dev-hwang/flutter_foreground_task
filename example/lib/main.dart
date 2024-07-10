@@ -147,6 +147,8 @@ class _ExamplePageState extends State<ExamplePage> {
             id: 'sendButton',
             text: 'Send',
             textColor: Colors.orange,
+            launchType: NotificationButton.UNDEFINE,
+            action: "clipboard"
           ),
           const NotificationButton(
             id: 'testButton',
