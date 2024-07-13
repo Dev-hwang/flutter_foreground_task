@@ -166,8 +166,8 @@ class _ExamplePageState extends State<ExamplePage> {
         notificationIcon: null,
         notificationButtons: [
           const NotificationButton(
-            id: 'btn_count',
-            text: 'count',
+            id: 'btn_hello',
+            text: 'hello',
             textColor: Colors.orange,
           ),
         ],

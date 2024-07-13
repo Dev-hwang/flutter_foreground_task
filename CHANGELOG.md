@@ -1,3 +1,47 @@
+## 7.0.0
+
+* [**CHORE**] Updates minimum supported SDK version to `Flutter 3.10` / `Dart 3.0`
+* [**BREAKING**] Change timezone(local > UTC) of timestamp in TaskHandler callback
+* [**BREAKING**] Remove `iconData`, `buttons` from AndroidNotificationOptions. Can use this options in the startService function
+
+```
+// before
+FlutterForegroundTask.init(
+  androidNotificationOptions: AndroidNotificationOptions(
+    channelId: 'foreground_service',
+    channelName: 'Foreground Service Notification',
+    iconData: null,
+    buttons: [
+      const NotificationButton(id: 'btn_hello', text: 'hello'),
+    ],
+  ),
+);
+
+// after
+FlutterForegroundTask.startService(
+  notificationTitle: 'Foreground Service is running',
+  notificationText: 'Tap to return to the app',
+  notificationIcon: null,
+  notificationButtons: [
+    const NotificationButton(id: 'btn_hello', text: 'hello'),
+  ],
+  callback: startCallback,
+)
+```
+
+* [**FEAT**] Add ability to update notification icon and buttons for Android platform
+
+```
+FlutterForegroundTask.updateService(
+  notificationIcon: null,
+  notificationButtons: [
+    const NotificationButton(id: 'btn_bye', text: 'bye'),
+  ],
+)
+```
+
+* [**FEAT**] Add `onNotificationDismissed` callback for Android 14
+
 ## 6.5.0
 
 * [**CHORE**] Bump Android minSdkVersion to 23
