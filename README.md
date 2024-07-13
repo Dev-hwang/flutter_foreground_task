@@ -159,20 +159,8 @@ void _initForegroundTask() {
       channelDescription: 'This notification appears when the foreground service is running.',
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
-      iconData: const NotificationIconData(
-        resType: ResourceType.mipmap,
-        resPrefix: ResourcePrefix.ic,
-        name: 'launcher',
-      ),
-      buttons: [
-        const NotificationButton(id: 'sendButton', text: 'Send'),
-        const NotificationButton(id: 'testButton', text: 'Test'),
-      ],
     ),
-    iosNotificationOptions: const IOSNotificationOptions(
-      showNotification: true,
-      playSound: false,
-    ),
+    iosNotificationOptions: const IOSNotificationOptions(),
     foregroundTaskOptions: const ForegroundTaskOptions(
       interval: 5000,
       isOnceEvent: false,
@@ -212,6 +200,8 @@ Widget build(BuildContext context) {
 3. Write callback and handler and start the foreground service. `FlutterForegroundTask.startService()` provides the following options:
 * `notificationTitle`: The title that will be displayed in the notification.
 * `notificationText`: The text that will be displayed in the notification.
+* `notificationIcon`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
+* `notificationButtons`: A list of buttons to display in the notification. A maximum of 3 is allowed.
 * `callback`: A top-level function that calls the setTaskHandler function.
 
 ```dart
@@ -223,13 +213,9 @@ void startCallback() {
 }
 
 class FirstTaskHandler extends TaskHandler {
-  SendPort? _sendPort;
-
   // Called when the task is started.
   @override
   void onStart(DateTime timestamp, SendPort? sendPort) async {
-    _sendPort = sendPort;
-
     // You can use the getData function to get the stored data.
     final customData =
         await FlutterForegroundTask.getData<String>(key: 'customData');
@@ -246,7 +232,7 @@ class FirstTaskHandler extends TaskHandler {
   // Called when the notification button on the Android platform is pressed.
   @override
   void onDestroy(DateTime timestamp, SendPort? sendPort) async {
-
+    print('onDestroy');
   }
 
   // Called when the notification button on the Android platform is pressed.
@@ -255,23 +241,20 @@ class FirstTaskHandler extends TaskHandler {
     print('onNotificationButtonPressed >> $id');
   }
 
-  // Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
-  @override
-  void onNotificationDismissed() {
-    print('onNotificationButtonDismissed');
-  }
-
   // Called when the notification itself on the Android platform is pressed.
   //
   // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
   // this function to be called.
   @override
   void onNotificationPressed() {
-    // Note that the app will only route to "/resume-route" when it is exited so
-    // it will usually be necessary to send a message through the send port to
-    // signal it to restore state when the app is already started.
-    FlutterForegroundTask.launchApp("/resume-route");
-    _sendPort?.send('onNotificationPressed');
+    super.onNotificationPressed();
+    print('onNotificationPressed');
+  }
+
+  // Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
+  @override
+  void onNotificationDismissed() {
+    print('onNotificationDismissed');
   }
 }
 
@@ -280,12 +263,8 @@ class ExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const ExamplePage(),
-        '/resume-route': (context) => const ResumeRoutePage(),
-      },
+    return const MaterialApp(
+      home: ExamplePage(),
     );
   }
 }
@@ -354,6 +333,14 @@ class _ExamplePageState extends State<ExamplePage> {
       return FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
+        notificationIcon: null,
+        notificationButtons: [
+          const NotificationButton(
+            id: 'btn_count',
+            text: 'count',
+            textColor: Colors.orange,
+          ),
+        ],
         callback: startCallback,
       );
     }
@@ -369,11 +356,7 @@ class _ExamplePageState extends State<ExamplePage> {
     _receivePort = newReceivePort;
     _receivePort?.listen((data) {
       if (data is int) {
-        print('eventCount: $data');
-      } else if (data is String) {
-        if (data == 'onNotificationPressed') {
-          Navigator.of(context).pushNamed('/resume-route');
-        }
+        print('count: $data');
       } else if (data is DateTime) {
         print('timestamp: ${data.toString()}');
       }
@@ -408,29 +391,6 @@ class _ExamplePageState extends State<ExamplePage> {
     super.dispose();
   }
 }
-
-class ResumeRoutePage extends StatelessWidget {
-  const ResumeRoutePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Resume Route'),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Navigate back to first route when tapped.
-            Navigator.of(context).pop();
-          },
-          child: const Text('Go back!'),
-        ),
-      ),
-    );
-  }
-}
 ```
 
 As you can see in the code above, you can manage data with the following functions.
@@ -460,7 +420,8 @@ class FirstTaskHandler extends TaskHandler {
       );
 
       // Send data to the main isolate.
-      sendPort?.send(location);
+      final String locationJson = jsonEncode(location.toJson());
+      sendPort?.send(locationJson);
     });
   }
 
@@ -602,11 +563,7 @@ Future<void> _requestPermissionForAndroid() async {
 
 void _onData(dynamic data) {
   if (data is int) {
-    print('eventCount: $data');
-  } else if (data is String) {
-    if (data == 'onNotificationPressed') {
-      Navigator.of(context).pushNamed('/resume-route');
-    }
+    print('count: $data');
   } else if (data is DateTime) {
     print('timestamp: ${data.toString()}');
   }
@@ -635,20 +592,8 @@ Widget build(BuildContext context) {
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
         isSticky: false, // important
-        iconData: const NotificationIconData(
-          resType: ResourceType.mipmap,
-          resPrefix: ResourcePrefix.ic,
-          name: 'launcher',
-        ),
-        buttons: [
-          const NotificationButton(id: 'sendButton', text: 'Send'),
-          const NotificationButton(id: 'testButton', text: 'Test'),
-        ],
       ),
-      iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: true,
-        playSound: false,
-      ),
+      iosNotificationOptions: const IOSNotificationOptions(),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         isOnceEvent: false,
@@ -690,8 +635,6 @@ Notification options for Android platform.
 | `showWhen`               | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                          |
 | `isSticky`               | Whether the system will restart the service if the service is killed. The default is `true`.                                          |
 | `visibility`             | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`. |
-| `iconData`               | The data of the icon to display in the notification. If the value is null, the app launcher icon is used.                             |
-| `buttons`                | A list of buttons to display in the notification. A maximum of 3 is allowed.                                                          |
 
 ### :chicken: NotificationIconData
 

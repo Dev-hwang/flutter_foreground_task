@@ -26,6 +26,12 @@ class WillStartForegroundTask extends StatefulWidget {
   /// The text that will be displayed in the notification.
   final String notificationText;
 
+  /// The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
+  final NotificationIconData? notificationIcon;
+
+  /// A list of buttons to display in the notification. A maximum of 3 is allowed.
+  final List<NotificationButton>? notificationButtons;
+
   /// A top-level function that calls the setTaskHandler function.
   final Function? callback;
 
@@ -44,6 +50,8 @@ class WillStartForegroundTask extends StatefulWidget {
     required this.foregroundTaskOptions,
     required this.notificationTitle,
     required this.notificationText,
+    this.notificationIcon,
+    this.notificationButtons,
     this.callback,
     this.onData,
     required this.child,
@@ -79,6 +87,8 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
       return FlutterForegroundTask.startService(
         notificationTitle: widget.notificationTitle,
         notificationText: widget.notificationText,
+        notificationIcon: widget.notificationIcon,
+        notificationButtons: widget.notificationButtons,
         callback: widget.callback,
       );
     }

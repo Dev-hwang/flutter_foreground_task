@@ -14,14 +14,11 @@ void startCallback() {
 }
 
 class MyTaskHandler extends TaskHandler {
-  SendPort? _sendPort;
   int _eventCount = 0;
 
   // Called when the task is started.
   @override
   void onStart(DateTime timestamp, SendPort? sendPort) async {
-    _sendPort = sendPort;
-
     // You can use the getData function to get the stored data.
     final customData =
         await FlutterForegroundTask.getData<String>(key: 'customData');
@@ -60,11 +57,14 @@ class MyTaskHandler extends TaskHandler {
   // this function to be called.
   @override
   void onNotificationPressed() {
-    // Note that the app will only route to "/resume-route" when it is exited so
-    // it will usually be necessary to send a message through the send port to
-    // signal it to restore state when the app is already started.
-    FlutterForegroundTask.launchApp("/resume-route");
-    _sendPort?.send('onNotificationPressed');
+    super.onNotificationPressed();
+    print('onNotificationPressed');
+  }
+
+  // Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
+  @override
+  void onNotificationDismissed() {
+    print('onNotificationDismissed');
   }
 }
 
@@ -73,12 +73,8 @@ class ExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const ExamplePage(),
-        '/resume-route': (context) => const ResumeRoutePage(),
-      },
+    return const MaterialApp(
+      home: ExamplePage(),
     );
   }
 }
@@ -137,10 +133,7 @@ class _ExamplePageState extends State<ExamplePage> {
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
       ),
-      iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: true,
-        playSound: false,
-      ),
+      iosNotificationOptions: const IOSNotificationOptions(),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         isOnceEvent: false,
@@ -173,14 +166,9 @@ class _ExamplePageState extends State<ExamplePage> {
         notificationIcon: null,
         notificationButtons: [
           const NotificationButton(
-            id: 'sendButton',
-            text: 'Send',
+            id: 'btn_count',
+            text: 'count',
             textColor: Colors.orange,
-          ),
-          const NotificationButton(
-            id: 'testButton',
-            text: 'Test',
-            textColor: Colors.grey,
           ),
         ],
         callback: startCallback,
@@ -202,11 +190,7 @@ class _ExamplePageState extends State<ExamplePage> {
     _receivePort = newReceivePort;
     _receivePort?.listen((data) {
       if (data is int) {
-        print('eventCount: $data');
-      } else if (data is String) {
-        if (data == 'onNotificationPressed') {
-          Navigator.of(context).pushNamed('/resume-route');
-        }
+        print('count: $data');
       } else if (data is DateTime) {
         print('timestamp: ${data.toString()}');
       }
@@ -271,29 +255,6 @@ class _ExamplePageState extends State<ExamplePage> {
           buttonBuilder('start', onPressed: _startForegroundTask),
           buttonBuilder('stop', onPressed: _stopForegroundTask),
         ],
-      ),
-    );
-  }
-}
-
-class ResumeRoutePage extends StatelessWidget {
-  const ResumeRoutePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Resume Route'),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Navigate back to first route when tapped.
-            Navigator.of(context).pop();
-          },
-          child: const Text('Go back!'),
-        ),
       ),
     );
   }
