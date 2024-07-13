@@ -21,15 +21,16 @@ object PreferencesKey {
     const val NOTIFICATION_CHANNEL_DESC = "notificationChannelDescription"
     const val NOTIFICATION_CHANNEL_IMPORTANCE = "notificationChannelImportance"
     const val NOTIFICATION_PRIORITY = "notificationPriority"
-    const val NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"
-    const val NOTIFICATION_CONTENT_TEXT = "notificationContentText"
     const val ENABLE_VIBRATION = "enableVibration"
     const val PLAY_SOUND = "playSound"
     const val SHOW_WHEN = "showWhen"
     const val IS_STICKY = "isSticky"
     const val VISIBILITY = "visibility"
-    const val ICON_DATA = "iconData"
-    const val BUTTONS = "buttons"
+
+    const val NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"
+    const val NOTIFICATION_CONTENT_TEXT = "notificationContentText"
+    const val NOTIFICATION_CONTENT_ICON = "iconData"
+    const val NOTIFICATION_CONTENT_BUTTONS = "buttons"
 
     const val FOREGROUND_TASK_OPTIONS_PREFS = prefix + "FOREGROUND_TASK_OPTIONS"
     const val TASK_INTERVAL = "interval"
@@ -38,5 +39,6 @@ object PreferencesKey {
     const val AUTO_RUN_ON_MY_PACKAGE_REPLACED = "autoRunOnMyPackageReplaced"
     const val ALLOW_WAKE_LOCK = "allowWakeLock"
     const val ALLOW_WIFI_LOCK = "allowWifiLock"
+
     const val CALLBACK_HANDLE = "callbackHandle"
 }

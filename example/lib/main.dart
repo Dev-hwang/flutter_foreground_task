@@ -136,24 +136,6 @@ class _ExamplePageState extends State<ExamplePage> {
             'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
-        iconData: const NotificationIconData(
-          resType: ResourceType.mipmap,
-          resPrefix: ResourcePrefix.ic,
-          name: 'launcher',
-          backgroundColor: Colors.orange,
-        ),
-        buttons: [
-          const NotificationButton(
-            id: 'sendButton',
-            text: 'Send',
-            textColor: Colors.orange,
-          ),
-          const NotificationButton(
-            id: 'testButton',
-            text: 'Test',
-            textColor: Colors.grey,
-          ),
-        ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
@@ -188,6 +170,19 @@ class _ExamplePageState extends State<ExamplePage> {
       return FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
+        notificationIcon: null,
+        notificationButtons: [
+          const NotificationButton(
+            id: 'sendButton',
+            text: 'Send',
+            textColor: Colors.orange,
+          ),
+          const NotificationButton(
+            id: 'testButton',
+            text: 'Test',
+            textColor: Colors.grey,
+          ),
+        ],
         callback: startCallback,
       );
     }

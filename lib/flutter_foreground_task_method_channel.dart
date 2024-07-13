@@ -9,6 +9,8 @@ import 'flutter_foreground_task_platform_interface.dart';
 import 'models/android_notification_options.dart';
 import 'models/foreground_task_options.dart';
 import 'models/ios_notification_options.dart';
+import 'models/notification_button.dart';
+import 'models/notification_icon_data.dart';
 import 'models/notification_permission.dart';
 
 /// An implementation of [FlutterForegroundTaskPlatform] that uses method channels.
@@ -24,6 +26,8 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     required ForegroundTaskOptions foregroundTaskOptions,
     required String notificationTitle,
     required String notificationText,
+    NotificationIconData? notificationIcon,
+    List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
     if (await isRunningService) {
@@ -48,9 +52,11 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
         ...androidNotificationOptions.toJson()
       else
         ...iosNotificationOptions.toJson(),
+      ...foregroundTaskOptions.toJson(),
       'notificationContentTitle': notificationTitle,
       'notificationContentText': notificationText,
-      ...foregroundTaskOptions.toJson(),
+      'iconData': notificationIcon?.toJson(),
+      'buttons': notificationButtons?.map((e) => e.toJson()).toList()
     };
     if (callback != null) {
       options['callbackHandle'] =
@@ -94,13 +100,17 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
+    NotificationIconData? notificationIcon,
+    List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
     if (await isRunningService) {
       final options = <String, dynamic>{
+        if (foregroundTaskOptions != null) ...foregroundTaskOptions.toJson(),
         'notificationContentTitle': notificationTitle,
         'notificationContentText': notificationText,
-        if (foregroundTaskOptions != null) ...foregroundTaskOptions.toJson(),
+        'iconData': notificationIcon?.toJson(),
+        'buttons': notificationButtons?.map((e) => e.toJson()).toList()
       };
       if (callback != null) {
         options['callbackHandle'] =

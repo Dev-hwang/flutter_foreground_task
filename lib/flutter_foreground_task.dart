@@ -11,6 +11,8 @@ import 'package:flutter_foreground_task/models/android_notification_options.dart
 import 'package:flutter_foreground_task/models/notification_permission.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_foreground_task_platform_interface.dart';
+import 'models/notification_button.dart';
+import 'models/notification_icon_data.dart';
 
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
@@ -75,6 +77,8 @@ class FlutterForegroundTask {
   static Future<bool> startService({
     required String notificationTitle,
     required String notificationText,
+    NotificationIconData? notificationIcon,
+    List<NotificationButton>? notificationButtons,
     Function? callback,
   }) {
     if (_initialized == false) {
@@ -88,6 +92,8 @@ class FlutterForegroundTask {
       foregroundTaskOptions: _foregroundTaskOptions,
       notificationTitle: notificationTitle,
       notificationText: notificationText,
+      notificationIcon: notificationIcon,
+      notificationButtons: notificationButtons,
       callback: callback,
     );
   }
@@ -101,12 +107,16 @@ class FlutterForegroundTask {
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
+    NotificationIconData? notificationIcon,
+    List<NotificationButton>? notificationButtons,
     Function? callback,
   }) =>
       FlutterForegroundTaskPlatform.instance.updateService(
         foregroundTaskOptions: foregroundTaskOptions,
         notificationText: notificationText,
         notificationTitle: notificationTitle,
+        notificationIcon: notificationIcon,
+        notificationButtons: notificationButtons,
         callback: callback,
       );
 
