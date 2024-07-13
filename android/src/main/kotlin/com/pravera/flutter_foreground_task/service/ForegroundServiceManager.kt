@@ -5,7 +5,9 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
+import com.pravera.flutter_foreground_task.models.ForegroundTaskData
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
+import com.pravera.flutter_foreground_task.models.NotificationContent
 import com.pravera.flutter_foreground_task.models.NotificationOptions
 
 /**
@@ -26,8 +28,10 @@ class ForegroundServiceManager {
 			val nIntent = Intent(context, ForegroundService::class.java)
 			val argsMap = arguments as? Map<*, *>
 			ForegroundServiceStatus.setData(context, ForegroundServiceAction.START)
-			ForegroundTaskOptions.setData(context, argsMap)
 			NotificationOptions.setData(context, argsMap)
+			ForegroundTaskOptions.setData(context, argsMap)
+			ForegroundTaskData.setData(context, argsMap)
+			NotificationContent.setData(context, argsMap)
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
@@ -66,7 +70,8 @@ class ForegroundServiceManager {
 			val argsMap = arguments as? Map<*, *>
 			ForegroundServiceStatus.setData(context, ForegroundServiceAction.UPDATE)
 			ForegroundTaskOptions.updateData(context, argsMap)
-			NotificationOptions.updateContent(context, argsMap)
+			ForegroundTaskData.updateData(context, argsMap)
+			NotificationContent.updateData(context, argsMap)
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false
@@ -87,8 +92,10 @@ class ForegroundServiceManager {
 		try {
 			val nIntent = Intent(context, ForegroundService::class.java)
 			ForegroundServiceStatus.setData(context, ForegroundServiceAction.STOP)
-			ForegroundTaskOptions.clearData(context)
 			NotificationOptions.clearData(context)
+			ForegroundTaskOptions.clearData(context)
+			ForegroundTaskData.clearData(context)
+			NotificationContent.clearData(context)
 			ContextCompat.startForegroundService(context, nIntent)
 		} catch (e: Exception) {
 			return false

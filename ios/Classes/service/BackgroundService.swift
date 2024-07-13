@@ -25,9 +25,7 @@ class BackgroundService: NSObject {
   
   private let userNotificationCenter: UNUserNotificationCenter
   private var isGrantedNotificationAuthorization: Bool = false
-  
-  private var notificationContentTitle: String = ""
-  private var notificationContentText: String = ""
+
   private var showNotification: Bool = true
   private var playSound: Bool = false
   private var prevInterval: Int? = nil
@@ -36,6 +34,8 @@ class BackgroundService: NSObject {
   private var currIsOnceEvent: Bool = false
   private var prevCallbackHandle: Int64? = nil
   private var currCallbackHandle: Int64? = nil
+  private var notificationContentTitle: String = ""
+  private var notificationContentText: String = ""
   
   private var flutterEngine: FlutterEngine? = nil
   private var backgroundChannel: FlutterMethodChannel? = nil
@@ -49,9 +49,7 @@ class BackgroundService: NSObject {
   
   func run(action: BackgroundServiceAction) {
     let prefs = UserDefaults.standard
-    
-    notificationContentTitle = prefs.string(forKey: NOTIFICATION_CONTENT_TITLE) ?? notificationContentTitle
-    notificationContentText = prefs.string(forKey: NOTIFICATION_CONTENT_TEXT) ?? notificationContentText
+
     showNotification = prefs.bool(forKey: SHOW_NOTIFICATION)
     playSound = prefs.bool(forKey: PLAY_SOUND)
     prevInterval = currInterval
@@ -60,6 +58,8 @@ class BackgroundService: NSObject {
     currIsOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
     prevCallbackHandle = currCallbackHandle
     currCallbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64
+    notificationContentTitle = prefs.string(forKey: NOTIFICATION_CONTENT_TITLE) ?? notificationContentTitle
+    notificationContentText = prefs.string(forKey: NOTIFICATION_CONTENT_TEXT) ?? notificationContentText
     
     switch action {
       case .START:
