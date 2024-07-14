@@ -448,7 +448,7 @@ void startCallback() {
 }
 
 class FirstTaskHandler extends TaskHandler {
-  int _eventCount = 0;
+  int _count = 0;
 
   @override
   void onStart(DateTime timestamp, SendPort? sendPort) async {
@@ -457,7 +457,7 @@ class FirstTaskHandler extends TaskHandler {
 
   @override
   void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-    if (_eventCount == 10) {
+    if (_count == 10) {
       FlutterForegroundTask.updateService(
         foregroundTaskOptions: const ForegroundTaskOptions(interval: 1000),
         callback: updateCallback,
@@ -469,9 +469,9 @@ class FirstTaskHandler extends TaskHandler {
       );
 
       // Send data to the main isolate.
-      sendPort?.send(_eventCount);
+      sendPort?.send(_count);
 
-      _eventCount++;
+      _count++;
     }
   }
 

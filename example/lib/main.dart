@@ -14,7 +14,7 @@ void startCallback() {
 }
 
 class MyTaskHandler extends TaskHandler {
-  int _eventCount = 0;
+  int _count = 0;
 
   // Called when the task is started.
   @override
@@ -30,13 +30,13 @@ class MyTaskHandler extends TaskHandler {
   void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     FlutterForegroundTask.updateService(
       notificationTitle: 'MyTaskHandler',
-      notificationText: 'eventCount: $_eventCount',
+      notificationText: 'count: $_count',
     );
 
     // Send data to the main isolate.
-    sendPort?.send(_eventCount);
+    sendPort?.send(_count);
 
-    _eventCount++;
+    _count++;
   }
 
   // Called when the notification button on the Android platform is pressed.
