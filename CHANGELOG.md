@@ -1,3 +1,7 @@
+## 7.1.0
+
+* [**FEAT-Recommended**] Allow updateService to be processed without service restart
+
 ## 7.0.0
 
 * [**CHORE**] Updates minimum supported SDK version to `Flutter 3.10` / `Dart 3.0`
