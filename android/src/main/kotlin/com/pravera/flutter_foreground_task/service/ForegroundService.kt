@@ -13,7 +13,9 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListener
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import io.flutter.FlutterInjector
@@ -46,6 +48,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         /** Returns whether the foreground service is running. */
         var isRunningService = false
             private set
+
+        var taskLifecycleListener: FlutterForegroundTaskLifecycleListener? = null
     }
 
     private lateinit var foregroundServiceStatus: ForegroundServiceStatus
@@ -61,9 +65,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
 
-    private var currFlutterLoader: FlutterLoader? = null
-    private var prevFlutterEngine: FlutterEngine? = null
-    private var currFlutterEngine: FlutterEngine? = null
+    private var flutterEngine: FlutterEngine? = null
+    private var flutterLoader: FlutterLoader? = null
     private var backgroundChannel: MethodChannel? = null
     private var repeatTask: Job? = null
 
@@ -75,7 +78,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 val data = intent.getStringExtra(DATA_FIELD_NAME)
                 backgroundChannel?.invokeMethod(action, data)
             } catch (e: Exception) {
-                Log.e(TAG, "onReceive", e)
+                Log.e(TAG, "broadcastReceiver", e)
             }
         }
     }
@@ -140,7 +143,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     override fun onDestroy() {
         super.onDestroy()
-        stopForegroundTask()
+        destroyForegroundTask {
+            destroyFlutterEngine()
+        }
         stopForegroundService()
         unregisterBroadcastReceiver()
         setRestartAlarm()
@@ -148,7 +153,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "initialize" -> startForegroundTask()
+            "startTask" -> startForegroundTask()
             else -> result.notImplemented()
         }
     }
@@ -196,7 +201,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     @SuppressLint("WrongConstant", "SuspiciousIndentation")
     private fun startForegroundService() {
-        createNotificationChannel()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
 
         val id = notificationOptions.id
         val notification = createNotification()
@@ -216,26 +223,32 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         isRunningService = true
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = notificationOptions.channelId
-            val channelName = notificationOptions.channelName
-            val channelDesc = notificationOptions.channelDescription
-            val channelImportance = notificationOptions.channelImportance
+    private fun stopForegroundService() {
+        releaseLockMode()
+        stopForeground(true)
+        stopSelf()
+        isRunningService = false
+    }
 
-            val nm = getSystemService(NotificationManager::class.java)
-            if (nm.getNotificationChannel(channelId) == null) {
-                val channel = NotificationChannel(channelId, channelName, channelImportance).apply {
-                    if (channelDesc != null) {
-                        description = channelDesc
-                    }
-                    enableVibration(notificationOptions.enableVibration)
-                    if (!notificationOptions.playSound) {
-                        setSound(null, null)
-                    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel() {
+        val channelId = notificationOptions.channelId
+        val channelName = notificationOptions.channelName
+        val channelDesc = notificationOptions.channelDescription
+        val channelImportance = notificationOptions.channelImportance
+
+        val nm = getSystemService(NotificationManager::class.java)
+        if (nm.getNotificationChannel(channelId) == null) {
+            val channel = NotificationChannel(channelId, channelName, channelImportance).apply {
+                if (channelDesc != null) {
+                    description = channelDesc
                 }
-                nm.createNotificationChannel(channel)
+                enableVibration(notificationOptions.enableVibration)
+                if (!notificationOptions.playSound) {
+                    setSound(null, null)
+                }
             }
+            nm.createNotificationChannel(channel)
         }
     }
 
@@ -290,7 +303,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 builder.setDeleteIntent(deletePendingIntent)
             }
 
-            val actions = buildButtonActions(notificationContent.buttons, needsUpdateButtons)
+            val actions = buildNotificationActions(notificationContent.buttons, needsUpdateButtons)
             for (action in actions) {
                 builder.addAction(action)
             }
@@ -316,7 +329,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             }
             builder.priority = notificationOptions.priority
 
-            val actions = buildButtonCompatActions(notificationContent.buttons, needsUpdateButtons)
+            val actions = buildNotificationCompatActions(notificationContent.buttons, needsUpdateButtons)
             for (action in actions) {
                 builder.addAction(action)
             }
@@ -330,13 +343,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         val notification = createNotification()
         val nm = getSystemService(NotificationManager::class.java)
         nm.notify(id, notification)
-    }
-
-    private fun stopForegroundService() {
-        releaseLockMode()
-        stopForeground(true)
-        stopSelf()
-        isRunningService = false
     }
 
     @SuppressLint("WakelockTimeout")
@@ -392,7 +398,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     private fun setRestartAlarm() {
-        val isStopStatus = foregroundServiceStatus.action == ForegroundServiceAction.STOP
+        val isStopStatus = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
         if (isStopStatus || isSetStopWithTaskFlag()) {
             return
         }
@@ -423,48 +429,105 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     private fun executeDartCallback(callbackHandle: Long?) {
-        // If there is no callback handle, the code below will not be executed.
+        // If there is no callbackHandle, the code below will not be executed.
         if (callbackHandle == null) return
 
-        initBackgroundChannel()
+        destroyForegroundTask {
+            destroyFlutterEngine()
+            createFlutterEngine()
 
-        val bundlePath = currFlutterLoader?.findAppBundlePath() ?: return
-        val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-        val dartCallback = DartExecutor.DartCallback(assets, bundlePath, callbackInfo)
-        currFlutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
+            val bundlePath = flutterLoader?.findAppBundlePath()
+            if (bundlePath != null) {
+                val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
+                val dartCallback = DartExecutor.DartCallback(assets, bundlePath, callbackInfo)
+                flutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
+            }
+        }
     }
 
-    private fun initBackgroundChannel() {
-        if (backgroundChannel != null) {
-            stopForegroundTask()
+    private fun createFlutterEngine() {
+        flutterEngine = FlutterEngine(this)
+        flutterLoader = FlutterInjector.instance().flutterLoader()
+        if (flutterLoader?.initialized() == false) {
+            flutterLoader?.startInitialization(this)
+        }
+        flutterLoader?.ensureInitializationComplete(this, null)
+
+        val messenger = flutterEngine?.dartExecutor?.binaryMessenger
+        if (messenger != null) {
+            backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
+            backgroundChannel?.setMethodCallHandler(this)
         }
 
-        currFlutterEngine = FlutterEngine(this)
-
-        currFlutterLoader = FlutterInjector.instance().flutterLoader()
-        if (currFlutterLoader?.initialized() == false) {
-            currFlutterLoader?.startInitialization(this)
-        }
-        currFlutterLoader?.ensureInitializationComplete(this, null)
-
-        val messenger = currFlutterEngine?.dartExecutor?.binaryMessenger ?: return
-        backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
-        backgroundChannel?.setMethodCallHandler(this)
+        taskLifecycleListener?.onCreateFlutterEngine(flutterEngine!!)
     }
 
-    private fun startForegroundTask() {
+    private fun destroyFlutterEngine() {
+        backgroundChannel?.setMethodCallHandler(null)
+        backgroundChannel = null
+
+        flutterEngine?.destroy()
+        flutterEngine = null
+        flutterLoader = null
+
+        taskLifecycleListener?.onDestroyFlutterEngine()
+    }
+
+    private fun startForegroundTask(callback: () -> Unit = {}) {
         stopRepeatTask()
 
-        val callback = object : MethodChannel.Result {
+        if (backgroundChannel == null) {
+            // TODO: callback.notInitialized
+            callback()
+            return
+        }
+
+        val channelCallback = object : MethodChannel.Result {
             override fun success(result: Any?) {
                 startRepeatTask()
+                callback()
             }
 
-            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {}
+            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                // TODO: callback.error
+                callback()
+            }
 
-            override fun notImplemented() {}
+            override fun notImplemented() {
+                // TODO: callback.notImplemented
+                callback()
+            }
         }
-        backgroundChannel?.invokeMethod(ACTION_TASK_START, null, callback)
+        backgroundChannel?.invokeMethod(ACTION_TASK_START, null, channelCallback)
+        taskLifecycleListener?.onTaskStart()
+    }
+
+    private fun destroyForegroundTask(callback: () -> Unit = {}) {
+        stopRepeatTask()
+
+        if (backgroundChannel == null) {
+            // TODO: callback.notInitialized
+            callback()
+            return
+        }
+
+        val channelCallback = object : MethodChannel.Result {
+            override fun success(result: Any?) {
+                callback()
+            }
+
+            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                // TODO: callback.error
+                callback()
+            }
+
+            override fun notImplemented() {
+                // TODO: callback.notImplemented
+                callback()
+            }
+        }
+        backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null, channelCallback)
+        taskLifecycleListener?.onTaskDestroy()
     }
 
     private fun startRepeatTask() {
@@ -475,8 +538,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 withContext(Dispatchers.Main) {
                     try {
                         backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
+                        taskLifecycleListener?.onTaskRepeatEvent()
                     } catch (e: Exception) {
-                        Log.e(TAG, "invokeMethod", e)
+                        Log.e(TAG, "repeatTask", e)
                     }
                 }
 
@@ -488,34 +552,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private fun stopRepeatTask() {
         repeatTask?.cancel()
         repeatTask = null
-    }
-
-    private fun stopForegroundTask() {
-        stopRepeatTask()
-
-        currFlutterLoader = null
-        prevFlutterEngine = currFlutterEngine
-        currFlutterEngine = null
-
-        val callback = object : MethodChannel.Result {
-            override fun success(result: Any?) {
-                prevFlutterEngine?.destroy()
-                prevFlutterEngine = null
-            }
-
-            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                prevFlutterEngine?.destroy()
-                prevFlutterEngine = null
-            }
-
-            override fun notImplemented() {
-                prevFlutterEngine?.destroy()
-                prevFlutterEngine = null
-            }
-        }
-        backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null, callback)
-        backgroundChannel?.setMethodCallHandler(null)
-        backgroundChannel = null
     }
 
     private fun getIconResId(): Int {
@@ -555,22 +591,22 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
             || ForegroundServiceUtils.canDrawOverlays(applicationContext)
         ) {
-            val pressedIntent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
+            val pIntent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
                 setPackage(packageName)
             }
-            PendingIntent.getBroadcast(this, 100, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getBroadcast(this, 100, pIntent, PendingIntent.FLAG_IMMUTABLE)
         } else {
             val pm = applicationContext.packageManager
-            val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
-            PendingIntent.getActivity(this, 200, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+            val lIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
+            PendingIntent.getActivity(this, 200, lIntent, PendingIntent.FLAG_IMMUTABLE)
         }
     }
 
     private fun getDeletePendingIntent(): PendingIntent {
-        val pressedIntent = Intent(ACTION_NOTIFICATION_DISMISSED).apply {
+        val dIntent = Intent(ACTION_NOTIFICATION_DISMISSED).apply {
             setPackage(packageName)
         }
-        return PendingIntent.getBroadcast(this, 200, pressedIntent, PendingIntent.FLAG_IMMUTABLE)
+        return PendingIntent.getBroadcast(this, 300, dIntent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun getRgbColor(rgb: String): Int? {
@@ -592,7 +628,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
     }
 
-    private fun buildButtonActions(
+    private fun buildNotificationActions(
         buttons: List<NotificationButton>,
         needsUpdate: Boolean = false
     ): List<Notification.Action> {
@@ -617,7 +653,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         return actions
     }
 
-    private fun buildButtonCompatActions(
+    private fun buildNotificationCompatActions(
         buttons: List<NotificationButton>,
         needsUpdate: Boolean = false
     ): List<NotificationCompat.Action> {

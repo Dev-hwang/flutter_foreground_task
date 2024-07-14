@@ -14,10 +14,35 @@ import Flutter
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
     
+    var taskLifecycleListener = FlutterForegroundTaskLifecycleListenerImpl()
+    SwiftFlutterForegroundTaskPlugin.setTaskLifecycleListener(taskLifecycleListener)
+    
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
 
 func registerPlugins(registry: FlutterPluginRegistry) {
   GeneratedPluginRegistrant.register(with: registry)
+}
+
+class FlutterForegroundTaskLifecycleListenerImpl: FlutterForegroundTaskLifecycleListener {
+  func onCreateFlutterEngine(flutterEngine: FlutterEngine?) {
+    print("Native-onCreateFlutterEngine")
+  }
+  
+  func onTaskStart() {
+    print("Native-onTaskStart")
+  }
+  
+  func onTaskRepeatEvent() {
+    print("Native-onTaskRepeatEvent")
+  }
+  
+  func onTaskDestroy() {
+    print("Native-onTaskDestroy")
+  }
+  
+  func onDestroyFlutterEngine() {
+    print("Native-onDestroyFlutterEngine")
+  }
 }

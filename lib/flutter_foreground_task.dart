@@ -296,8 +296,7 @@ class FlutterForegroundTask {
       }
     });
 
-    // Initializes the plug-in background channel and starts a foreground task.
-    backgroundChannel.invokeMethod('initialize');
+    backgroundChannel.invokeMethod('startTask');
   }
 
   static ReceivePort? _registerPort() {

@@ -39,7 +39,7 @@ class MyTaskHandler extends TaskHandler {
     _count++;
   }
 
-  // Called when the notification button on the Android platform is pressed.
+  // Called when the task is destroyed.
   @override
   void onDestroy(DateTime timestamp, SendPort? sendPort) async {
     print('onDestroy');

@@ -1,5 +1,6 @@
 package com.pravera.flutter_foreground_task
 
+import com.pravera.flutter_foreground_task.service.ForegroundService
 import com.pravera.flutter_foreground_task.service.ForegroundServiceManager
 import com.pravera.flutter_foreground_task.service.NotificationPermissionManager
 import com.pravera.flutter_foreground_task.service.ServiceProvider
@@ -9,6 +10,13 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 /** FlutterForegroundTaskPlugin */
 class FlutterForegroundTaskPlugin : FlutterPlugin, ActivityAware, ServiceProvider {
+    companion object {
+        /** Register a [FlutterForegroundTaskLifecycleListener]. */
+        fun setTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener?) {
+            ForegroundService.taskLifecycleListener = listener
+        }
+    }
+
     private lateinit var notificationPermissionManager: NotificationPermissionManager
     private lateinit var foregroundServiceManager: ForegroundServiceManager
 
