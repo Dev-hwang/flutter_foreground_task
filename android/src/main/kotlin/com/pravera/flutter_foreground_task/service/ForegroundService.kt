@@ -25,7 +25,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
 import java.util.*
-import kotlin.system.exitProcess
 
 /**
  * A service class for implementing foreground service.
@@ -105,7 +104,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         when (foregroundServiceStatus.action) {
             ForegroundServiceAction.UPDATE -> {
-                startForegroundService()
+                updateNotification()
                 val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
                 val currCallbackHandle = foregroundTaskData.callbackHandle
                 if (prevCallbackHandle != currCallbackHandle) {
@@ -197,8 +196,51 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     @SuppressLint("WrongConstant", "SuspiciousIndentation")
     private fun startForegroundService() {
-        // notification
+        createNotificationChannel()
+
         val id = notificationOptions.id
+        val notification = createNotification()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                id,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+            )
+        } else {
+            startForeground(id, notification)
+        }
+
+        releaseLockMode()
+        acquireLockMode()
+
+        isRunningService = true
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = notificationOptions.channelId
+            val channelName = notificationOptions.channelName
+            val channelDesc = notificationOptions.channelDescription
+            val channelImportance = notificationOptions.channelImportance
+
+            val nm = getSystemService(NotificationManager::class.java)
+            if (nm.getNotificationChannel(channelId) == null) {
+                val channel = NotificationChannel(channelId, channelName, channelImportance).apply {
+                    if (channelDesc != null) {
+                        description = channelDesc
+                    }
+                    enableVibration(notificationOptions.enableVibration)
+                    if (!notificationOptions.playSound) {
+                        setSound(null, null)
+                    }
+                }
+                nm.createNotificationChannel(channel)
+            }
+        }
+    }
+
+    private fun createNotification(): Notification {
+        // notification
         val channelId = notificationOptions.channelId
 
         // notification icon
@@ -229,10 +271,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             needsUpdateButtons = true
         }
 
-        // Create a notification and start the foreground service.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
-
             val builder = Notification.Builder(this, channelId)
             builder.setOngoing(true)
             builder.setShowWhen(notificationOptions.showWhen)
@@ -256,15 +295,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 builder.addAction(action)
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(
-                    id,
-                    builder.build(),
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
-                )
-            } else {
-                startForeground(id, builder.build())
-            }
+            return builder.build()
         } else {
             val builder = NotificationCompat.Builder(this, channelId)
             builder.setOngoing(true)
@@ -290,36 +321,15 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 builder.addAction(action)
             }
 
-            startForeground(id, builder.build())
+            return builder.build()
         }
-
-        releaseLockMode()
-        acquireLockMode()
-
-        isRunningService = true
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = notificationOptions.channelId
-            val channelName = notificationOptions.channelName
-            val channelDesc = notificationOptions.channelDescription
-            val channelImportance = notificationOptions.channelImportance
-
-            val nm = getSystemService(NotificationManager::class.java)
-            if (nm.getNotificationChannel(channelId) == null) {
-                val channel = NotificationChannel(channelId, channelName, channelImportance).apply {
-                    if (channelDesc != null) {
-                        description = channelDesc
-                    }
-                    enableVibration(notificationOptions.enableVibration)
-                    if (!notificationOptions.playSound) {
-                        setSound(null, null)
-                    }
-                }
-                nm.createNotificationChannel(channel)
-            }
-        }
+    private fun updateNotification() {
+        val id = notificationOptions.id
+        val notification = createNotification()
+        val nm = getSystemService(NotificationManager::class.java)
+        nm.notify(id, notification)
     }
 
     private fun stopForegroundService() {
