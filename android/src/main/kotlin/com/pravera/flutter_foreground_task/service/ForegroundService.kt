@@ -16,6 +16,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListener
+import com.pravera.flutter_foreground_task.RequestCode
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import io.flutter.FlutterInjector
@@ -158,7 +159,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
         stopForegroundService()
         unregisterBroadcastReceiver()
-        setRestartAlarm()
+        setRestartServiceAlarm()
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -407,7 +408,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         return (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
     }
 
-    private fun setRestartAlarm() {
+    private fun setRestartServiceAlarm() {
         val isStopStatus = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
         if (isStopStatus || isSetStopWithTaskFlag()) {
             return
@@ -432,7 +433,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
 
         val intent = Intent(this, RestartReceiver::class.java)
-        val sender = PendingIntent.getBroadcast(this, 1000, intent, PendingIntent.FLAG_IMMUTABLE)
+        val sender = PendingIntent.getBroadcast(
+            this, RequestCode.SET_RESTART_SERVICE_ALARM, intent, PendingIntent.FLAG_IMMUTABLE)
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
@@ -612,11 +614,13 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             val pIntent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
                 setPackage(packageName)
             }
-            PendingIntent.getBroadcast(this, 100, pIntent, PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getBroadcast(
+                this, RequestCode.NOTIFICATION_PRESSED_BROADCAST, pIntent, PendingIntent.FLAG_IMMUTABLE)
         } else {
             val pm = applicationContext.packageManager
             val lIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
-            PendingIntent.getActivity(this, 200, lIntent, PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getActivity(
+                this, RequestCode.NOTIFICATION_PRESSED, lIntent, PendingIntent.FLAG_IMMUTABLE)
         }
     }
 
@@ -624,7 +628,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         val dIntent = Intent(ACTION_NOTIFICATION_DISMISSED).apply {
             setPackage(packageName)
         }
-        return PendingIntent.getBroadcast(this, 300, dIntent, PendingIntent.FLAG_IMMUTABLE)
+        return PendingIntent.getBroadcast(
+            this, RequestCode.NOTIFICATION_DISMISSED_BROADCAST, dIntent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun getRgbColor(rgb: String): Int? {

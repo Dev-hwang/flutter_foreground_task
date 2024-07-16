@@ -87,13 +87,15 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
             "openIgnoreBatteryOptimizationSettings" -> {
                 checkActivityNull(result)?.let {
                     methodCallResult1 = result
-                    ForegroundServiceUtils.openIgnoreBatteryOptimizationSettings(it, RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    ForegroundServiceUtils.openIgnoreBatteryOptimizationSettings(
+                        it, RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                 }
             }
             "requestIgnoreBatteryOptimization" -> {
                 checkActivityNull(result)?.let {
                     methodCallResult2 = result
-                    ForegroundServiceUtils.requestIgnoreBatteryOptimization(it, RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION)
+                    ForegroundServiceUtils.requestIgnoreBatteryOptimization(
+                        it, RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION)
                 }
             }
             "canDrawOverlays" -> result.success(ForegroundServiceUtils.canDrawOverlays(context))
@@ -102,7 +104,8 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                     methodCallResult3 = result
                     val arguments = args as? Map<*, *>
                     val forceOpen = arguments?.get("forceOpen") as? Boolean ?: false
-                    ForegroundServiceUtils.openSystemAlertWindowSettings(it, RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS, forceOpen)
+                    ForegroundServiceUtils.openSystemAlertWindowSettings(
+                        it, RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS, forceOpen)
                 }
             }
             else -> result.notImplemented()

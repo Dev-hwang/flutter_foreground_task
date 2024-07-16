@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.WindowManager
+
 /**
  * Utilities that can be used while the foreground service is running.
  *
