@@ -24,7 +24,6 @@ object PreferencesKey {
     const val ENABLE_VIBRATION = "enableVibration"
     const val PLAY_SOUND = "playSound"
     const val SHOW_WHEN = "showWhen"
-    const val IS_STICKY = "isSticky"
     const val VISIBILITY = "visibility"
 
     const val NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"

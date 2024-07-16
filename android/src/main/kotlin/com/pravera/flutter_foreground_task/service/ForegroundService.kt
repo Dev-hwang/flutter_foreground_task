@@ -145,7 +145,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             }
         }
 
-        return if (notificationOptions.isSticky) START_STICKY else START_NOT_STICKY
+        return if (isSetStopWithTaskFlag()) START_NOT_STICKY else START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -419,10 +419,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     private fun setRestartServiceAlarm() {
-        if (!notificationOptions.isSticky) {
-            return
-        }
-
         val isIgnoringBatteryOptimizations =
             ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isIgnoringBatteryOptimizations) {
