@@ -8,18 +8,14 @@
 import Foundation
 import Flutter
 
-/**
- * A listener that can listen to the task lifecycle events.
- *
- * It has the same meaning as the TaskHandler callback function on the Dart side.
- */
+/** A listener that can listen to the task lifecycle events. */
 public protocol FlutterForegroundTaskLifecycleListener {
   /**
-   * Called before onTaskStart is called.
+   * Each time a task starts, a new FlutterEngine is created.
    *
-   * You can do some initialization before the task starts. (like MethodChannel and internal plug-in initialization)
+   * This is called before onTaskStart, Initialize the service you want to use in the task. (like PlatformChannel initialization)
    */
-  func onCreateFlutterEngine(flutterEngine: FlutterEngine?)
+  func onEngineCreate(flutterEngine: FlutterEngine?)
   
   /** Called when the task is started. */
   func onTaskStart()
@@ -31,9 +27,9 @@ public protocol FlutterForegroundTaskLifecycleListener {
   func onTaskDestroy()
   
   /**
-   * Called after onTaskDestroy is called.
+   * If one task is finished or replaced by another, the FlutterEngine is destroyed.
    *
-   * Dispose the services initialized in onCreateFlutterEngine.
+   * This is called after onTaskDestroy, where dispose the service that was initialized in onEngineCreate.
    */
-  func onDestroyFlutterEngine()
+  func onEngineWillDestroy()
 }

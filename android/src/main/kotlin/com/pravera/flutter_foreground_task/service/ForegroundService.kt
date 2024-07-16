@@ -459,18 +459,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             backgroundChannel?.setMethodCallHandler(this)
         }
 
-        taskLifecycleListener?.onCreateFlutterEngine(flutterEngine!!)
+        taskLifecycleListener?.onEngineCreate(flutterEngine!!)
     }
 
     private fun destroyFlutterEngine() {
         backgroundChannel?.setMethodCallHandler(null)
         backgroundChannel = null
 
+        taskLifecycleListener?.onEngineWillDestroy()
         flutterEngine?.destroy()
         flutterEngine = null
         flutterLoader = null
-
-        taskLifecycleListener?.onDestroyFlutterEngine()
     }
 
     private fun startForegroundTask(callback: () -> Unit = {}) {

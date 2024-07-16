@@ -161,13 +161,13 @@ class BackgroundService: NSObject {
   
   private func createFlutterEngine() {
     flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
-    taskLifecycleListener?.onCreateFlutterEngine(flutterEngine: flutterEngine!)
+    taskLifecycleListener?.onEngineCreate(flutterEngine: flutterEngine!)
   }
   
   private func destroyFlutterEngine() {
+    taskLifecycleListener?.onEngineWillDestroy()
     flutterEngine?.destroyContext()
     flutterEngine = nil
-    taskLifecycleListener?.onDestroyFlutterEngine()
   }
   
   private func createBackgroundChannel() {
