@@ -1,3 +1,10 @@
+## 7.2.0
+
+* [**FEAT**] Add ability to restart service when app is deleted from recent app list
+  - To restart service on Android 12+, you must allow the `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+* [**REMOVE**] Remove `isSticky` from AndroidNotificationOptions
+  - The isSticky option is automatically set by the service based on the Manifest android:stopWithTask
+
 ## 7.1.0
 
 * [**FEAT-Recommended**] Allow updateService to be processed without service restart

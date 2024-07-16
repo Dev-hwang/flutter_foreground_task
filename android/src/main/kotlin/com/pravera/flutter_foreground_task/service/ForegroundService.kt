@@ -550,21 +550,28 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private fun startRepeatTask() {
         stopRepeatTask()
 
-        repeatTask = CoroutineScope(Dispatchers.Default).launch {
-            do {
-                withContext(Dispatchers.Main) {
-                    try {
-                        backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
-                        for (listener in taskLifecycleListeners) {
-                            listener.onTaskRepeatEvent()
+        if (foregroundTaskOptions.isOnceEvent) {
+            backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
+            for (listener in taskLifecycleListeners) {
+                listener.onTaskRepeatEvent()
+            }
+        } else {
+            repeatTask = CoroutineScope(Dispatchers.Default).launch {
+                val interval = foregroundTaskOptions.interval
+                while (isRunningService) {
+                    withContext(Dispatchers.Main) {
+                        try {
+                            backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
+                            for (listener in taskLifecycleListeners) {
+                                listener.onTaskRepeatEvent()
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "repeatTask", e)
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "repeatTask", e)
                     }
+                    delay(interval)
                 }
-
-                delay(foregroundTaskOptions.interval)
-            } while (!foregroundTaskOptions.isOnceEvent)
+            }
         }
     }
 
