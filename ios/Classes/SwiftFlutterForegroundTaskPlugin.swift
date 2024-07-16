@@ -18,6 +18,14 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     registerPlugins = callback
   }
   
+  public static func addTaskLifecycleListener(_ listener: FlutterForegroundTaskLifecycleListener) {
+    BackgroundService.sharedInstance.addTaskLifecycleListener(listener)
+  }
+  
+  public static func removeTaskLifecycleListener(_ listener: FlutterForegroundTaskLifecycleListener) {
+    BackgroundService.sharedInstance.removeTaskLifecycleListener(listener)
+  }
+  
   private func initServices() {
     backgroundServiceManager = BackgroundServiceManager()
   }

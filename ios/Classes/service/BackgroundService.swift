@@ -21,7 +21,21 @@ let ACTION_TASK_DESTROY: String = "onDestroy"
 class BackgroundService: NSObject {
   static let sharedInstance = BackgroundService()
   
-  var isRunningService: Bool = false
+  private(set) var isRunningService: Bool = false
+  
+  private var taskLifecycleListeners: Array<FlutterForegroundTaskLifecycleListener> = []
+  
+  func addTaskLifecycleListener(_ listener: FlutterForegroundTaskLifecycleListener) {
+    if taskLifecycleListeners.contains(where: { $0 === listener }) == false {
+      taskLifecycleListeners.append(listener)
+    }
+  }
+  
+  func removeTaskLifecycleListener(_ listener: FlutterForegroundTaskLifecycleListener) {
+    if let index = taskLifecycleListeners.firstIndex(where: { $0 === listener }) {
+      taskLifecycleListeners.remove(at: index)
+    }
+  }
   
   private let userNotificationCenter: UNUserNotificationCenter
   private var isGrantedNotificationAuthorization: Bool = false
@@ -90,7 +104,9 @@ class BackgroundService: NSObject {
         }
         break
       case .STOP:
-        stopBackgroundTask() { _ in
+        destroyBackgroundTask() { _ in
+          self.disposeBackgroundChannel()
+          self.destroyFlutterEngine()
           self.isRunningService = false
           self.isGrantedNotificationAuthorization = false
           self.removeAllNotification()
@@ -137,23 +153,48 @@ class BackgroundService: NSObject {
   }
   
   private func executeDartCallback(callbackHandle: Int64) {
-    stopBackgroundTask() { _ in
+    destroyBackgroundTask() { _ in
       // The backgroundChannel cannot be registered unless the registerPlugins function is called.
       if (SwiftFlutterForegroundTaskPlugin.registerPlugins == nil) { return }
       
-      self.flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
+      self.destroyFlutterEngine()
+      self.createFlutterEngine()
       
       let callbackInfo = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
       let entrypoint = callbackInfo?.callbackName
       let uri = callbackInfo?.callbackLibraryPath
       self.flutterEngine?.run(withEntrypoint: entrypoint, libraryURI: uri)
       
+      self.disposeBackgroundChannel()
       SwiftFlutterForegroundTaskPlugin.registerPlugins!(self.flutterEngine!)
-      
-      let backgroundMessenger = self.flutterEngine!.binaryMessenger
-      self.backgroundChannel = FlutterMethodChannel(name: BG_CHANNEL_NAME, binaryMessenger: backgroundMessenger)
-      self.backgroundChannel?.setMethodCallHandler(self.onMethodCall)
+      self.createBackgroundChannel()
     }
+  }
+  
+  private func createFlutterEngine() {
+    flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
+    for listener in taskLifecycleListeners {
+      listener.onEngineCreate(flutterEngine: flutterEngine!)
+    }
+  }
+  
+  private func destroyFlutterEngine() {
+    for listener in taskLifecycleListeners {
+      listener.onEngineWillDestroy()
+    }
+    flutterEngine?.destroyContext()
+    flutterEngine = nil
+  }
+  
+  private func createBackgroundChannel() {
+    let messenger = flutterEngine!.binaryMessenger
+    backgroundChannel = FlutterMethodChannel(name: BG_CHANNEL_NAME, binaryMessenger: messenger)
+    backgroundChannel?.setMethodCallHandler(onMethodCall)
+  }
+  
+  private func disposeBackgroundChannel() {
+    backgroundChannel?.setMethodCallHandler(nil)
+    backgroundChannel = nil
   }
   
   private func startBackgroundTask() {
@@ -161,6 +202,25 @@ class BackgroundService: NSObject {
     
     backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: nil) { _ in
       self.startRepeatTask()
+      for listener in self.taskLifecycleListeners {
+        listener.onTaskStart()
+      }
+    }
+  }
+  
+  private func destroyBackgroundTask(onComplete: @escaping (Bool) -> Void) {
+    stopRepeatTask()
+    
+    // The background task destruction is complete and a new background task can be started.
+    if backgroundChannel == nil {
+      onComplete(true)
+    } else {
+      backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
+        for listener in self.taskLifecycleListeners {
+          listener.onTaskDestroy()
+        }
+        onComplete(true)
+      }
     }
   }
   
@@ -168,13 +228,20 @@ class BackgroundService: NSObject {
     stopRepeatTask()
     
     if currIsOnceEvent {
-      backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
-      return
-    }
-    
-    let timeInterval = TimeInterval(currInterval / 1000)
-    repeatTask = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
-      self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
+      backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
+        for listener in self.taskLifecycleListeners {
+          listener.onTaskRepeatEvent()
+        }
+      }
+    } else {
+      let timeInterval = TimeInterval(currInterval / 1000)
+      repeatTask = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
+        self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
+          for listener in self.taskLifecycleListeners {
+            listener.onTaskRepeatEvent()
+          }
+        }
+      }
     }
   }
   
@@ -183,25 +250,9 @@ class BackgroundService: NSObject {
     repeatTask = nil
   }
   
-  private func stopBackgroundTask(onComplete: @escaping (Bool) -> Void) {
-    stopRepeatTask()
-    
-    // The background task destruction is complete and a new background task can be started.
-    if backgroundChannel == nil {
-      onComplete(true)
-    } else {
-      backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
-        self.flutterEngine?.destroyContext()
-        self.flutterEngine = nil
-        self.backgroundChannel = nil
-        onComplete(true)
-      }
-    }
-  }
-  
   private func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-      case "initialize":
+      case "startTask":
         startBackgroundTask()
       default:
         result(FlutterMethodNotImplemented)
