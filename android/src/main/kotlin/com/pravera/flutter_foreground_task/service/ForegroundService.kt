@@ -159,7 +159,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
         stopForegroundService()
         unregisterBroadcastReceiver()
-        setRestartServiceAlarm()
+
+        val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
+        if (!isCorrectlyStopped && !isSetStopWithTaskFlag()) {
+            Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
+            setRestartServiceAlarm()
+        }
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        stopSelf()
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -409,20 +419,13 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     private fun setRestartServiceAlarm() {
-        val isStopStatus = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
-        if (isStopStatus || isSetStopWithTaskFlag()) {
-            return
-        }
-
-        Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
-
         if (!notificationOptions.isSticky) {
             return
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            && !ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)
-        ) {
+        val isIgnoringBatteryOptimizations =
+            ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isIgnoringBatteryOptimizations) {
             Log.i(TAG, "Turn off battery optimization to restart service in the background.")
             return
         }
