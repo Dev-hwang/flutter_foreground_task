@@ -9,7 +9,7 @@ import Foundation
 import Flutter
 
 /** A listener that can listen to the task lifecycle events. */
-public protocol FlutterForegroundTaskLifecycleListener {
+public protocol FlutterForegroundTaskLifecycleListener : AnyObject {
   /**
    * Each time a task starts, a new FlutterEngine is created.
    *

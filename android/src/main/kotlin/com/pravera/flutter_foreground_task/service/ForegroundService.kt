@@ -49,7 +49,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         var isRunningService = false
             private set
 
-        var taskLifecycleListener: FlutterForegroundTaskLifecycleListener? = null
+        private var taskLifecycleListeners: MutableList<FlutterForegroundTaskLifecycleListener> = mutableListOf()
+
+        fun addTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
+            if (!taskLifecycleListeners.contains(listener)) {
+                taskLifecycleListeners.add(listener);
+            }
+        }
+
+        fun removeTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
+            taskLifecycleListeners.remove(listener)
+        }
     }
 
     private lateinit var foregroundServiceStatus: ForegroundServiceStatus
@@ -452,21 +462,24 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             flutterLoader?.startInitialization(this)
         }
         flutterLoader?.ensureInitializationComplete(this, null)
+        for (listener in taskLifecycleListeners) {
+            listener.onEngineCreate(flutterEngine!!)
+        }
 
         val messenger = flutterEngine?.dartExecutor?.binaryMessenger
         if (messenger != null) {
             backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
             backgroundChannel?.setMethodCallHandler(this)
         }
-
-        taskLifecycleListener?.onEngineCreate(flutterEngine!!)
     }
 
     private fun destroyFlutterEngine() {
         backgroundChannel?.setMethodCallHandler(null)
         backgroundChannel = null
 
-        taskLifecycleListener?.onEngineWillDestroy()
+        for (listener in taskLifecycleListeners) {
+            listener.onEngineWillDestroy()
+        }
         flutterEngine?.destroy()
         flutterEngine = null
         flutterLoader = null
@@ -498,7 +511,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             }
         }
         backgroundChannel?.invokeMethod(ACTION_TASK_START, null, channelCallback)
-        taskLifecycleListener?.onTaskStart()
+        for (listener in taskLifecycleListeners) {
+            listener.onTaskStart()
+        }
     }
 
     private fun destroyForegroundTask(callback: () -> Unit = {}) {
@@ -526,7 +541,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             }
         }
         backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null, channelCallback)
-        taskLifecycleListener?.onTaskDestroy()
+        for (listener in taskLifecycleListeners) {
+            listener.onTaskDestroy()
+        }
     }
 
     private fun startRepeatTask() {
@@ -537,7 +554,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 withContext(Dispatchers.Main) {
                     try {
                         backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
-                        taskLifecycleListener?.onTaskRepeatEvent()
+                        for (listener in taskLifecycleListeners) {
+                            listener.onTaskRepeatEvent()
+                        }
                     } catch (e: Exception) {
                         Log.e(TAG, "repeatTask", e)
                     }

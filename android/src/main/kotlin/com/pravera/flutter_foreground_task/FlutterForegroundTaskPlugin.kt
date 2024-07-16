@@ -11,9 +11,12 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 /** FlutterForegroundTaskPlugin */
 class FlutterForegroundTaskPlugin : FlutterPlugin, ActivityAware, ServiceProvider {
     companion object {
-        /** Register a [FlutterForegroundTaskLifecycleListener]. */
-        fun setTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener?) {
-            ForegroundService.taskLifecycleListener = listener
+        fun addTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
+            ForegroundService.addTaskLifecycleListener(listener)
+        }
+
+        fun removeTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
+            ForegroundService.removeTaskLifecycleListener(listener)
         }
     }
 

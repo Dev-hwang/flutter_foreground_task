@@ -23,7 +23,19 @@ class BackgroundService: NSObject {
   
   private(set) var isRunningService: Bool = false
   
-  var taskLifecycleListener: FlutterForegroundTaskLifecycleListener? = nil
+  private var taskLifecycleListeners: Array<FlutterForegroundTaskLifecycleListener> = []
+  
+  func addTaskLifecycleListener(_ listener: FlutterForegroundTaskLifecycleListener) {
+    if taskLifecycleListeners.contains(where: { $0 === listener }) == false {
+      taskLifecycleListeners.append(listener)
+    }
+  }
+  
+  func removeTaskLifecycleListener(_ listener: FlutterForegroundTaskLifecycleListener) {
+    if let index = taskLifecycleListeners.firstIndex(where: { $0 === listener }) {
+      taskLifecycleListeners.remove(at: index)
+    }
+  }
   
   private let userNotificationCenter: UNUserNotificationCenter
   private var isGrantedNotificationAuthorization: Bool = false
@@ -161,11 +173,15 @@ class BackgroundService: NSObject {
   
   private func createFlutterEngine() {
     flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
-    taskLifecycleListener?.onEngineCreate(flutterEngine: flutterEngine!)
+    for listener in taskLifecycleListeners {
+      listener.onEngineCreate(flutterEngine: flutterEngine!)
+    }
   }
   
   private func destroyFlutterEngine() {
-    taskLifecycleListener?.onEngineWillDestroy()
+    for listener in taskLifecycleListeners {
+      listener.onEngineWillDestroy()
+    }
     flutterEngine?.destroyContext()
     flutterEngine = nil
   }
@@ -186,7 +202,9 @@ class BackgroundService: NSObject {
     
     backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: nil) { _ in
       self.startRepeatTask()
-      self.taskLifecycleListener?.onTaskStart()
+      for listener in self.taskLifecycleListeners {
+        listener.onTaskStart()
+      }
     }
   }
   
@@ -198,7 +216,9 @@ class BackgroundService: NSObject {
       onComplete(true)
     } else {
       backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
-        self.taskLifecycleListener?.onTaskDestroy()
+        for listener in self.taskLifecycleListeners {
+          listener.onTaskDestroy()
+        }
         onComplete(true)
       }
     }
@@ -209,13 +229,17 @@ class BackgroundService: NSObject {
     
     if currIsOnceEvent {
       backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
-        self.taskLifecycleListener?.onTaskRepeatEvent()
+        for listener in self.taskLifecycleListeners {
+          listener.onTaskRepeatEvent()
+        }
       }
     } else {
       let timeInterval = TimeInterval(currInterval / 1000)
       repeatTask = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
         self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
-          self.taskLifecycleListener?.onTaskRepeatEvent()
+          for listener in self.taskLifecycleListeners {
+            listener.onTaskRepeatEvent()
+          }
         }
       }
     }
