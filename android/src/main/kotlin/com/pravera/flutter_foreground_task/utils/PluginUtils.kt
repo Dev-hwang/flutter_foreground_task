@@ -12,12 +12,12 @@ import android.provider.Settings
 import android.view.WindowManager
 
 /**
- * Utilities that can be used while the foreground service is running.
+ * Utilities supported in the plugin.
  *
  * @author Dev-hwang
  * @version 1.0
  */
-class ForegroundServiceUtils {
+class PluginUtils {
 	companion object {
 		/**
 		 * Returns whether the app is in the foreground.

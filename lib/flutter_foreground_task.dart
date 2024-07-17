@@ -4,17 +4,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
 import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/ios_notification_options.dart';
 import 'package:flutter_foreground_task/models/android_notification_options.dart';
 import 'package:flutter_foreground_task/models/notification_permission.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_foreground_task_platform_interface.dart';
+import 'errors/service_not_initialized_exception.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon_data.dart';
+import 'models/service_request_result.dart';
 
-export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
+export 'package:flutter_foreground_task/errors/service_not_initialized_exception.dart';
+export 'package:flutter_foreground_task/errors/service_timeout_exception.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
 export 'package:flutter_foreground_task/models/ios_notification_options.dart';
 export 'package:flutter_foreground_task/models/notification_button.dart';
@@ -24,6 +26,7 @@ export 'package:flutter_foreground_task/models/android_notification_options.dart
 export 'package:flutter_foreground_task/models/notification_permission.dart';
 export 'package:flutter_foreground_task/models/notification_priority.dart';
 export 'package:flutter_foreground_task/models/notification_visibility.dart';
+export 'package:flutter_foreground_task/models/service_request_result.dart';
 export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
@@ -74,16 +77,15 @@ class FlutterForegroundTask {
   }
 
   /// Start the foreground service with notification.
-  static Future<bool> startService({
+  static Future<ServiceRequestResult> startService({
     required String notificationTitle,
     required String notificationText,
     NotificationIconData? notificationIcon,
     List<NotificationButton>? notificationButtons,
     Function? callback,
-  }) {
+  }) async {
     if (_initialized == false) {
-      throw const ForegroundTaskException(
-          'Not initialized. Please call this function after calling the init function.');
+      return ServiceRequestResult.error(ServiceNotInitializedException());
     }
 
     return FlutterForegroundTaskPlatform.instance.startService(
@@ -99,11 +101,11 @@ class FlutterForegroundTask {
   }
 
   /// Restart the foreground service.
-  static Future<bool> restartService() =>
+  static Future<ServiceRequestResult> restartService() =>
       FlutterForegroundTaskPlatform.instance.restartService();
 
   /// Update the foreground service.
-  static Future<bool> updateService({
+  static Future<ServiceRequestResult> updateService({
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
@@ -121,7 +123,7 @@ class FlutterForegroundTask {
       );
 
   /// Stop the foreground service.
-  static Future<bool> stopService() =>
+  static Future<ServiceRequestResult> stopService() =>
       FlutterForegroundTaskPlatform.instance.stopService();
 
   /// Returns whether the foreground service is running.

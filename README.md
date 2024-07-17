@@ -160,11 +160,15 @@ void _initForegroundTask() {
       channelImportance: NotificationChannelImportance.LOW,
       priority: NotificationPriority.LOW,
     ),
-    iosNotificationOptions: const IOSNotificationOptions(),
+    iosNotificationOptions: const IOSNotificationOptions(
+      showNotification: false,
+      playSound: false,
+    ),
     foregroundTaskOptions: const ForegroundTaskOptions(
       interval: 5000,
       isOnceEvent: false,
       autoRunOnBoot: true,
+      autoRunOnMyPackageReplaced: true,
       allowWakeLock: true,
       allowWifiLock: true,
     ),
@@ -315,7 +319,7 @@ class _ExamplePageState extends State<ExamplePage> {
     }
   }
 
-  Future<bool> _startForegroundTask() async {
+  Future<void> _startForegroundTask() async {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
@@ -324,13 +328,14 @@ class _ExamplePageState extends State<ExamplePage> {
     final bool isRegistered = _registerReceivePort(receivePort);
     if (!isRegistered) {
       print('Failed to register receivePort!');
-      return false;
+      return;
     }
 
+    ServiceRequestResult requestResult;
     if (await FlutterForegroundTask.isRunningService) {
-      return FlutterForegroundTask.restartService();
+      requestResult = await FlutterForegroundTask.restartService();
     } else {
-      return FlutterForegroundTask.startService(
+      requestResult = await FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         notificationIcon: null,
@@ -343,6 +348,12 @@ class _ExamplePageState extends State<ExamplePage> {
         ],
         callback: startCallback,
       );
+    }
+
+    // handle error
+    if (!requestResult.success) {
+      final Object? error = requestResult.error;
+      print('error: $error');
     }
   }
 
@@ -513,8 +524,15 @@ class SecondTaskHandler extends TaskHandler {
 5. If you no longer use the foreground service, call `FlutterForegroundTask.stopService()`.
 
 ```dart
-Future<bool> _stopForegroundTask() {
-  return FlutterForegroundTask.stopService();
+Future<void> _stopForegroundTask() async {
+  final ServiceRequestResult requestResult = 
+      await FlutterForegroundTask.stopService();
+
+  // handle error
+  if (!requestResult.success) {
+    final Object? error = requestResult.error;
+    print('error: $error');
+  }
 }
 ```
 
@@ -592,7 +610,10 @@ Widget build(BuildContext context) {
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
       ),
-      iosNotificationOptions: const IOSNotificationOptions(),
+      iosNotificationOptions: const IOSNotificationOptions(
+        showNotification: false,
+        playSound: false,
+      ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         isOnceEvent: false,
@@ -728,6 +749,15 @@ The level of detail displayed in notifications on the lock screen.
 | `VISIBILITY_PUBLIC`  | Show this notification in its entirety on all lockscreens.                                                     |
 | `VISIBILITY_SECRET`  | Do not reveal any part of this notification on a secure lockscreen.                                            |
 | `VISIBILITY_PRIVATE` | Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens. |
+
+### :chicken: ServiceRequestResult
+
+Result of service request.
+
+| Property  | Description                         |
+|-----------|-------------------------------------|
+| `success` | Whether the request was successful. |
+| `error`   | Error when the request failed.      |
 
 ## Utility methods
 

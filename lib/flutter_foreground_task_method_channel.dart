@@ -6,12 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'flutter_foreground_task_platform_interface.dart';
+import 'errors/service_timeout_exception.dart';
 import 'models/android_notification_options.dart';
 import 'models/foreground_task_options.dart';
 import 'models/ios_notification_options.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon_data.dart';
 import 'models/notification_permission.dart';
+import 'models/service_request_result.dart';
 
 /// An implementation of [FlutterForegroundTaskPlatform] that uses method channels.
 class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
@@ -20,7 +22,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   final methodChannel = const MethodChannel('flutter_foreground_task/methods');
 
   @override
-  Future<bool> startService({
+  Future<ServiceRequestResult> startService({
     required AndroidNotificationOptions androidNotificationOptions,
     required IOSNotificationOptions iosNotificationOptions,
     required ForegroundTaskOptions foregroundTaskOptions,
@@ -30,11 +32,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
-    if (await isRunningService) {
-      return true;
-    }
-
-    // for Android 13
+    // Notification Permission for Android 13+
     if (Platform.isAndroid && await attachedActivity) {
       try {
         final NotificationPermission notificationPermissionStatus =
@@ -47,36 +45,35 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       }
     }
 
-    final options = <String, dynamic>{
-      if (Platform.isAndroid)
-        ...androidNotificationOptions.toJson()
-      else
-        ...iosNotificationOptions.toJson(),
-      ...foregroundTaskOptions.toJson(),
-      'notificationContentTitle': notificationTitle,
-      'notificationContentText': notificationText,
-      'iconData': notificationIcon?.toJson(),
-      'buttons': notificationButtons?.map((e) => e.toJson()).toList()
-    };
-    if (callback != null) {
-      options['callbackHandle'] =
-          PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
-    }
-
-    final bool reqResult =
-        await methodChannel.invokeMethod('startService', options);
-    if (!reqResult) {
-      return false;
+    try {
+      final options = <String, dynamic>{
+        if (Platform.isAndroid)
+          ...androidNotificationOptions.toJson()
+        else
+          ...iosNotificationOptions.toJson(),
+        ...foregroundTaskOptions.toJson(),
+        'notificationContentTitle': notificationTitle,
+        'notificationContentText': notificationText,
+        'iconData': notificationIcon?.toJson(),
+        'buttons': notificationButtons?.map((e) => e.toJson()).toList()
+      };
+      if (callback != null) {
+        options['callbackHandle'] =
+            PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
+      }
+      await methodChannel.invokeMethod('startService', options);
+    } catch (e) {
+      return ServiceRequestResult.error(e);
     }
 
     final Stopwatch stopwatch = Stopwatch()..start();
-    bool startState = false;
+    bool isStarted = false;
     await Future.doWhile(() async {
-      startState = await isRunningService;
+      isStarted = await isRunningService;
 
       // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
       // ref: https://developer.android.com/guide/components/services#StartingAService
-      if (startState || stopwatch.elapsedMilliseconds > 5 * 1000) {
+      if (isStarted || stopwatch.elapsedMilliseconds > 5 * 1000) {
         return false;
       } else {
         await Future.delayed(const Duration(milliseconds: 100));
@@ -84,19 +81,23 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       }
     });
 
-    return startState;
+    return isStarted
+        ? ServiceRequestResult.success()
+        : ServiceRequestResult.error(ServiceTimeoutException());
   }
 
   @override
-  Future<bool> restartService() async {
-    if (await isRunningService) {
-      return await methodChannel.invokeMethod('restartService');
+  Future<ServiceRequestResult> restartService() async {
+    try {
+      await methodChannel.invokeMethod('restartService');
+      return ServiceRequestResult.success();
+    } catch (e) {
+      return ServiceRequestResult.error(e);
     }
-    return false;
   }
 
   @override
-  Future<bool> updateService({
+  Future<ServiceRequestResult> updateService({
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
@@ -104,7 +105,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
-    if (await isRunningService) {
+    try {
       final options = <String, dynamic>{
         if (foregroundTaskOptions != null) ...foregroundTaskOptions.toJson(),
         'notificationContentTitle': notificationTitle,
@@ -116,30 +117,29 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
         options['callbackHandle'] =
             PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
       }
-      return await methodChannel.invokeMethod('updateService', options);
+      await methodChannel.invokeMethod('updateService', options);
+      return ServiceRequestResult.success();
+    } catch (e) {
+      return ServiceRequestResult.error(e);
     }
-    return false;
   }
 
   @override
-  Future<bool> stopService() async {
-    if (!await isRunningService) {
-      return true;
-    }
-
-    final bool reqResult = await methodChannel.invokeMethod('stopService');
-    if (!reqResult) {
-      return false;
+  Future<ServiceRequestResult> stopService() async {
+    try {
+      await methodChannel.invokeMethod('stopService');
+    } catch (e) {
+      return ServiceRequestResult.error(e);
     }
 
     final Stopwatch stopwatch = Stopwatch()..start();
-    bool stopState = false;
+    bool isStopped = false;
     await Future.doWhile(() async {
-      stopState = !await isRunningService;
+      isStopped = !await isRunningService;
 
       // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
       // ref: https://developer.android.com/guide/components/services#StartingAService
-      if (stopState || stopwatch.elapsedMilliseconds > 5 * 1000) {
+      if (isStopped || stopwatch.elapsedMilliseconds > 5 * 1000) {
         return false;
       } else {
         await Future.delayed(const Duration(milliseconds: 100));
@@ -147,7 +147,9 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       }
     });
 
-    return stopState;
+    return isStopped
+        ? ServiceRequestResult.success()
+        : ServiceRequestResult.error(ServiceTimeoutException());
   }
 
   @override
