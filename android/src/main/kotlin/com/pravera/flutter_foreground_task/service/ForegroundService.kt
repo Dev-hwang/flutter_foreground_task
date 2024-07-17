@@ -41,6 +41,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private const val ACTION_TASK_START = "onStart"
         private const val ACTION_TASK_REPEAT_EVENT = "onRepeatEvent"
         private const val ACTION_TASK_DESTROY = "onDestroy"
+        private const val ACTION_SEND_DATA = "sendData"
+
         private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
         private const val ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
@@ -61,6 +63,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         fun removeTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
             taskLifecycleListeners.remove(listener)
         }
+
+        private var flutterEngine: FlutterEngine? = null
+        private var flutterLoader: FlutterLoader? = null
+        private var backgroundChannel: MethodChannel? = null
+        private var repeatTask: Job? = null
+
+        fun sendData(data: Any?) {
+            if (isRunningService) {
+                backgroundChannel?.invokeMethod(ACTION_SEND_DATA, data)
+            }
+        }
     }
 
     private lateinit var foregroundServiceStatus: ForegroundServiceStatus
@@ -75,11 +88,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
-
-    private var flutterEngine: FlutterEngine? = null
-    private var flutterLoader: FlutterLoader? = null
-    private var backgroundChannel: MethodChannel? = null
-    private var repeatTask: Job? = null
 
     // A broadcast receiver that handles intents that occur in the foreground service.
     private var broadcastReceiver = object : BroadcastReceiver() {

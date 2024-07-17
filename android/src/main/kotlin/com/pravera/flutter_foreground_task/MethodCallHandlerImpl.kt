@@ -73,6 +73,8 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                     result.success(true)
                 }
 
+                "sendData" -> provider.getForegroundServiceManager().sendData(args)
+
                 "isRunningService" ->
                     result.success(provider.getForegroundServiceManager().isRunningService())
 

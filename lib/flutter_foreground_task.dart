@@ -44,6 +44,9 @@ abstract class TaskHandler {
   /// Called when the task is destroyed.
   void onDestroy(DateTime timestamp, SendPort? sendPort);
 
+  /// Called when data is sent using [FlutterForegroundTask.sendData].
+  void receiveData(Object data);
+
   /// Called when the notification button on the Android platform is pressed.
   void onNotificationButtonPressed(String id) {}
 
@@ -125,6 +128,10 @@ class FlutterForegroundTask {
   /// Stop the foreground service.
   static Future<ServiceRequestResult> stopService() =>
       FlutterForegroundTaskPlatform.instance.stopService();
+
+  /// Send data to [TaskHandler].
+  static void sendData(Object data) =>
+      FlutterForegroundTaskPlatform.instance.sendData(data);
 
   /// Returns whether the foreground service is running.
   static Future<bool> get isRunningService =>
@@ -285,6 +292,9 @@ class FlutterForegroundTask {
           break;
         case 'onDestroy':
           handler.onDestroy(timestamp, sendPort);
+          break;
+        case 'sendData':
+          handler.receiveData(call.arguments);
           break;
         case 'onNotificationButtonPressed':
           final String notificationButtonId = call.arguments.toString();

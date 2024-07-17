@@ -153,6 +153,11 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   }
 
   @override
+  void sendData(Object data) {
+    methodChannel.invokeMethod('sendData', data);
+  }
+
+  @override
   Future<bool> get isRunningService async {
     return await methodChannel.invokeMethod('isRunningService');
   }

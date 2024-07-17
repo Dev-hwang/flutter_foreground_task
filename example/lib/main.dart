@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -19,10 +20,7 @@ class MyTaskHandler extends TaskHandler {
   // Called when the task is started.
   @override
   void onStart(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the getData function to get the stored data.
-    final customData =
-        await FlutterForegroundTask.getData<String>(key: 'customData');
-    print('customData: $customData');
+    print('onStart');
   }
 
   // Called every [interval] milliseconds in [ForegroundTaskOptions].
@@ -40,6 +38,12 @@ class MyTaskHandler extends TaskHandler {
   @override
   void onDestroy(DateTime timestamp, SendPort? sendPort) async {
     print('onDestroy');
+  }
+
+  // Called when data is sent using [FlutterForegroundTask.sendData].
+  @override
+  void receiveData(Object data) {
+    print('receiveData: $data');
   }
 
   // Called when the notification button on the Android platform is pressed.
@@ -146,9 +150,6 @@ class _ExamplePageState extends State<ExamplePage> {
   }
 
   Future<void> _startForegroundTask() async {
-    // You can save data using the saveData function.
-    await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
-
     // Register the receivePort before starting the service.
     final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
     final bool isRegistered = _registerReceivePort(receivePort);
@@ -202,13 +203,7 @@ class _ExamplePageState extends State<ExamplePage> {
     _closeReceivePort();
 
     _receivePort = newReceivePort;
-    _receivePort?.listen((data) {
-      if (data is int) {
-        print('count: $data');
-      } else if (data is DateTime) {
-        print('timestamp: ${data.toString()}');
-      }
-    });
+    _receivePort?.listen(_onReceiveData);
 
     return _receivePort != null;
   }
@@ -216,6 +211,20 @@ class _ExamplePageState extends State<ExamplePage> {
   void _closeReceivePort() {
     _receivePort?.close();
     _receivePort = null;
+  }
+
+  void _onReceiveData(dynamic data) {
+    if (data is int) {
+      print('count: $data');
+    } else if (data is DateTime) {
+      print('timestamp: ${data.toString()}');
+    }
+  }
+
+  void _onSendData() {
+    final Random random = Random();
+    final int data = random.nextInt(100);
+    FlutterForegroundTask.sendData(data);
   }
 
   @override
@@ -266,8 +275,9 @@ class _ExamplePageState extends State<ExamplePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          buttonBuilder('start', onPressed: _startForegroundTask),
-          buttonBuilder('stop', onPressed: _stopForegroundTask),
+          buttonBuilder('start service', onPressed: _startForegroundTask),
+          buttonBuilder('stop service', onPressed: _stopForegroundTask),
+          buttonBuilder('send random data', onPressed: _onSendData),
         ],
       ),
     );
