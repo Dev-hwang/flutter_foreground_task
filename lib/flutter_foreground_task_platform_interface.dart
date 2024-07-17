@@ -63,6 +63,10 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('stopService() has not been implemented.');
   }
 
+  void sendData(Object data) {
+    throw UnimplementedError('sendData() has not been implemented.');
+  }
+
   Future<bool> get isRunningService {
     throw UnimplementedError('isRunningService has not been implemented.');
   }

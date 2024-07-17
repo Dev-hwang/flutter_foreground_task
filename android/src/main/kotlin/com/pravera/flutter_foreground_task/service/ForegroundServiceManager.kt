@@ -76,6 +76,13 @@ class ForegroundServiceManager {
 		ContextCompat.startForegroundService(context, nIntent)
 	}
 
+	/** Send data to TaskHandler. */
+	fun sendData(data: Any?) {
+		if (data != null) {
+			ForegroundService.sendData(data)
+		}
+	}
+
 	/** Returns whether the foreground service is running. */
 	fun isRunningService(): Boolean = ForegroundService.isRunningService
 }
