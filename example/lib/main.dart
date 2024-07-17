@@ -28,10 +28,7 @@ class MyTaskHandler extends TaskHandler {
   // Called every [interval] milliseconds in [ForegroundTaskOptions].
   @override
   void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-    FlutterForegroundTask.updateService(
-      notificationTitle: 'MyTaskHandler',
-      notificationText: 'count: $_count',
-    );
+    FlutterForegroundTask.updateService(notificationText: 'count: $_count');
 
     // Send data to the main isolate.
     sendPort?.send(_count);
@@ -133,7 +130,10 @@ class _ExamplePageState extends State<ExamplePage> {
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
       ),
-      iosNotificationOptions: const IOSNotificationOptions(),
+      iosNotificationOptions: const IOSNotificationOptions(
+        showNotification: false,
+        playSound: false,
+      ),
       foregroundTaskOptions: const ForegroundTaskOptions(
         interval: 5000,
         isOnceEvent: false,
@@ -145,7 +145,7 @@ class _ExamplePageState extends State<ExamplePage> {
     );
   }
 
-  Future<bool> _startForegroundTask() async {
+  Future<void> _startForegroundTask() async {
     // You can save data using the saveData function.
     await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
 
@@ -154,13 +154,14 @@ class _ExamplePageState extends State<ExamplePage> {
     final bool isRegistered = _registerReceivePort(receivePort);
     if (!isRegistered) {
       print('Failed to register receivePort!');
-      return false;
+      return;
     }
 
+    ServiceRequestResult requestResult;
     if (await FlutterForegroundTask.isRunningService) {
-      return FlutterForegroundTask.restartService();
+      requestResult = await FlutterForegroundTask.restartService();
     } else {
-      return FlutterForegroundTask.startService(
+      requestResult = await FlutterForegroundTask.startService(
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         notificationIcon: null,
@@ -174,10 +175,23 @@ class _ExamplePageState extends State<ExamplePage> {
         callback: startCallback,
       );
     }
+
+    // handle error
+    if (!requestResult.success) {
+      final Object? error = requestResult.error;
+      print('error: $error');
+    }
   }
 
-  Future<bool> _stopForegroundTask() {
-    return FlutterForegroundTask.stopService();
+  Future<void> _stopForegroundTask() async {
+    final ServiceRequestResult requestResult =
+        await FlutterForegroundTask.stopService();
+
+    // handle error
+    if (!requestResult.success) {
+      final Object? error = requestResult.error;
+      print('error: $error');
+    }
   }
 
   bool _registerReceivePort(ReceivePort? newReceivePort) {

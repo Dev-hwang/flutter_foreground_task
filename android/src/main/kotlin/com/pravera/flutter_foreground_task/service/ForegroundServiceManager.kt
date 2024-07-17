@@ -3,6 +3,8 @@ package com.pravera.flutter_foreground_task.service
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
+import com.pravera.flutter_foreground_task.errors.ServiceAlreadyStartedException
+import com.pravera.flutter_foreground_task.errors.ServiceNotStartedException
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskData
@@ -17,91 +19,61 @@ import com.pravera.flutter_foreground_task.models.NotificationOptions
  * @version 1.0
  */
 class ForegroundServiceManager {
-	/**
-	 * Start the foreground service.
-	 *
-	 * @param context context
-	 * @param arguments arguments
-	 */
-	fun start(context: Context, arguments: Any?): Boolean {
-		try {
-			val nIntent = Intent(context, ForegroundService::class.java)
-			val argsMap = arguments as? Map<*, *>
-			ForegroundServiceStatus.setData(context, ForegroundServiceAction.START)
-			NotificationOptions.setData(context, argsMap)
-			ForegroundTaskOptions.setData(context, argsMap)
-			ForegroundTaskData.setData(context, argsMap)
-			NotificationContent.setData(context, argsMap)
-			ContextCompat.startForegroundService(context, nIntent)
-		} catch (e: Exception) {
-			return false
+	/** Start the foreground service. */
+	fun start(context: Context, arguments: Any?) {
+		if (ForegroundService.isRunningService) {
+			throw ServiceAlreadyStartedException()
 		}
 
-		return true
+		val nIntent = Intent(context, ForegroundService::class.java)
+		val argsMap = arguments as? Map<*, *>
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.START)
+		NotificationOptions.setData(context, argsMap)
+		ForegroundTaskOptions.setData(context, argsMap)
+		ForegroundTaskData.setData(context, argsMap)
+		NotificationContent.setData(context, argsMap)
+		ContextCompat.startForegroundService(context, nIntent)
 	}
 
-	/**
-	 * Restart the foreground service.
-	 *
-	 * @param context context
-	 * @param arguments arguments
-	 */
-	fun restart(context: Context, arguments: Any?): Boolean {
-		try {
-			val nIntent = Intent(context, ForegroundService::class.java)
-			ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
-			ContextCompat.startForegroundService(context, nIntent)
-		} catch (e: Exception) {
-			return false
+	/** Restart the foreground service. */
+	fun restart(context: Context) {
+		if (!ForegroundService.isRunningService) {
+			throw ServiceNotStartedException()
 		}
 
-		return true
+		val nIntent = Intent(context, ForegroundService::class.java)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
+		ContextCompat.startForegroundService(context, nIntent)
 	}
 
-	/**
-	 * Update the foreground service.
-	 *
-	 * @param context context
-	 * @param arguments arguments
-	 */
-	fun update(context: Context, arguments: Any?): Boolean {
-		try {
-			val nIntent = Intent(context, ForegroundService::class.java)
-			val argsMap = arguments as? Map<*, *>
-			ForegroundServiceStatus.setData(context, ForegroundServiceAction.UPDATE)
-			ForegroundTaskOptions.updateData(context, argsMap)
-			ForegroundTaskData.updateData(context, argsMap)
-			NotificationContent.updateData(context, argsMap)
-			ContextCompat.startForegroundService(context, nIntent)
-		} catch (e: Exception) {
-			return false
+	/** Update the foreground service. */
+	fun update(context: Context, arguments: Any?) {
+		if (!ForegroundService.isRunningService) {
+			throw ServiceNotStartedException()
 		}
 
-		return true
+		val nIntent = Intent(context, ForegroundService::class.java)
+		val argsMap = arguments as? Map<*, *>
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.UPDATE)
+		ForegroundTaskOptions.updateData(context, argsMap)
+		ForegroundTaskData.updateData(context, argsMap)
+		NotificationContent.updateData(context, argsMap)
+		ContextCompat.startForegroundService(context, nIntent)
 	}
 
-	/**
-	 * Stop the foreground service.
-	 *
-	 * @param context context
-	 */
-	fun stop(context: Context): Boolean {
-		// If the service is not running, the stop function is not executed.
-		if (!ForegroundService.isRunningService) return false
-
-		try {
-			val nIntent = Intent(context, ForegroundService::class.java)
-			ForegroundServiceStatus.setData(context, ForegroundServiceAction.STOP)
-			NotificationOptions.clearData(context)
-			ForegroundTaskOptions.clearData(context)
-			ForegroundTaskData.clearData(context)
-			NotificationContent.clearData(context)
-			ContextCompat.startForegroundService(context, nIntent)
-		} catch (e: Exception) {
-			return false
+	/** Stop the foreground service. */
+	fun stop(context: Context) {
+		if (!ForegroundService.isRunningService) {
+			throw ServiceNotStartedException()
 		}
 
-		return true
+		val nIntent = Intent(context, ForegroundService::class.java)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.STOP)
+		NotificationOptions.clearData(context)
+		ForegroundTaskOptions.clearData(context)
+		ForegroundTaskData.clearData(context)
+		NotificationContent.clearData(context)
+		ContextCompat.startForegroundService(context, nIntent)
 	}
 
 	/** Returns whether the foreground service is running. */

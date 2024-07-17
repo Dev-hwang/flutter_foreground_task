@@ -9,51 +9,55 @@ import Flutter
 import Foundation
 
 class BackgroundServiceManager: NSObject {
-  func start(call: FlutterMethodCall) -> Bool {
+  func start(call: FlutterMethodCall) throws {
     if #available(iOS 10.0, *) {
+      if BackgroundService.sharedInstance.isRunningService {
+        throw ServiceError.ServiceAlreadyStartedException
+      }
+ 
       saveOptions(call: call)
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.START)
     } else {
-      // Fallback on earlier versions
-      return false
+      throw ServiceError.ServiceNotSupportedException
     }
-    
-    return true
   }
   
-  func restart(call: FlutterMethodCall) -> Bool {
+  func restart(call: FlutterMethodCall) throws {
     if #available(iOS 10.0, *) {
+      if !BackgroundService.sharedInstance.isRunningService {
+        throw ServiceError.ServiceNotStartedException
+      }
+      
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.RESTART)
     } else {
-      // Fallback on earlier versions
-      return false
+      throw ServiceError.ServiceNotSupportedException
     }
-    
-    return true
   }
   
-  func update(call: FlutterMethodCall) -> Bool {
+  func update(call: FlutterMethodCall) throws {
     if #available(iOS 10.0, *) {
+      if !BackgroundService.sharedInstance.isRunningService {
+        throw ServiceError.ServiceNotStartedException
+      }
+      
       updateOptions(call: call)
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.UPDATE)
     } else {
-      // Fallback on earlier versions
-      return false
+      throw ServiceError.ServiceNotSupportedException
     }
-    
-    return true
   }
   
-  func stop() -> Bool {
+  func stop() throws {
     if #available(iOS 10.0, *) {
+      if !BackgroundService.sharedInstance.isRunningService {
+        throw ServiceError.ServiceNotStartedException
+      }
+      
       clearOptions()
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.STOP)
     } else {
-      // Fallback on earlier versions
-      return false
+      throw ServiceError.ServiceNotSupportedException
     }
-    
-    return true
   }
   
   func isRunningService() -> Bool {

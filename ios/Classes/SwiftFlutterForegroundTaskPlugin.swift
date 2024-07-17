@@ -36,23 +36,34 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   }
   
   private func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
-    switch call.method {
-      case "startService":
-        result(backgroundServiceManager?.start(call: call) ?? false)
-      case "restartService":
-        result(backgroundServiceManager?.restart(call: call) ?? false)
-      case "updateService":
-        result(backgroundServiceManager?.update(call: call) ?? false)
-      case "stopService":
-        result(backgroundServiceManager?.stop() ?? false)
-      case "isRunningService":
-        result(backgroundServiceManager?.isRunningService() ?? false)
-      case "minimizeApp":
-        UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
-      case "isAppOnForeground":
-        result(UIApplication.shared.applicationState == .active)
-      default:
-        result(FlutterMethodNotImplemented)
+    do {
+      switch call.method {
+        case "startService":
+          try backgroundServiceManager!.start(call: call)
+          result(true)
+        case "restartService":
+          try backgroundServiceManager!.restart(call: call)
+          result(true)
+        case "updateService":
+          try backgroundServiceManager!.update(call: call)
+          result(true)
+        case "stopService":
+          try backgroundServiceManager!.stop()
+          result(true)
+        case "isRunningService":
+          result(backgroundServiceManager!.isRunningService())
+        case "minimizeApp":
+          UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
+        case "isAppOnForeground":
+          result(UIApplication.shared.applicationState == .active)
+        default:
+          result(FlutterMethodNotImplemented)
+      }
+    } catch {
+      let code = String(describing: error.self)
+      let message = error.localizedDescription
+      let flutterError = FlutterError(code: code, message: message, details: nil)
+      result(flutterError)
     }
   }
   

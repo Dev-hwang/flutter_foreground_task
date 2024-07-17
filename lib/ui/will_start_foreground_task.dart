@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
@@ -73,18 +74,18 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     );
   }
 
-  Future<bool> _startForegroundTask() async {
+  Future<void> _startForegroundTask() async {
     final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
     final bool isRegistered = _registerReceivePort(receivePort);
     if (!isRegistered) {
-      print('Failed to register receivePort!');
-      return false;
+      dev.log('Failed to register receivePort!');
+      return;
     }
 
     if (await FlutterForegroundTask.isRunningService) {
-      return FlutterForegroundTask.restartService();
+      await FlutterForegroundTask.restartService();
     } else {
-      return FlutterForegroundTask.startService(
+      await FlutterForegroundTask.startService(
         notificationTitle: widget.notificationTitle,
         notificationText: widget.notificationText,
         notificationIcon: widget.notificationIcon,
@@ -94,8 +95,8 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
     }
   }
 
-  Future<bool> _stopForegroundTask() {
-    return FlutterForegroundTask.stopService();
+  Future<void> _stopForegroundTask() async {
+    await FlutterForegroundTask.stopService();
   }
 
   bool _registerReceivePort(ReceivePort? newReceivePort) {
@@ -143,6 +144,7 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    // needs synchronized
     if (await widget.onWillStart()) {
       switch (state) {
         case AppLifecycleState.resumed:

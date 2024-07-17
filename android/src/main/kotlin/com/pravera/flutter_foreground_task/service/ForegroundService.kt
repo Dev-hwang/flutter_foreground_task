@@ -18,7 +18,7 @@ import androidx.core.app.NotificationCompat
 import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListener
 import com.pravera.flutter_foreground_task.RequestCode
 import com.pravera.flutter_foreground_task.models.*
-import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
+import com.pravera.flutter_foreground_task.utils.PluginUtils
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -81,7 +81,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private var backgroundChannel: MethodChannel? = null
     private var repeatTask: Job? = null
 
-    // A broadcast receiver that handles intents that occur within the foreground service.
+    // A broadcast receiver that handles intents that occur in the foreground service.
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             try {
@@ -162,7 +162,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
         if (!isCorrectlyStopped && !isSetStopWithTaskFlag()) {
-            Log.i(TAG, "The foreground service was terminated due to an unexpected problem.")
+            Log.i(TAG, "The service was terminated due to an unexpected problem and requested to restart.")
             setRestartServiceAlarm()
         }
     }
@@ -420,7 +420,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     private fun setRestartServiceAlarm() {
         val isIgnoringBatteryOptimizations =
-            ForegroundServiceUtils.isIgnoringBatteryOptimizations(applicationContext)
+            PluginUtils.isIgnoringBatteryOptimizations(applicationContext)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isIgnoringBatteryOptimizations) {
             Log.i(TAG, "Turn off battery optimization to restart service in the background.")
             return
@@ -586,7 +586,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             val appInfo =
                 pm.getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA)
             appInfo.icon
-        } catch (e: PackageManager.NameNotFoundException) {
+        } catch (e: Exception) {
             Log.e(TAG, "getIconResId", e)
             0
         }
@@ -614,9 +614,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     private fun getPendingIntent(): PendingIntent {
-        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-            || ForegroundServiceUtils.canDrawOverlays(applicationContext)
-        ) {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || PluginUtils.canDrawOverlays(applicationContext)) {
             val pIntent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
                 setPackage(packageName)
             }

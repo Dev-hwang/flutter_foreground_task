@@ -7,6 +7,7 @@ import 'models/ios_notification_options.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon_data.dart';
 import 'models/notification_permission.dart';
+import 'models/service_request_result.dart';
 
 abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   /// Constructs a FlutterForegroundTaskPlatform.
@@ -30,7 +31,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<bool> startService({
+  Future<ServiceRequestResult> startService({
     required AndroidNotificationOptions androidNotificationOptions,
     required IOSNotificationOptions iosNotificationOptions,
     required ForegroundTaskOptions foregroundTaskOptions,
@@ -43,11 +44,11 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('startService() has not been implemented.');
   }
 
-  Future<bool> restartService() {
+  Future<ServiceRequestResult> restartService() {
     throw UnimplementedError('restartService() has not been implemented.');
   }
 
-  Future<bool> updateService({
+  Future<ServiceRequestResult> updateService({
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
@@ -58,7 +59,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('updateService() has not been implemented.');
   }
 
-  Future<bool> stopService() {
+  Future<ServiceRequestResult> stopService() {
     throw UnimplementedError('stopService() has not been implemented.');
   }
 
