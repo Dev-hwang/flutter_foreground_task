@@ -41,7 +41,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private const val ACTION_TASK_START = "onStart"
         private const val ACTION_TASK_REPEAT_EVENT = "onRepeatEvent"
         private const val ACTION_TASK_DESTROY = "onDestroy"
-        private const val ACTION_SEND_DATA = "sendData"
+        private const val ACTION_RECEIVE_DATA = "onReceiveData"
 
         private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
@@ -71,7 +71,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         fun sendData(data: Any?) {
             if (isRunningService) {
-                backgroundChannel?.invokeMethod(ACTION_SEND_DATA, data)
+                backgroundChannel?.invokeMethod(ACTION_RECEIVE_DATA, data)
             }
         }
     }

@@ -16,7 +16,7 @@ let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 let ACTION_TASK_START: String = "onStart"
 let ACTION_TASK_REPEAT_EVENT: String = "onRepeatEvent"
 let ACTION_TASK_DESTROY: String = "onDestroy"
-let ACTION_SEND_DATA: String = "sendData"
+let ACTION_RECEIVE_DATA: String = "onReceiveData"
 
 @available(iOS 10.0, *)
 class BackgroundService: NSObject {
@@ -44,7 +44,7 @@ class BackgroundService: NSObject {
   
   func sendData(data: Any?) {
     if isRunningService {
-      backgroundChannel?.invokeMethod(ACTION_SEND_DATA, arguments: data)
+      backgroundChannel?.invokeMethod(ACTION_RECEIVE_DATA, arguments: data)
     }
   }
   

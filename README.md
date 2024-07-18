@@ -220,10 +220,7 @@ class FirstTaskHandler extends TaskHandler {
   // Called when the task is started.
   @override
   void onStart(DateTime timestamp, SendPort? sendPort) async {
-    // You can use the getData function to get the stored data.
-    final customData =
-        await FlutterForegroundTask.getData<String>(key: 'customData');
-    print('customData: $customData');
+    print('onStart');
   }
 
   // Called every [interval] milliseconds in [ForegroundTaskOptions].
@@ -237,6 +234,12 @@ class FirstTaskHandler extends TaskHandler {
   @override
   void onDestroy(DateTime timestamp, SendPort? sendPort) async {
     print('onDestroy');
+  }
+
+  // Called when data is sent using [FlutterForegroundTask.sendData].
+  @override
+  void onReceiveData(Object data) {
+    print('onReceiveData: $data');
   }
 
   // Called when the notification button on the Android platform is pressed.
@@ -255,7 +258,8 @@ class FirstTaskHandler extends TaskHandler {
     print('onNotificationPressed');
   }
 
-  // Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
+  // Called when the notification itself on the Android platform is dismissed 
+  // on Android 14 which allow this behaviour.
   @override
   void onNotificationDismissed() {
     print('onNotificationDismissed');
@@ -320,9 +324,6 @@ class _ExamplePageState extends State<ExamplePage> {
   }
 
   Future<void> _startForegroundTask() async {
-    // You can save data using the saveData function.
-    await FlutterForegroundTask.saveData(key: 'customData', value: 'hello');
-
     // Register the receivePort before starting the service.
     final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
     final bool isRegistered = _registerReceivePort(receivePort);
@@ -365,13 +366,7 @@ class _ExamplePageState extends State<ExamplePage> {
     _closeReceivePort();
 
     _receivePort = newReceivePort;
-    _receivePort?.listen((data) {
-      if (data is int) {
-        print('count: $data');
-      } else if (data is DateTime) {
-        print('timestamp: ${data.toString()}');
-      }
-    });
+    _receivePort?.listen(_onReceiveData);
 
     return _receivePort != null;
   }
@@ -379,6 +374,20 @@ class _ExamplePageState extends State<ExamplePage> {
   void _closeReceivePort() {
     _receivePort?.close();
     _receivePort = null;
+  }
+
+  void _onReceiveData(dynamic data) {
+    if (data is int) {
+      print('count: $data');
+    } else if (data is DateTime) {
+      print('timestamp: ${data.toString()}');
+    }
+  }
+
+  void _sendData() {
+    final Random random = Random();
+    final int data = random.nextInt(100);
+    FlutterForegroundTask.sendData(data);
   }
 
   @override
@@ -404,7 +413,47 @@ class _ExamplePageState extends State<ExamplePage> {
 }
 ```
 
-As you can see in the code above, you can manage data with the following functions.
+As you can see in the code above, this plugin supports two-way communication between TaskHandler and UI.
+
+The data trying to send must be a type provided by Flutter. like int, double, bool, String, Map.
+
+If you want to send a custom object, send it in String format using jsonEncode and jsonDecode.
+
+JSON and serialization >> https://docs.flutter.dev/data-and-backend/serialization/json
+
+```dart
+// send (TaskHandler -> UI)
+@override
+void onStart(DateTime timestamp, SendPort? sendPort) async {
+  sendPort?.send(Object); // this
+}
+
+// receive
+void _onReceiveData(dynamic data) {
+  if (data is int) {
+    print('count: $data');
+  } else if (data is DateTime) {
+    print('timestamp: ${data.toString()}');
+  }
+}
+```
+
+```dart
+// send (UI -> TaskHandler)
+void _sendData() {
+  final Random random = Random();
+  final int data = random.nextInt(100);
+  FlutterForegroundTask.sendData(data); // this
+}
+
+// receive
+@override
+void onReceiveData(Object data) {
+  print('onReceiveData: $data');
+}
+```
+
+And there are some functions for storing and managing data that are only used in this plugin.
 
 ```dart
 void function() async {
@@ -462,9 +511,7 @@ class FirstTaskHandler extends TaskHandler {
   int _count = 0;
 
   @override
-  void onStart(DateTime timestamp, SendPort? sendPort) async {
-
-  }
+  void onStart(DateTime timestamp, SendPort? sendPort) async { }
 
   @override
   void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
@@ -487,9 +534,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
-
-  }
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async { }
 }
 
 @pragma('vm:entry-point')
@@ -499,9 +544,7 @@ void updateCallback() {
 
 class SecondTaskHandler extends TaskHandler {
   @override
-  void onStart(DateTime timestamp, SendPort? sendPort) async {
-
-  }
+  void onStart(DateTime timestamp, SendPort? sendPort) async { }
 
   @override
   void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
@@ -515,9 +558,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
-
-  }
+  void onDestroy(DateTime timestamp, SendPort? sendPort) async { }
 }
 ```
 
