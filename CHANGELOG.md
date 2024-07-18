@@ -1,3 +1,8 @@
+## 7.4.2
+
+* [**FIX**] Fixed an issue where notification events were handled on both when using plugin in multiple apps [#137](https://github.com/Dev-hwang/flutter_foreground_task/issues/137)
+* [**FIX**] Fixed an issue where the service did not restart when Android OS forcibly terminated the service [#223](https://github.com/Dev-hwang/flutter_foreground_task/issues/223)
+
 ## 7.4.0
 
 * [**FEAT**] Add result class to handle service request errors
