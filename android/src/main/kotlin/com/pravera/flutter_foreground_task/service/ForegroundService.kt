@@ -116,49 +116,49 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     override fun onCreate() {
         super.onCreate()
-        loadDataFromPreferences()
         registerBroadcastReceiver()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        loadDataFromPreferences()
 
         when (foregroundServiceStatus.action) {
             ForegroundServiceAction.START -> {
                 startForegroundService()
                 executeDartCallback(foregroundTaskData.callbackHandle)
             }
-
             ForegroundServiceAction.REBOOT -> {
                 startForegroundService()
                 executeDartCallback(foregroundTaskData.callbackHandle)
             }
-        }
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        loadDataFromPreferences()
-
-        when (foregroundServiceStatus.action) {
-            ForegroundServiceAction.UPDATE -> {
-                updateNotification()
-                val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
-                val currCallbackHandle = foregroundTaskData.callbackHandle
-                if (prevCallbackHandle != currCallbackHandle) {
-                    executeDartCallback(currCallbackHandle)
-                } else {
-                    val prevInterval = prevForegroundTaskOptions?.interval
-                    val currInterval = foregroundTaskOptions.interval
-                    val prevIsOnceEvent = prevForegroundTaskOptions?.isOnceEvent
-                    val currIsOnceEvent = foregroundTaskOptions.isOnceEvent
-                    if (prevInterval != currInterval || prevIsOnceEvent != currIsOnceEvent) {
-                        startRepeatTask()
-                    }
-                }
-            }
-
             ForegroundServiceAction.RESTART -> {
                 startForegroundService()
                 executeDartCallback(foregroundTaskData.callbackHandle)
             }
-
+            ForegroundServiceAction.UPDATE -> {
+                if (intent == null) {
+                    // call: Android OS
+                    startForegroundService()
+                    executeDartCallback(foregroundTaskData.callbackHandle)
+                    Log.i(TAG, "Android OS has requested a service restart.")
+                } else {
+                    // call: ForegroundServiceManager.kt
+                    updateNotification()
+                    val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
+                    val currCallbackHandle = foregroundTaskData.callbackHandle
+                    if (prevCallbackHandle != currCallbackHandle) {
+                        executeDartCallback(currCallbackHandle)
+                    } else {
+                        val prevInterval = prevForegroundTaskOptions?.interval
+                        val currInterval = foregroundTaskOptions.interval
+                        val prevIsOnceEvent = prevForegroundTaskOptions?.isOnceEvent
+                        val currIsOnceEvent = foregroundTaskOptions.isOnceEvent
+                        if (prevInterval != currInterval || prevIsOnceEvent != currIsOnceEvent) {
+                            startRepeatTask()
+                        }
+                    }
+                }
+            }
             ForegroundServiceAction.STOP -> {
                 stopForegroundService()
                 return START_NOT_STICKY
