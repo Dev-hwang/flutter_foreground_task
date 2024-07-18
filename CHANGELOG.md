@@ -1,7 +1,14 @@
+## 7.4.0
+
+* [**FEAT**] Add result class to handle service request errors
+  - The return value of service request functions changed from boolean to `ServiceRequestResult`
+* [**FEAT**] Add function to send data to TaskHandler
+  - You can send data from UI to TaskHandler using `FlutterForegroundTask.sendData` function
+
 ## 7.2.0
 
 * [**FEAT**] Add ability to restart service when app is deleted from recent app list
-  - To restart service on Android 12+, you must allow the `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+  - To restart service on Android 12+, you must allow the `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission
 * [**REMOVE**] Remove `isSticky` from AndroidNotificationOptions
   - The isSticky option is automatically set by the service based on the Manifest android:stopWithTask
 
