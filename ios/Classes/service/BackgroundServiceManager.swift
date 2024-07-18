@@ -9,20 +9,20 @@ import Flutter
 import Foundation
 
 class BackgroundServiceManager: NSObject {
-  func start(call: FlutterMethodCall) throws {
+  func start(arguments: Any?) throws {
     if #available(iOS 10.0, *) {
       if BackgroundService.sharedInstance.isRunningService {
         throw ServiceError.ServiceAlreadyStartedException
       }
  
-      saveOptions(call: call)
+      saveOptions(arguments: arguments)
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.START)
     } else {
       throw ServiceError.ServiceNotSupportedException
     }
   }
   
-  func restart(call: FlutterMethodCall) throws {
+  func restart(arguments: Any?) throws {
     if #available(iOS 10.0, *) {
       if !BackgroundService.sharedInstance.isRunningService {
         throw ServiceError.ServiceNotStartedException
@@ -34,13 +34,13 @@ class BackgroundServiceManager: NSObject {
     }
   }
   
-  func update(call: FlutterMethodCall) throws {
+  func update(arguments: Any?) throws {
     if #available(iOS 10.0, *) {
       if !BackgroundService.sharedInstance.isRunningService {
         throw ServiceError.ServiceNotStartedException
       }
       
-      updateOptions(call: call)
+      updateOptions(arguments: arguments)
       BackgroundService.sharedInstance.run(action: BackgroundServiceAction.UPDATE)
     } else {
       throw ServiceError.ServiceNotSupportedException
@@ -60,6 +60,12 @@ class BackgroundServiceManager: NSObject {
     }
   }
   
+  func sendData(data: Any?) {
+    if data != nil {
+      BackgroundService.sharedInstance.sendData(data: data)
+    }
+  }
+  
   func isRunningService() -> Bool {
     if #available(iOS 10.0, *) {
       return BackgroundService.sharedInstance.isRunningService
@@ -68,8 +74,8 @@ class BackgroundServiceManager: NSObject {
     }
   }
   
-  private func saveOptions(call: FlutterMethodCall) {
-    guard let argsDict = call.arguments as? Dictionary<String, Any> else { return }
+  private func saveOptions(arguments: Any?) {
+    guard let argsDict = arguments as? Dictionary<String, Any> else { return }
     let prefs = UserDefaults.standard
 
     // notification options
@@ -99,8 +105,8 @@ class BackgroundServiceManager: NSObject {
     prefs.set(notificationContentText, forKey: NOTIFICATION_CONTENT_TEXT)
   }
   
-  private func updateOptions(call: FlutterMethodCall) {
-    guard let argsDict = call.arguments as? Dictionary<String, Any> else { return }
+  private func updateOptions(arguments: Any?) {
+    guard let argsDict = arguments as? Dictionary<String, Any> else { return }
     let prefs = UserDefaults.standard
 
     // background task options

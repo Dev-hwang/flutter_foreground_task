@@ -36,20 +36,23 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   }
   
   private func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
+    let args = call.arguments
     do {
       switch call.method {
         case "startService":
-          try backgroundServiceManager!.start(call: call)
+          try backgroundServiceManager!.start(arguments: args)
           result(true)
         case "restartService":
-          try backgroundServiceManager!.restart(call: call)
+          try backgroundServiceManager!.restart(arguments: args)
           result(true)
         case "updateService":
-          try backgroundServiceManager!.update(call: call)
+          try backgroundServiceManager!.update(arguments: args)
           result(true)
         case "stopService":
           try backgroundServiceManager!.stop()
           result(true)
+        case "sendData":
+          backgroundServiceManager!.sendData(data: args)
         case "isRunningService":
           result(backgroundServiceManager!.isRunningService())
         case "minimizeApp":
