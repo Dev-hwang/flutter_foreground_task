@@ -45,7 +45,7 @@ abstract class TaskHandler {
   void onDestroy(DateTime timestamp, SendPort? sendPort);
 
   /// Called when data is sent using [FlutterForegroundTask.sendData].
-  void receiveData(Object data);
+  void onReceiveData(Object data) {}
 
   /// Called when the notification button on the Android platform is pressed.
   void onNotificationButtonPressed(String id) {}
@@ -56,7 +56,8 @@ abstract class TaskHandler {
   /// this function to be called.
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
 
-  /// Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
+  /// Called when the notification itself on the Android platform is dismissed
+  /// on Android 14 which allow this behaviour.
   void onNotificationDismissed() {}
 }
 
@@ -293,8 +294,8 @@ class FlutterForegroundTask {
         case 'onDestroy':
           handler.onDestroy(timestamp, sendPort);
           break;
-        case 'sendData':
-          handler.receiveData(call.arguments);
+        case 'onReceiveData':
+          handler.onReceiveData(call.arguments);
           break;
         case 'onNotificationButtonPressed':
           final String notificationButtonId = call.arguments.toString();

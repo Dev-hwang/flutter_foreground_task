@@ -42,8 +42,8 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when data is sent using [FlutterForegroundTask.sendData].
   @override
-  void receiveData(Object data) {
-    print('receiveData: $data');
+  void onReceiveData(Object data) {
+    print('onReceiveData: $data');
   }
 
   // Called when the notification button on the Android platform is pressed.
@@ -62,7 +62,8 @@ class MyTaskHandler extends TaskHandler {
     print('onNotificationPressed');
   }
 
-  // Called when the notification itself on the Android platform is dismissed on Android 14 which allow this behaviour.
+  // Called when the notification itself on the Android platform is dismissed
+  // on Android 14 which allow this behaviour.
   @override
   void onNotificationDismissed() {
     print('onNotificationDismissed');
