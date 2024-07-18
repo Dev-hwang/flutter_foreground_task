@@ -1,3 +1,7 @@
+## 7.4.3
+
+* [**REFACTOR-Recommended**] Improve restart alarm that occurs when the service terminates abnormally
+
 ## 7.4.2
 
 * [**FIX**] Fixed an issue where notification events were handled on both when using plugin in multiple apps [#137](https://github.com/Dev-hwang/flutter_foreground_task/issues/137)
