@@ -56,7 +56,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         fun addTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
             if (!taskLifecycleListeners.contains(listener)) {
-                taskLifecycleListeners.add(listener);
+                taskLifecycleListeners.add(listener)
             }
         }
 
@@ -160,6 +160,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 }
             }
             ForegroundServiceAction.STOP -> {
+                RestartReceiver.cancelRestartAlarm(this)
                 stopForegroundService()
                 return START_NOT_STICKY
             }
@@ -183,13 +184,17 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
         if (!isCorrectlyStopped && !isSetStopWithTaskFlag()) {
             Log.i(TAG, "The service was terminated due to an unexpected problem and requested to restart.")
-            setRestartServiceAlarm()
+            RestartReceiver.setRestartAlarm(this, 5000)
         }
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        stopSelf()
+        if (isSetStopWithTaskFlag()) {
+            stopSelf()
+        } else {
+            RestartReceiver.setRestartAlarm(this, 1000)
+        }
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -317,7 +322,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 for (i in currButtons.indices) {
                     if (prevButtons[i].compareTo(currButtons[i]) != 0) {
                         needsUpdateButtons = true
-                        break;
+                        break
                     }
                 }
             }
@@ -436,27 +441,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         val cName = ComponentName(this, this.javaClass)
         val flags = pm.getServiceInfo(cName, PackageManager.GET_META_DATA).flags
         return (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
-    }
-
-    private fun setRestartServiceAlarm() {
-        val isIgnoringBatteryOptimizations =
-            PluginUtils.isIgnoringBatteryOptimizations(applicationContext)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isIgnoringBatteryOptimizations) {
-            Log.i(TAG, "Turn off battery optimization to restart service in the background.")
-            return
-        }
-
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            add(Calendar.SECOND, 1)
-        }
-
-        val intent = Intent(this, RestartReceiver::class.java)
-        val sender = PendingIntent.getBroadcast(
-            this, RequestCode.SET_RESTART_SERVICE_ALARM, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, sender)
     }
 
     private fun executeDartCallback(callbackHandle: Long?) {
