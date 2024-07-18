@@ -16,6 +16,7 @@ let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 let ACTION_TASK_START: String = "onStart"
 let ACTION_TASK_REPEAT_EVENT: String = "onRepeatEvent"
 let ACTION_TASK_DESTROY: String = "onDestroy"
+let ACTION_SEND_DATA: String = "sendData"
 
 @available(iOS 10.0, *)
 class BackgroundService: NSObject {
@@ -37,6 +38,16 @@ class BackgroundService: NSObject {
     }
   }
   
+  private var flutterEngine: FlutterEngine? = nil
+  private var backgroundChannel: FlutterMethodChannel? = nil
+  private var repeatTask: Timer? = nil
+  
+  func sendData(data: Any?) {
+    if isRunningService {
+      backgroundChannel?.invokeMethod(ACTION_SEND_DATA, arguments: data)
+    }
+  }
+  
   private let userNotificationCenter: UNUserNotificationCenter
   private var isGrantedNotificationAuthorization: Bool = false
 
@@ -50,10 +61,6 @@ class BackgroundService: NSObject {
   private var currCallbackHandle: Int64? = nil
   private var notificationContentTitle: String = ""
   private var notificationContentText: String = ""
-  
-  private var flutterEngine: FlutterEngine? = nil
-  private var backgroundChannel: FlutterMethodChannel? = nil
-  private var repeatTask: Timer? = nil
   
   override init() {
     userNotificationCenter = UNUserNotificationCenter.current()

@@ -221,7 +221,7 @@ class _ExamplePageState extends State<ExamplePage> {
     }
   }
 
-  void _onSendData() {
+  void _sendData() {
     final Random random = Random();
     final int data = random.nextInt(100);
     FlutterForegroundTask.sendData(data);
@@ -277,7 +277,7 @@ class _ExamplePageState extends State<ExamplePage> {
         children: [
           buttonBuilder('start service', onPressed: _startForegroundTask),
           buttonBuilder('stop service', onPressed: _stopForegroundTask),
-          buttonBuilder('send random data', onPressed: _onSendData),
+          buttonBuilder('send random data', onPressed: _sendData),
         ],
       ),
     );
