@@ -46,7 +46,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
         private const val ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
-        private const val DATA_FIELD_NAME = "data"
+        private const val INTENT_DATA_FIELD_NAME = "data"
 
         /** Returns whether the foreground service is running. */
         var isRunningService = false
@@ -93,11 +93,23 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             try {
-                val action = intent?.action ?: return
-                val data = intent.getStringExtra(DATA_FIELD_NAME)
+                // No intent ??
+                if (intent == null) {
+                    throw Exception("Intent is Null.")
+                }
+
+                // This intent has not sent from the current package.
+                val iPackageName = intent.`package`
+                val cPackageName = packageName
+                if (iPackageName != cPackageName) {
+                    throw Exception("This intent has not sent from the current package. ($iPackageName != $cPackageName)")
+                }
+
+                val action = intent.action ?: return
+                val data = intent.getStringExtra(INTENT_DATA_FIELD_NAME)
                 backgroundChannel?.invokeMethod(action, data)
             } catch (e: Exception) {
-                Log.e(TAG, "broadcastReceiver", e)
+                Log.e(TAG, e.message, e)
             }
         }
     }
@@ -671,7 +683,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         for (i in buttons.indices) {
             val intent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
                 setPackage(packageName)
-                putExtra(DATA_FIELD_NAME, buttons[i].id)
+                putExtra(INTENT_DATA_FIELD_NAME, buttons[i].id)
             }
             var flags = PendingIntent.FLAG_IMMUTABLE
             if (needsUpdate) {
@@ -696,7 +708,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         for (i in buttons.indices) {
             val intent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
                 setPackage(packageName)
-                putExtra(DATA_FIELD_NAME, buttons[i].id)
+                putExtra(INTENT_DATA_FIELD_NAME, buttons[i].id)
             }
             var flags = PendingIntent.FLAG_IMMUTABLE
             if (needsUpdate) {
