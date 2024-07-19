@@ -338,6 +338,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             builder.setContentIntent(pendingIntent)
             builder.setContentTitle(notificationContent.title)
             builder.setContentText(notificationContent.text)
+            builder.style = Notification.BigTextStyle()
             builder.setVisibility(notificationOptions.visibility)
             if (iconBackgroundColor != null) {
                 builder.setColor(iconBackgroundColor)
@@ -363,6 +364,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             builder.setContentIntent(pendingIntent)
             builder.setContentTitle(notificationContent.title)
             builder.setContentText(notificationContent.text)
+            builder.setStyle(NotificationCompat.BigTextStyle())
             builder.setVisibility(notificationOptions.visibility)
             if (iconBackgroundColor != null) {
                 builder.color = iconBackgroundColor
