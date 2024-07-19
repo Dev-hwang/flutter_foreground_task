@@ -15,7 +15,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^7.4.3
+  flutter_foreground_task: ^7.5.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
@@ -412,7 +412,7 @@ class _ExamplePageState extends State<ExamplePage> {
 
 As you can see in the code above, this plugin supports two-way communication between TaskHandler and UI.
 
-The data trying to send must be a type provided by Flutter. like int, double, bool, String, Map.
+The send function can only send primitive type(int, double), String, Collection provided by Flutter.
 
 If you want to send a custom object, send it in String format using jsonEncode and jsonDecode.
 

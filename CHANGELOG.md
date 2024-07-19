@@ -1,6 +1,14 @@
+## 7.5.0
+
+* [**FEAT**] Support notificationText with multiple lines [#182](https://github.com/Dev-hwang/flutter_foreground_task/issues/182)
+* [**REMOVE**] Remove `WillStartForegroundTask` widget
+  - This widget is designed to start a service when the app is minimized.
+  - This widget had an ambiguous purpose, it caused a lot of problems because the widget controlled the service.
+  - These issues have led me to remove this widget. Please implement it yourself if necessary.
+
 ## 7.4.3
 
-* [**REFACTOR-Recommended**] Improve restart alarm that occurs when the service terminates abnormally
+* [**FEAT-Recommended**] Improve restart alarm that occurs when the service terminates abnormally
 
 ## 7.4.2
 
