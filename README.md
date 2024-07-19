@@ -4,11 +4,10 @@ This plugin is used to implement a foreground service on the Android platform.
 
 ## Features
 
-* Can perform repetitive task with foreground service.
-* Provides useful utilities (minimizeApp, wakeUpScreen, etc.) that can use when performing task.
+* Can perform repetitive tasks with foreground service.
 * Provides a widget that prevents the app from closing when the foreground service is running.
-* Provides a widget that can start the foreground service when the app is minimized or closed.
-* Provides an option to automatically resume foreground service on boot.
+* Provides useful utilities that can use while performing tasks.
+* Provides option to automatically resume foreground service on boot.
 
 ## Getting started
 
@@ -141,9 +140,7 @@ func registerPlugins(registry: FlutterPluginRegistry) {
 
 ## How to use
 
-This plugin has two ways to start a foreground task. There is a way to manually start a foreground task and a way to start it when the app is minimized or closed by the `WillStartForegroundTask` widget.
-
-#### :hatched_chick: Start manually
+### :hatched_chick: FlutterForegroundTask
 
 1. Initialize the `FlutterForegroundTask`. You can use the `FlutterForegroundTask.init()` function to set notifications and task options.
 * `androidNotificationOptions`: Options for setting up notifications on the Android platform.
@@ -574,106 +571,6 @@ Future<void> _stopForegroundTask() async {
     final Object? error = requestResult.error;
     print('error: $error');
   }
-}
-```
-
-#### :hatched_chick: Start with `WillStartForegroundTask` widget
-
-```
-<service 
-    android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-    android:stopWithTask="true" /> <!-- important -->
-```
-
-```dart
-Future<void> _requestPermissionForAndroid() async {
-  if (!Platform.isAndroid) {
-    return;
-  }
-
-  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-  // onNotificationPressed function to be called.
-  //
-  // When the notification is pressed while permission is denied,
-  // the onNotificationPressed function is not called and the app opens.
-  //
-  // If you do not use the onNotificationPressed or launchApp function,
-  // you do not need to write this code.
-  if (!await FlutterForegroundTask.canDrawOverlays) {
-    // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
-    await FlutterForegroundTask.openSystemAlertWindowSettings();
-  }
-
-  // Android 12 or higher, there are restrictions on starting a foreground service.
-  //
-  // To restart the service on device reboot or unexpected problem, you need to allow below permission.
-  if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
-    // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
-    await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-  }
-
-  // Android 13 and higher, you need to allow notification permission to expose foreground service notification.
-  final NotificationPermission notificationPermissionStatus =
-      await FlutterForegroundTask.checkNotificationPermission();
-  if (notificationPermissionStatus != NotificationPermission.granted) {
-    await FlutterForegroundTask.requestNotificationPermission();
-  }
-}
-
-void _onData(dynamic data) {
-  if (data is int) {
-    print('count: $data');
-  } else if (data is DateTime) {
-    print('timestamp: ${data.toString()}');
-  }
-}
-
-@override
-void initState() {
-  super.initState();
-  _requestPermissionForAndroid();
-}
-
-@override
-Widget build(BuildContext context) {
-  return MaterialApp(
-    // A widget that can start the foreground service when the app is minimized or closed.
-    // This widget must be declared above the [Scaffold] widget.
-    home: WillStartForegroundTask(
-      onWillStart: () async {
-        // Return whether to start the foreground service.
-        return true;
-      },
-      androidNotificationOptions: AndroidNotificationOptions(
-        channelId: 'foreground_service',
-        channelName: 'Foreground Service Notification',
-        channelDescription: 'This notification appears when the foreground service is running.',
-        channelImportance: NotificationChannelImportance.LOW,
-        priority: NotificationPriority.LOW,
-      ),
-      iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: false,
-        playSound: false,
-      ),
-      foregroundTaskOptions: const ForegroundTaskOptions(
-        interval: 5000,
-        isOnceEvent: false,
-        allowWakeLock: false,
-        allowWifiLock: false,
-      ),
-      notificationTitle: 'Foreground Service is running',
-      notificationText: 'Tap to return to the app',
-      callback: startCallback,
-      onData: _onData,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter Foreground Task'),
-          centerTitle: true,
-        ),
-        body: buildContentView(),
-      ),
-    ),
-  );
 }
 ```
 

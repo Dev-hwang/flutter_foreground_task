@@ -27,7 +27,6 @@ export 'package:flutter_foreground_task/models/notification_permission.dart';
 export 'package:flutter_foreground_task/models/notification_priority.dart';
 export 'package:flutter_foreground_task/models/notification_visibility.dart';
 export 'package:flutter_foreground_task/models/service_request_result.dart';
-export 'package:flutter_foreground_task/ui/will_start_foreground_task.dart';
 export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 
 const String _kPortName = 'flutter_foreground_task/isolateComPort';
