@@ -1,3 +1,9 @@
+## 7.5.0+1
+
+* [**DOCS**] Update readme
+  - Update documentation on how to pass timestamp to UI isolate
+  - Update `WithForegroundTask` documentation comment
+
 ## 7.5.0
 
 * [**FEAT**] Support notificationText with multiple lines [#182](https://github.com/Dev-hwang/flutter_foreground_task/issues/182)
