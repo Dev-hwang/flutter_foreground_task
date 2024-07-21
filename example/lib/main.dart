@@ -217,8 +217,13 @@ class _ExamplePageState extends State<ExamplePage> {
   void _onReceiveData(dynamic data) {
     if (data is int) {
       print('count: $data');
-    } else if (data is DateTime) {
-      print('timestamp: ${data.toString()}');
+    } else if (data is Map<String, dynamic>) {
+      final dynamic timestampMillis = data["timestampMillis"];
+      if (timestampMillis != null) {
+        final DateTime timestamp =
+            DateTime.fromMillisecondsSinceEpoch(timestampMillis, isUtc: true);
+        print('timestamp: ${timestamp.toString()}');
+      }
     }
   }
 
@@ -251,7 +256,9 @@ class _ExamplePageState extends State<ExamplePage> {
 
   @override
   Widget build(BuildContext context) {
-    // A widget that prevents the app from closing when the foreground service is running.
+    // A widget that minimize the app without closing it when the user presses
+    // the soft back button. It only works when the service is running.
+    //
     // This widget must be declared above the [Scaffold] widget.
     return WithForegroundTask(
       child: Scaffold(

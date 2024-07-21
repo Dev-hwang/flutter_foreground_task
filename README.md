@@ -5,7 +5,7 @@ This plugin is used to implement a foreground service on the Android platform.
 ## Features
 
 * Can perform repetitive tasks with foreground service.
-* Provides a widget that prevents the app from closing when the foreground service is running.
+* Provides a widget that minimize the app without closing it when the user presses the soft back button.
 * Provides useful utilities that can use while performing tasks.
 * Provides option to automatically resume foreground service on boot.
 
@@ -179,12 +179,14 @@ void initState() {
 }
 ```
 
-2. Add `WithForegroundTask` widget to prevent the app from closing when the foreground service is running.
+2. [**optional**] If necessary, add `WithForegroundTask` widget.
 
 ```dart
 @override
 Widget build(BuildContext context) {
-  // A widget that prevents the app from closing when the foreground service is running.
+  // A widget that minimize the app without closing it when the user presses
+  // the soft back button. It only works when the service is running.
+  //
   // This widget must be declared above the [Scaffold] widget.
   return WithForegroundTask(
     child: Scaffold(
@@ -224,7 +226,10 @@ class FirstTaskHandler extends TaskHandler {
   @override
   void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
     // Send data to the main isolate.
-    sendPort?.send(timestamp);
+    final Map<String, dynamic> data = {
+      "timestampMillis": timestamp.millisecondsSinceEpoch,
+    };
+    sendPort?.send(data);
   }
 
   // Called when the task is destroyed.
@@ -376,8 +381,13 @@ class _ExamplePageState extends State<ExamplePage> {
   void _onReceiveData(dynamic data) {
     if (data is int) {
       print('count: $data');
-    } else if (data is DateTime) {
-      print('timestamp: ${data.toString()}');
+    } else if (data is Map<String, dynamic>) {
+      final dynamic timestampMillis = data["timestampMillis"];
+      if (timestampMillis != null) {
+        final DateTime timestamp =
+            DateTime.fromMillisecondsSinceEpoch(timestampMillis, isUtc: true);
+        print('timestamp: ${timestamp.toString()}');
+      }
     }
   }
 
@@ -429,8 +439,13 @@ void onStart(DateTime timestamp, SendPort? sendPort) async {
 void _onReceiveData(dynamic data) {
   if (data is int) {
     print('count: $data');
-  } else if (data is DateTime) {
-    print('timestamp: ${data.toString()}');
+  } else if (data is Map<String, dynamic>) {
+    final dynamic timestampMillis = data["timestampMillis"];
+    if (timestampMillis != null) {
+      final DateTime timestamp =
+          DateTime.fromMillisecondsSinceEpoch(timestampMillis, isUtc: true);
+      print('timestamp: ${timestamp.toString()}');
+    }
   }
 }
 ```
@@ -551,7 +566,10 @@ class SecondTaskHandler extends TaskHandler {
     );
 
     // Send data to the main isolate.
-    sendPort?.send(timestamp);
+    final Map<String, dynamic> data = {
+      "timestampMillis": timestamp.millisecondsSinceEpoch,
+    };
+    sendPort?.send(data);
   }
 
   @override

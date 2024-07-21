@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-/// A widget that prevents the app from closing when the foreground service is running.
+/// A widget that minimize the app without closing it when the user presses the soft back button.
+/// It only works when the service is running.
 ///
 /// This widget must be declared above the [Scaffold] widget.
 class WithForegroundTask extends StatefulWidget {
