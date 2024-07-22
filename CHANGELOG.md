@@ -1,8 +1,13 @@
+## 7.5.2
+
+* [**FIX**] Fixed an issue that caused poor performance and delays in TaskHandler
+* [**FIX-iOS**] Fixed an issue where onDestroy was not called when an app was closed in recent apps
+
 ## 7.5.0+1
 
 * [**DOCS**] Update readme
   - Update documentation on how to pass timestamp to UI isolate
-  - Update `WithForegroundTask` documentation comment
+  - Update `WithForegroundTask` documentation comments
 
 ## 7.5.0
 
