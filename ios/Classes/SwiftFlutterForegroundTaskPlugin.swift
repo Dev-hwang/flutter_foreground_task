@@ -83,4 +83,13 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
                                      withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
     backgroundServiceManager?.userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler)
   }
+  
+  public func applicationWillTerminate(_ application: UIApplication) {
+    do {
+      try backgroundServiceManager!.stop()
+      sleep(2) // Chance to handle onDestroy before app terminates
+    } catch {
+      // ServiceError.ServiceNotStartedException
+    }
+  }
 }

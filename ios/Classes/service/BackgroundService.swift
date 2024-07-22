@@ -114,10 +114,10 @@ class BackgroundService: NSObject {
         destroyBackgroundTask() { _ in
           self.disposeBackgroundChannel()
           self.destroyFlutterEngine()
-          self.isRunningService = false
-          self.isGrantedNotificationAuthorization = false
-          self.removeAllNotification()
         }
+        removeAllNotification()
+        isGrantedNotificationAuthorization = false
+        isRunningService = false
         break
     }
   }

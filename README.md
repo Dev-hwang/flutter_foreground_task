@@ -59,7 +59,7 @@ Runtime requirements are listed in the link above.
 We can also launch `flutter_foreground_task` on the iOS platform. However, it has the following limitations.
 
 * Works only on iOS 12.0 or later.
-* If you force close an app from app list, the task will be destroyed immediately.
+* If you force close an app in recent apps, the task will be destroyed immediately.
 * The task cannot be started automatically on boot like Android OS.
 * The task will run in the background for approximately 30 seconds due to background processing limitations. but it works fine in the foreground.
 
