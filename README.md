@@ -58,10 +58,10 @@ Runtime requirements are listed in the link above.
 
 We can also launch `flutter_foreground_task` on the iOS platform. However, it has the following limitations.
 
-* Works only on iOS 10.0 or later.
-* If the app is forcibly closed, the task will not work.
-* Task cannot be started automatically on device reboot.
-* Due to the background processing limitations of the platform, the `onRepeatEvent` event may not work properly in the background. But in the foreground it works fine.
+* Works only on iOS 12.0 or later.
+* If you force close an app from app list, the task will be destroyed immediately.
+* The task cannot be started automatically on boot like Android OS.
+* The task will run in the background for approximately 30 seconds due to background processing limitations. but it works fine in the foreground.
 
 **Objective-C**:
 
@@ -137,6 +137,12 @@ func registerPlugins(registry: FlutterPluginRegistry) {
   GeneratedPluginRegistrant.register(with: registry)
 }
 ```
+
+**Configuring background execution modes**
+
+Background mode settings are required for tasks to be processed in the background. 
+
+See this [page](https://developer.apple.com/documentation/xcode/configuring-background-execution-modes) for settings.
 
 ## How to use
 
@@ -256,7 +262,7 @@ class FirstTaskHandler extends TaskHandler {
   // this function to be called.
   @override
   void onNotificationPressed() {
-    super.onNotificationPressed();
+    FlutterForegroundTask.launchApp('/');
     print('onNotificationPressed');
   }
 
@@ -273,8 +279,11 @@ class ExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: ExamplePage(),
+    return MaterialApp(
+      routes: {
+        '/': (context) => const ExamplePage(),
+      },
+      initialRoute: '/',
     );
   }
 }

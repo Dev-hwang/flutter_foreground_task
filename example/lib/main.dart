@@ -58,7 +58,7 @@ class MyTaskHandler extends TaskHandler {
   // this function to be called.
   @override
   void onNotificationPressed() {
-    super.onNotificationPressed();
+    FlutterForegroundTask.launchApp('/');
     print('onNotificationPressed');
   }
 
@@ -75,8 +75,11 @@ class ExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: ExamplePage(),
+    return MaterialApp(
+      routes: {
+        '/': (context) => const ExamplePage(),
+      },
+      initialRoute: '/',
     );
   }
 }
