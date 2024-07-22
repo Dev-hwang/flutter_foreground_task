@@ -146,105 +146,52 @@ See this [page](https://developer.apple.com/documentation/xcode/configuring-back
 
 ## How to use
 
-### :hatched_chick: FlutterForegroundTask
+### :hatched_chick: step by step
 
-1. Initialize the `FlutterForegroundTask`. You can use the `FlutterForegroundTask.init()` function to set notifications and task options.
-* `androidNotificationOptions`: Options for setting up notifications on the Android platform.
-* `iosNotificationOptions`: Options for setting up notifications on the iOS platform.
-* `foregroundTaskOptions`: Options for setting the foreground task.
+1. Initialize port for communication between TaskHandler and UI.
 
 ```dart
-void _initForegroundTask() {
-  FlutterForegroundTask.init(
-    androidNotificationOptions: AndroidNotificationOptions(
-      channelId: 'foreground_service',
-      channelName: 'Foreground Service Notification',
-      channelDescription: 'This notification appears when the foreground service is running.',
-      channelImportance: NotificationChannelImportance.LOW,
-      priority: NotificationPriority.LOW,
-    ),
-    iosNotificationOptions: const IOSNotificationOptions(
-      showNotification: false,
-      playSound: false,
-    ),
-    foregroundTaskOptions: const ForegroundTaskOptions(
-      interval: 5000,
-      isOnceEvent: false,
-      autoRunOnBoot: true,
-      autoRunOnMyPackageReplaced: true,
-      allowWakeLock: true,
-      allowWifiLock: true,
-    ),
-  );
-}
-
-@override
-void initState() {
-  super.initState();
-  _initForegroundTask();
+void main() {
+  // Initialize port for communication between TaskHandler and UI.
+  FlutterForegroundTask.initCommunicationPort();
+  runApp(const ExampleApp());
 }
 ```
 
-2. [**optional**] If necessary, add `WithForegroundTask` widget.
-
-```dart
-@override
-Widget build(BuildContext context) {
-  // A widget that minimize the app without closing it when the user presses
-  // the soft back button. It only works when the service is running.
-  //
-  // This widget must be declared above the [Scaffold] widget.
-  return WithForegroundTask(
-    child: Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter Foreground Task'),
-        centerTitle: true,
-      ),
-      body: buildContentView(),
-    ),
-  );
-}
-```
-
-3. Write callback and handler and start the foreground service. `FlutterForegroundTask.startService()` provides the following options:
-* `notificationTitle`: The title that will be displayed in the notification.
-* `notificationText`: The text that will be displayed in the notification.
-* `notificationIcon`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
-* `notificationButtons`: A list of buttons to display in the notification. A maximum of 3 is allowed.
-* `callback`: A top-level function that calls the setTaskHandler function.
+2. Write a `TaskHandler` and a `callback` to request starting a TaskHandler.
 
 ```dart
 // The callback function should always be a top-level function.
 @pragma('vm:entry-point')
 void startCallback() {
   // The setTaskHandler function must be called to handle the task in the background.
-  FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
+  FlutterForegroundTask.setTaskHandler(MyTaskHandler());
 }
 
-class FirstTaskHandler extends TaskHandler {
+class MyTaskHandler extends TaskHandler {
   // Called when the task is started.
   @override
-  void onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp) {
     print('onStart');
   }
 
-  // Called every [interval] milliseconds in [ForegroundTaskOptions].
+  // Called every [ForegroundTaskOptions.interval] milliseconds.
   @override
-  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-    // Send data to the main isolate.
+  void onRepeatEvent(DateTime timestamp) {
+    // Send data to main isolate.
     final Map<String, dynamic> data = {
       "timestampMillis": timestamp.millisecondsSinceEpoch,
     };
-    sendPort?.send(data);
+    FlutterForegroundTask.sendDataToMain(data);
   }
 
   // Called when the task is destroyed.
   @override
-  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
+  void onDestroy(DateTime timestamp) {
     print('onDestroy');
   }
 
-  // Called when data is sent using [FlutterForegroundTask.sendData].
+  // Called when data is sent using [FlutterForegroundTask.sendDataToTask].
   @override
   void onReceiveData(Object data) {
     print('onReceiveData: $data');
@@ -253,7 +200,7 @@ class FirstTaskHandler extends TaskHandler {
   // Called when the notification button on the Android platform is pressed.
   @override
   void onNotificationButtonPressed(String id) {
-    print('onNotificationButtonPressed >> $id');
+    print('onNotificationButtonPressed: $id');
   }
 
   // Called when the notification itself on the Android platform is pressed.
@@ -273,38 +220,42 @@ class FirstTaskHandler extends TaskHandler {
     print('onNotificationDismissed');
   }
 }
+```
 
-class ExampleApp extends StatelessWidget {
-  const ExampleApp({Key? key}) : super(key: key);
+3. Add a callback to receive data sent from the TaskHandler. If the screen or controller is disposed, be sure to call the `removeTaskDataCallback` function.
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      routes: {
-        '/': (context) => const ExamplePage(),
-      },
-      initialRoute: '/',
-    );
+```dart
+void _onReceiveTaskData(dynamic data) {
+  if (data is Map<String, dynamic>) {
+    final dynamic timestampMillis = data["timestampMillis"];
+    if (timestampMillis != null) {
+      final DateTime timestamp =
+          DateTime.fromMillisecondsSinceEpoch(timestampMillis, isUtc: true);
+      print('timestamp: ${timestamp.toString()}');
+    }
   }
 }
 
-class ExamplePage extends StatefulWidget {
-  const ExamplePage({Key? key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _ExamplePageState();
+@override
+void initState() {
+  super.initState();
+  // Add a callback to receive data sent from the TaskHandler.
+  FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
 }
 
-class _ExamplePageState extends State<ExamplePage> {
-  ReceivePort? _receivePort;
+@override
+void dispose() {
+  // Remove a callback to receive data sent from the TaskHandler.
+  FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
+  super.dispose();
+}
+```
 
-  // ...
+4. Request permissions and initialize the service.
 
-  Future<void> _requestPermissionForAndroid() async {
-    if (!Platform.isAndroid) {
-      return;
-    }
-
+```dart
+Future<void> _requestPermissions() async {
+  if (Platform.isAndroid) {
     // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
     // onNotificationPressed function to be called.
     //
@@ -333,103 +284,152 @@ class _ExamplePageState extends State<ExamplePage> {
       await FlutterForegroundTask.requestNotificationPermission();
     }
   }
+}
 
-  Future<void> _startForegroundTask() async {
-    // Register the receivePort before starting the service.
-    final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
-    final bool isRegistered = _registerReceivePort(receivePort);
-    if (!isRegistered) {
-      print('Failed to register receivePort!');
-      return;
-    }
+Future<void> _initService() async {
+  FlutterForegroundTask.init(
+    androidNotificationOptions: AndroidNotificationOptions(
+      channelId: 'foreground_service',
+      channelName: 'Foreground Service Notification',
+      channelDescription:
+          'This notification appears when the foreground service is running.',
+      channelImportance: NotificationChannelImportance.LOW,
+      priority: NotificationPriority.LOW,
+    ),
+    iosNotificationOptions: const IOSNotificationOptions(
+      showNotification: false,
+      playSound: false,
+    ),
+    foregroundTaskOptions: const ForegroundTaskOptions(
+      interval: 5000,
+      isOnceEvent: false,
+      autoRunOnBoot: true,
+      autoRunOnMyPackageReplaced: true,
+      allowWakeLock: true,
+      allowWifiLock: true,
+    ),
+  );
+}
 
-    ServiceRequestResult requestResult;
-    if (await FlutterForegroundTask.isRunningService) {
-      requestResult = await FlutterForegroundTask.restartService();
-    } else {
-      requestResult = await FlutterForegroundTask.startService(
-        notificationTitle: 'Foreground Service is running',
-        notificationText: 'Tap to return to the app',
-        notificationIcon: null,
-        notificationButtons: [
-          const NotificationButton(
-            id: 'btn_hello',
-            text: 'hello',
-            textColor: Colors.orange,
-          ),
-        ],
-        callback: startCallback,
-      );
-    }
+@override
+void initState() {
+  super.initState();
+  // Add a callback to receive data sent from the TaskHandler.
+  FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
 
-    // handle error
-    if (!requestResult.success) {
-      final Object? error = requestResult.error;
-      print('error: $error');
-    }
-  }
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Request permissions and initialize the service.
+    _requestPermissions();
+    _initService();
+  });
+}
+```
 
-  bool _registerReceivePort(ReceivePort? newReceivePort) {
-    if (newReceivePort == null) {
-      return false;
-    }
+5. Use `FlutterForegroundTask.startService` to start the service. `startService` provides the following options:
+* `notificationTitle`: The title that will be displayed in the notification.
+* `notificationText`: The text that will be displayed in the notification.
+* `notificationIcon`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
+* `notificationButtons`: A list of buttons to display in the notification. A maximum of 3 is allowed.
+* `callback`: A top-level function that calls the setTaskHandler function.
 
-    _closeReceivePort();
-
-    _receivePort = newReceivePort;
-    _receivePort?.listen(_onReceiveData);
-
-    return _receivePort != null;
-  }
-
-  void _closeReceivePort() {
-    _receivePort?.close();
-    _receivePort = null;
-  }
-
-  void _onReceiveData(dynamic data) {
-    if (data is int) {
-      print('count: $data');
-    } else if (data is Map<String, dynamic>) {
-      final dynamic timestampMillis = data["timestampMillis"];
-      if (timestampMillis != null) {
-        final DateTime timestamp =
-            DateTime.fromMillisecondsSinceEpoch(timestampMillis, isUtc: true);
-        print('timestamp: ${timestamp.toString()}');
-      }
-    }
-  }
-
-  void _sendData() {
-    final Random random = Random();
-    final int data = random.nextInt(100);
-    FlutterForegroundTask.sendData(data);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _requestPermissionForAndroid();
-      _initForegroundTask();
-
-      // You can get the previous ReceivePort without restarting the service.
-      if (await FlutterForegroundTask.isRunningService) {
-        final newReceivePort = FlutterForegroundTask.receivePort;
-        _registerReceivePort(newReceivePort);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _closeReceivePort();
-    super.dispose();
+```dart
+Future<ServiceRequestResult> _startService() async {
+  if (await FlutterForegroundTask.isRunningService) {
+    return FlutterForegroundTask.restartService();
+  } else {
+    return FlutterForegroundTask.startService(
+      notificationTitle: 'Foreground Service is running',
+      notificationText: 'Tap to return to the app',
+      notificationIcon: null,
+      notificationButtons: [
+        const NotificationButton(id: 'btn_hello', text: 'hello'),
+      ],
+      callback: startCallback,
+    );
   }
 }
 ```
 
-As you can see in the code above, this plugin supports two-way communication between TaskHandler and UI.
+6. Use `FlutterForegroundTask.updateService` to update the service. The options are the same as the start function.
+
+```dart
+@pragma('vm:entry-point')
+void startCallback() {
+  FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
+}
+
+class FirstTaskHandler extends TaskHandler {
+  int _count = 0;
+
+  @override
+  void onStart(DateTime timestamp) { }
+
+  @override
+  void onRepeatEvent(DateTime timestamp) {
+    if (_count == 10) {
+      FlutterForegroundTask.updateService(
+        foregroundTaskOptions: const ForegroundTaskOptions(interval: 1000),
+        callback: updateCallback,
+      );
+    } else {
+      FlutterForegroundTask.updateService(
+        notificationTitle: 'FirstTaskHandler',
+        notificationText: timestamp.toString(),
+      );
+
+      // Send data to main isolate.
+      final Map<String, dynamic> data = {
+        "timestampMillis": timestamp.millisecondsSinceEpoch,
+      };
+      FlutterForegroundTask.sendDataToMain(data);
+    }
+
+    _count++;
+  }
+
+  @override
+  void onDestroy(DateTime timestamp) { }
+}
+
+@pragma('vm:entry-point')
+void updateCallback() {
+  FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
+}
+
+class SecondTaskHandler extends TaskHandler {
+  @override
+  void onStart(DateTime timestamp) { }
+
+  @override
+  void onRepeatEvent(DateTime timestamp) {
+    FlutterForegroundTask.updateService(
+      notificationTitle: 'SecondTaskHandler',
+      notificationText: timestamp.toString(),
+    );
+
+    // Send data to main isolate.
+    final Map<String, dynamic> data = {
+      "timestampMillis": timestamp.millisecondsSinceEpoch,
+    };
+    FlutterForegroundTask.sendDataToMain(data);
+  }
+
+  @override
+  void onDestroy(DateTime timestamp) { }
+}
+```
+
+7. If you no longer use the service, call `FlutterForegroundTask.stopService`.
+
+```dart
+Future<ServiceRequestResult> _stopService() async {
+  return FlutterForegroundTask.stopService();
+}
+```
+
+### :hatched_chick: deepening
+
+This plugin supports two-way communication between TaskHandler and UI.
 
 The send function can only send primitive type(int, double), String, Collection provided by Flutter.
 
@@ -438,17 +438,16 @@ If you want to send a custom object, send it in String format using jsonEncode a
 JSON and serialization >> https://docs.flutter.dev/data-and-backend/serialization/json
 
 ```dart
-// send (TaskHandler -> UI)
+// TaskHandler
 @override
-void onStart(DateTime timestamp, SendPort? sendPort) async {
-  sendPort?.send(Object); // this
+void onStart(DateTime timestamp) {
+  // TaskHandler -> UI
+  FlutterForegroundTask.sendDataToMain(Object); // this
 }
 
-// receive
-void _onReceiveData(dynamic data) {
-  if (data is int) {
-    print('count: $data');
-  } else if (data is Map<String, dynamic>) {
+// Main(UI)::onReceiveTaskData
+void _onReceiveTaskData(dynamic data) {
+  if (data is Map<String, dynamic>) {
     final dynamic timestampMillis = data["timestampMillis"];
     if (timestampMillis != null) {
       final DateTime timestamp =
@@ -460,14 +459,16 @@ void _onReceiveData(dynamic data) {
 ```
 
 ```dart
-// send (UI -> TaskHandler)
-void _sendData() {
+// Main(UI)
+void _sendRandomData() {
   final Random random = Random();
   final int data = random.nextInt(100);
-  FlutterForegroundTask.sendData(data); // this
+
+  // UI -> TaskHandler
+  FlutterForegroundTask.sendDataToTask(data); // this
 }
 
-// receive
+// TaskHandler::onReceiveData
 @override
 void onReceiveData(Object data) {
   print('onReceiveData: $data');
@@ -489,114 +490,32 @@ void function() async {
 If the plugin you want to use provides a stream, use it like this:
 
 ```dart
-class FirstTaskHandler extends TaskHandler {
+class MyTaskHandler extends TaskHandler {
   StreamSubscription<Location>? _streamSubscription;
 
   @override
-  void onStart(DateTime timestamp, SendPort? sendPort) async {
+  void onStart(DateTime timestamp) {
     _streamSubscription = FlLocation.getLocationStream().listen((location) {
       FlutterForegroundTask.updateService(
         notificationTitle: 'My Location',
         notificationText: '${location.latitude}, ${location.longitude}',
       );
 
-      // Send data to the main isolate.
+      // Send data to main isolate.
       final String locationJson = jsonEncode(location.toJson());
-      sendPort?.send(locationJson);
+      FlutterForegroundTask.sendDataToMain(locationJson);
     });
   }
 
   @override
-  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-
+  void onRepeatEvent(DateTime timestamp) {
+    // not use
   }
 
   @override
-  void onDestroy(DateTime timestamp, SendPort? sendPort) async {
-    await _streamSubscription?.cancel();
-  }
-}
-```
-
-4. Use `FlutterForegroundTask.updateService()` to update the foreground service. The options are the same as the start function.
-
-```dart
-// The callback function should always be a top-level function.
-@pragma('vm:entry-point')
-void startCallback() {
-  // The setTaskHandler function must be called to handle the task in the background.
-  FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
-}
-
-class FirstTaskHandler extends TaskHandler {
-  int _count = 0;
-
-  @override
-  void onStart(DateTime timestamp, SendPort? sendPort) async { }
-
-  @override
-  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-    if (_count == 10) {
-      FlutterForegroundTask.updateService(
-        foregroundTaskOptions: const ForegroundTaskOptions(interval: 1000),
-        callback: updateCallback,
-      );
-    } else {
-      FlutterForegroundTask.updateService(
-        notificationTitle: 'FirstTaskHandler',
-        notificationText: timestamp.toString(),
-      );
-
-      // Send data to the main isolate.
-      sendPort?.send(_count);
-
-      _count++;
-    }
-  }
-
-  @override
-  void onDestroy(DateTime timestamp, SendPort? sendPort) async { }
-}
-
-@pragma('vm:entry-point')
-void updateCallback() {
-  FlutterForegroundTask.setTaskHandler(SecondTaskHandler());
-}
-
-class SecondTaskHandler extends TaskHandler {
-  @override
-  void onStart(DateTime timestamp, SendPort? sendPort) async { }
-
-  @override
-  void onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
-    FlutterForegroundTask.updateService(
-      notificationTitle: 'SecondTaskHandler',
-      notificationText: timestamp.toString(),
-    );
-
-    // Send data to the main isolate.
-    final Map<String, dynamic> data = {
-      "timestampMillis": timestamp.millisecondsSinceEpoch,
-    };
-    sendPort?.send(data);
-  }
-
-  @override
-  void onDestroy(DateTime timestamp, SendPort? sendPort) async { }
-}
-```
-
-5. If you no longer use the foreground service, call `FlutterForegroundTask.stopService()`.
-
-```dart
-Future<void> _stopForegroundTask() async {
-  final ServiceRequestResult requestResult = 
-      await FlutterForegroundTask.stopService();
-
-  // handle error
-  if (!requestResult.success) {
-    final Object? error = requestResult.error;
-    print('error: $error');
+  void onDestroy(DateTime timestamp) {
+    _streamSubscription?.cancel();
+    _streamSubscription = null;
   }
 }
 ```

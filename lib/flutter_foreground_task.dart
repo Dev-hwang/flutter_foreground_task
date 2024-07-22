@@ -32,18 +32,20 @@ export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 const String _kPortName = 'flutter_foreground_task/isolateComPort';
 const String _kPrefsKeyPrefix = 'com.pravera.flutter_foreground_task.prefs.';
 
+typedef DataCallback = void Function(dynamic data);
+
 /// A class that implements a task handler.
 abstract class TaskHandler {
   /// Called when the task is started.
-  void onStart(DateTime timestamp, SendPort? sendPort);
+  void onStart(DateTime timestamp);
 
-  /// Called every [interval] milliseconds in [ForegroundTaskOptions].
-  void onRepeatEvent(DateTime timestamp, SendPort? sendPort);
+  /// Called every [ForegroundTaskOptions.interval] milliseconds.
+  void onRepeatEvent(DateTime timestamp);
 
   /// Called when the task is destroyed.
-  void onDestroy(DateTime timestamp, SendPort? sendPort);
+  void onDestroy(DateTime timestamp);
 
-  /// Called when data is sent using [FlutterForegroundTask.sendData].
+  /// Called when data is sent using [FlutterForegroundTask.sendDataToTask].
   void onReceiveData(Object data) {}
 
   /// Called when the notification button on the Android platform is pressed.
@@ -62,6 +64,8 @@ abstract class TaskHandler {
 
 /// A class that implements foreground task and provides useful utilities.
 class FlutterForegroundTask {
+  // ====================== Service ======================
+
   static late AndroidNotificationOptions _androidNotificationOptions;
   static late IOSNotificationOptions _iosNotificationOptions;
   static late ForegroundTaskOptions _foregroundTaskOptions;
@@ -129,16 +133,101 @@ class FlutterForegroundTask {
   static Future<ServiceRequestResult> stopService() =>
       FlutterForegroundTaskPlatform.instance.stopService();
 
-  /// Send data to [TaskHandler].
-  static void sendData(Object data) =>
-      FlutterForegroundTaskPlatform.instance.sendData(data);
-
   /// Returns whether the foreground service is running.
   static Future<bool> get isRunningService =>
       FlutterForegroundTaskPlatform.instance.isRunningService;
 
-  /// Get the [ReceivePort].
-  static ReceivePort? get receivePort => _registerPort();
+  /// Set up the task handler and start the foreground task.
+  ///
+  /// It must always be called from a top-level function, otherwise foreground task will not work.
+  static void setTaskHandler(TaskHandler handler) {
+    // Create a method channel to communicate with the platform.
+    const MethodChannel backgroundChannel =
+        MethodChannel('flutter_foreground_task/background');
+
+    // Binding the framework to the flutter engine.
+    WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+
+    // Set the method call handler for the background channel.
+    backgroundChannel.setMethodCallHandler((call) async {
+      final DateTime timestamp = DateTime.timestamp();
+
+      switch (call.method) {
+        case 'onStart':
+          handler.onStart(timestamp);
+          break;
+        case 'onRepeatEvent':
+          handler.onRepeatEvent(timestamp);
+          break;
+        case 'onDestroy':
+          handler.onDestroy(timestamp);
+          break;
+        case 'onReceiveData':
+          handler.onReceiveData(call.arguments);
+          break;
+        case 'onNotificationButtonPressed':
+          handler.onNotificationButtonPressed(call.arguments.toString());
+          break;
+        case 'onNotificationDismissed':
+          handler.onNotificationDismissed();
+          break;
+        case 'onNotificationPressed':
+          handler.onNotificationPressed();
+      }
+    });
+
+    backgroundChannel.invokeMethod('startTask');
+  }
+
+  // =================== Communication ===================
+
+  static ReceivePort? _receivePort;
+  static StreamSubscription? _streamSubscription;
+  static final List<DataCallback> _dataCallbacks = [];
+
+  /// Initialize port for communication between TaskHandler and UI.
+  static void initCommunicationPort() {
+    final ReceivePort receivePort = ReceivePort();
+    final SendPort sendPort = receivePort.sendPort;
+
+    IsolateNameServer.removePortNameMapping(_kPortName);
+    if (IsolateNameServer.registerPortWithName(sendPort, _kPortName)) {
+      _streamSubscription?.cancel();
+      _receivePort?.close();
+
+      _receivePort = receivePort;
+      _streamSubscription = _receivePort?.listen((data) {
+        for (final DataCallback dataCallback in _dataCallbacks.toList()) {
+          dataCallback.call(data);
+        }
+      });
+    }
+  }
+
+  /// Add a callback to receive data sent from the [TaskHandler].
+  static void addTaskDataCallback(DataCallback callback) {
+    if (!_dataCallbacks.contains(callback)) {
+      _dataCallbacks.add(callback);
+    }
+  }
+
+  /// Remove a callback to receive data sent from the [TaskHandler].
+  static void removeTaskDataCallback(DataCallback callback) {
+    _dataCallbacks.remove(callback);
+  }
+
+  /// Send data to [TaskHandler].
+  static void sendDataToTask(Object data) =>
+      FlutterForegroundTaskPlatform.instance.sendData(data);
+
+  /// Send date to main isolate.
+  static void sendDataToMain(Object data) {
+    final SendPort? sendPort = IsolateNameServer.lookupPortByName(_kPortName);
+    sendPort?.send(data);
+  }
+
+  // ====================== Storage ======================
 
   /// Get the stored data with [key].
   static Future<T?> getData<T>({required String key}) async {
@@ -170,10 +259,8 @@ class FlutterForegroundTask {
   }
 
   /// Save data with [key].
-  static Future<bool> saveData({
-    required String key,
-    required Object value,
-  }) async {
+  static Future<bool> saveData(
+      {required String key, required Object value}) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.reload();
 
@@ -212,6 +299,8 @@ class FlutterForegroundTask {
 
     return true;
   }
+
+  // ====================== Utility ======================
 
   /// Minimize the app to the background.
   static void minimizeApp() =>
@@ -269,73 +358,4 @@ class FlutterForegroundTask {
   /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
   static Future<NotificationPermission> requestNotificationPermission() =>
       FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
-
-  /// Set up the task handler and start the foreground task.
-  ///
-  /// It must always be called from a top-level function, otherwise foreground task will not work.
-  static void setTaskHandler(TaskHandler handler) {
-    // Create a method channel to communicate with the platform.
-    const MethodChannel backgroundChannel =
-        MethodChannel('flutter_foreground_task/background');
-
-    // Binding the framework to the flutter engine.
-    WidgetsFlutterBinding.ensureInitialized();
-    DartPluginRegistrant.ensureInitialized();
-
-    // Set the method call handler for the background channel.
-    backgroundChannel.setMethodCallHandler((call) async {
-      final DateTime timestamp = DateTime.timestamp();
-      final SendPort? sendPort = _lookupPort();
-
-      switch (call.method) {
-        case 'onStart':
-          handler.onStart(timestamp, sendPort);
-          break;
-        case 'onRepeatEvent':
-          handler.onRepeatEvent(timestamp, sendPort);
-          break;
-        case 'onDestroy':
-          handler.onDestroy(timestamp, sendPort);
-          break;
-        case 'onReceiveData':
-          handler.onReceiveData(call.arguments);
-          break;
-        case 'onNotificationButtonPressed':
-          final String notificationButtonId = call.arguments.toString();
-          handler.onNotificationButtonPressed(notificationButtonId);
-          break;
-        case 'onNotificationDismissed':
-          handler.onNotificationDismissed();
-          break;
-        case 'onNotificationPressed':
-          handler.onNotificationPressed();
-      }
-    });
-
-    backgroundChannel.invokeMethod('startTask');
-  }
-
-  static ReceivePort? _registerPort() {
-    if (_removePort()) {
-      final receivePort = ReceivePort();
-      final sendPort = receivePort.sendPort;
-      if (IsolateNameServer.registerPortWithName(sendPort, _kPortName)) {
-        return receivePort;
-      }
-    }
-
-    return null;
-  }
-
-  static SendPort? _lookupPort() {
-    return IsolateNameServer.lookupPortByName(_kPortName);
-  }
-
-  static bool _removePort() {
-    if (_lookupPort() != null) {
-      return IsolateNameServer.removePortNameMapping(_kPortName);
-    }
-
-    return true;
-  }
 }
