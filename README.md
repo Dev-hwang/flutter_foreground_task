@@ -15,7 +15,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^7.5.2
+  flutter_foreground_task: ^8.0.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
@@ -518,6 +518,52 @@ class MyTaskHandler extends TaskHandler {
     _streamSubscription = null;
   }
 }
+```
+
+## Migration (ver 8.0.0)
+
+1. The `sendPort` parameter was removed from the service callback(onStart, onRepeatEvent, onDestroy)
+
+```dart
+// before
+void onStart(DateTime timestamp, SendPort? sendPort) {
+  sendPort?.send(Object);
+}
+
+// after
+void onStart(DateTime timestamp) {
+  // Send data to main isolate.
+  FlutterForegroundTask.sendDataToMain(Object);
+}
+```
+
+2. `FlutterForegroundTask.receivePort` getter function was removed.
+
+```dart
+// before
+final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
+receivePort?.listen(_onReceiveTaskData)
+receivePort?.close();
+
+// atfer
+void main() {
+  // Initialize port for communication between TaskHandler and UI.
+  FlutterForegroundTask.initCommunicationPort();
+  runApp(const ExampleApp());
+}
+
+FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
+FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
+```
+
+3. `sendData` renamed to `sendDataToTask`
+
+```dart
+// before
+FlutterForegroundTask.sendData(Object);
+
+// after
+FlutterForegroundTask.sendDataToTask(Object);
 ```
 
 ## Models

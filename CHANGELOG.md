@@ -1,3 +1,10 @@
+## 8.0.0
+
+* [**BREAKING**] Redesign the communication method between TaskHandler and UI
+  - Fixed an issue where `SendPort.send` does not work when calling `receivePort` getter function after app restart [#244](https://github.com/Dev-hwang/flutter_foreground_task/issues/244)
+  - Allow task data to be listened on multiple pages
+  - Check [readme-Migration](https://github.com/Dev-hwang/flutter_foreground_task?tab=readme-ov-file#migration-ver-800) for changes
+
 ## 7.5.2
 
 * [**FIX**] Fixed an issue that caused poor performance and delays in TaskHandler
