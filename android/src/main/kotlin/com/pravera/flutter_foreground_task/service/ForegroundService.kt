@@ -15,6 +15,7 @@ import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListener
 import com.pravera.flutter_foreground_task.RequestCode
 import com.pravera.flutter_foreground_task.models.*
@@ -389,8 +390,13 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     private fun updateNotification() {
         val id = notificationOptions.id
         val notification = createNotification()
-        val nm = getSystemService(NotificationManager::class.java)
-        nm.notify(id, notification)
+        val nm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getSystemService(NotificationManager::class.java)
+        } else {
+            // crash 23+
+            ContextCompat.getSystemService(this, NotificationManager::class.java)
+        }
+        nm?.notify(id, notification)
     }
 
     @SuppressLint("WakelockTimeout")
@@ -679,7 +685,11 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             val text = getTextSpan(buttons[i].text, textColor)
             val pendingIntent =
                 PendingIntent.getBroadcast(this, i + 1, intent, flags)
-            val action = Notification.Action.Builder(null, text, pendingIntent).build()
+            val action = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Notification.Action.Builder(null, text, pendingIntent).build()
+            } else {
+                Notification.Action.Builder(0, text, pendingIntent).build()
+            }
             actions.add(action)
         }
 
