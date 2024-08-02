@@ -51,59 +51,57 @@ class BackgroundService: NSObject {
   private let userNotificationCenter: UNUserNotificationCenter
   private var isGrantedNotificationAuthorization: Bool = false
 
-  private var showNotification: Bool = true
-  private var playSound: Bool = false
-  private var prevInterval: Int? = nil
-  private var currInterval: Int = 5000
-  private var prevIsOnceEvent: Bool? = nil
-  private var currIsOnceEvent: Bool = false
-  private var prevCallbackHandle: Int64? = nil
-  private var currCallbackHandle: Int64? = nil
-  private var notificationContentTitle: String = ""
-  private var notificationContentText: String = ""
+  private var notificationOptions: NotificationOptions
+  private var notificationContent: NotificationContent
+  private var prevBackgroundTaskOptions: BackgroundTaskOptions?
+  private var currBackgroundTaskOptions: BackgroundTaskOptions
+  private var prevBackgroundTaskData: BackgroundTaskData?
+  private var currBackgroundTaskData: BackgroundTaskData
   
   override init() {
     userNotificationCenter = UNUserNotificationCenter.current()
+    notificationOptions = NotificationOptions.getData()
+    notificationContent = NotificationContent.getData()
+    currBackgroundTaskOptions = BackgroundTaskOptions.getData()
+    currBackgroundTaskData = BackgroundTaskData.getData()
     super.init()
     // userNotificationCenter.delegate = self
   }
   
   func run(action: BackgroundServiceAction) {
-    let prefs = UserDefaults.standard
-
-    showNotification = prefs.bool(forKey: SHOW_NOTIFICATION)
-    playSound = prefs.bool(forKey: PLAY_SOUND)
-    prevInterval = currInterval
-    currInterval = prefs.integer(forKey: TASK_INTERVAL)
-    prevIsOnceEvent = currIsOnceEvent
-    currIsOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
-    prevCallbackHandle = currCallbackHandle
-    currCallbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64
-    notificationContentTitle = prefs.string(forKey: NOTIFICATION_CONTENT_TITLE) ?? notificationContentTitle
-    notificationContentText = prefs.string(forKey: NOTIFICATION_CONTENT_TEXT) ?? notificationContentText
+    notificationOptions = NotificationOptions.getData()
+    notificationContent = NotificationContent.getData()
+    prevBackgroundTaskOptions = currBackgroundTaskOptions
+    currBackgroundTaskOptions = BackgroundTaskOptions.getData()
+    prevBackgroundTaskData = currBackgroundTaskData
+    currBackgroundTaskData = BackgroundTaskData.getData()
     
     switch action {
       case .START:
         requestNotificationAuthorization()
         isRunningService = true
-        if let callbackHandle = currCallbackHandle {
+        if let callbackHandle = currBackgroundTaskData.callbackHandle {
           executeDartCallback(callbackHandle: callbackHandle)
         }
         break
       case .RESTART:
         sendNotification()
         isRunningService = true
-        if let callbackHandle = currCallbackHandle {
+        if let callbackHandle = currBackgroundTaskData.callbackHandle {
           executeDartCallback(callbackHandle: callbackHandle)
         }
         break
       case .UPDATE:
         sendNotification()
         isRunningService = true
-        if let callbackHandle = currCallbackHandle {
-          if prevCallbackHandle != callbackHandle {
+        if let callbackHandle = currBackgroundTaskData.callbackHandle {
+          if prevBackgroundTaskData?.callbackHandle != callbackHandle {
             executeDartCallback(callbackHandle: callbackHandle)
           } else {
+            let prevInterval = prevBackgroundTaskOptions?.interval
+            let currInterval = currBackgroundTaskOptions.interval
+            let prevIsOnceEvent = prevBackgroundTaskOptions?.isOnceEvent
+            let currIsOnceEvent = currBackgroundTaskOptions.isOnceEvent
             if prevInterval != currInterval || prevIsOnceEvent != currIsOnceEvent {
               startRepeatTask()
             }
@@ -123,7 +121,7 @@ class BackgroundService: NSObject {
   }
   
   private func requestNotificationAuthorization() {
-    if showNotification {
+    if notificationOptions.showNotification {
       let options = UNAuthorizationOptions(arrayLiteral: .alert, .sound)
       userNotificationCenter.requestAuthorization(options: options) { success, error in
         if let error = error {
@@ -141,15 +139,15 @@ class BackgroundService: NSObject {
   }
   
   private func sendNotification() {
-    if isGrantedNotificationAuthorization && showNotification {
-      let notificationContent = UNMutableNotificationContent()
-      notificationContent.title = notificationContentTitle
-      notificationContent.body = notificationContentText
-      if playSound {
-        notificationContent.sound = UNNotificationSound.default
+    if isGrantedNotificationAuthorization && notificationOptions.showNotification {
+      let content = UNMutableNotificationContent()
+      content.title = notificationContent.title
+      content.body = notificationContent.text
+      if notificationOptions.playSound {
+        content.sound = UNNotificationSound.default
       }
       
-      let request = UNNotificationRequest(identifier: NOTIFICATION_ID, content: notificationContent, trigger: nil)
+      let request = UNNotificationRequest(identifier: NOTIFICATION_ID, content: content, trigger: nil)
       userNotificationCenter.add(request, withCompletionHandler: nil)
     }
   }
@@ -234,14 +232,14 @@ class BackgroundService: NSObject {
   private func startRepeatTask() {
     stopRepeatTask()
     
-    if currIsOnceEvent {
+    if currBackgroundTaskOptions.isOnceEvent {
       backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
         for listener in self.taskLifecycleListeners {
           listener.onTaskRepeatEvent()
         }
       }
     } else {
-      let timeInterval = TimeInterval(currInterval / 1000)
+      let timeInterval = TimeInterval(currBackgroundTaskOptions.interval / 1000)
       repeatTask = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
         self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
           for listener in self.taskLifecycleListeners {
@@ -281,7 +279,7 @@ class BackgroundService: NSObject {
     // If it is not a notification requested by this plugin, the processing below is ignored.
     if notification.request.identifier != NOTIFICATION_ID { return }
     
-    if playSound {
+    if notificationOptions.playSound {
       completionHandler([.alert, .sound])
     } else {
       completionHandler([.alert])

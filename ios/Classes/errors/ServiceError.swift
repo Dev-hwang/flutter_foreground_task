@@ -8,6 +8,7 @@
 import Foundation
 
 enum ServiceError {
+  case ServiceArgumentNullException
   case ServiceAlreadyStartedException
   case ServiceNotStartedException
   case ServiceNotSupportedException
@@ -16,6 +17,8 @@ enum ServiceError {
 extension ServiceError : LocalizedError {
   public var errorDescription: String? {
     switch self {
+      case .ServiceArgumentNullException:
+        return NSLocalizedString("The required argument was not passed to the service.", comment: "ServiceArgumentNullException")
       case .ServiceAlreadyStartedException:
         return NSLocalizedString("The service has already started.", comment: "ServiceAlreadyStartedException")
       case .ServiceNotStartedException:
