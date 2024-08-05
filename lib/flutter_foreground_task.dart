@@ -48,7 +48,7 @@ abstract class TaskHandler {
   /// Called when data is sent using [FlutterForegroundTask.sendDataToTask].
   void onReceiveData(Object data) {}
 
-  /// Called when the notification button on the Android platform is pressed.
+  /// Called when the notification button is pressed.
   void onNotificationButtonPressed(String id) {}
 
   /// Called when the notification itself on the Android platform is pressed.

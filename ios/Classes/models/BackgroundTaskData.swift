@@ -18,11 +18,9 @@ struct BackgroundTaskData {
   }
   
   static func setData(args: Dictionary<String, Any>) {
-    let callbackHandle = args[CALLBACK_HANDLE] as? Int64
-    
     let prefs = UserDefaults.standard
     prefs.removeObject(forKey: CALLBACK_HANDLE)
-    if callbackHandle != nil {
+    if let callbackHandle = args[CALLBACK_HANDLE] as? Int64 {
       prefs.set(callbackHandle, forKey: CALLBACK_HANDLE)
     }
   }
