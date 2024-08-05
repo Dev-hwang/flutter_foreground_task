@@ -50,7 +50,7 @@ class MyTaskHandler extends TaskHandler {
     print('onReceiveData: $data');
   }
 
-  // Called when the notification button on the Android platform is pressed.
+  // Called when the notification button is pressed.
   @override
   void onNotificationButtonPressed(String id) {
     print('onNotificationButtonPressed: $id');
@@ -139,7 +139,7 @@ class _ExamplePageState extends State<ExamplePage> {
         priority: NotificationPriority.LOW,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: false,
+        showNotification: true,
         playSound: false,
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
