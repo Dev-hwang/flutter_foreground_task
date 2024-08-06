@@ -203,10 +203,10 @@ class MyTaskHandler extends TaskHandler {
     print('onNotificationButtonPressed: $id');
   }
 
-  // Called when the notification itself on the Android platform is pressed.
+  // Called when the notification itself is pressed.
   //
-  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-  // this function to be called.
+  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
+  // for this function to be called.
   @override
   void onNotificationPressed() {
     FlutterForegroundTask.launchApp('/');
@@ -297,7 +297,7 @@ Future<void> _initService() async {
       priority: NotificationPriority.LOW,
     ),
     iosNotificationOptions: const IOSNotificationOptions(
-      showNotification: false,
+      showNotification: true,
       playSound: false,
     ),
     foregroundTaskOptions: const ForegroundTaskOptions(
