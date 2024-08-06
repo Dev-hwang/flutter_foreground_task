@@ -20,6 +20,7 @@ let ACTION_TASK_DESTROY: String = "onDestroy"
 let ACTION_RECEIVE_DATA: String = "onReceiveData"
 
 let ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
+let ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
 
 @available(iOS 10.0, *)
 class BackgroundService: NSObject {
@@ -145,6 +146,8 @@ class BackgroundService: NSObject {
     let actionId = response.actionIdentifier
     if notificationContent.buttons.contains(where: { $0.id == actionId }) {
       backgroundChannel?.invokeMethod(ACTION_NOTIFICATION_BUTTON_PRESSED, arguments: actionId)
+    } else if actionId == UNNotificationDefaultActionIdentifier {
+      backgroundChannel?.invokeMethod(ACTION_NOTIFICATION_PRESSED, arguments: nil)
     }
     
     completionHandler()
