@@ -54,7 +54,7 @@ class BackgroundService: NSObject {
   }
   
   private let notificationCenter: UNUserNotificationCenter
-  private var isGrantedNotificationAuthorization: Bool = false
+  private let notificationPermissionManager: NotificationPermissionManager
   private var canReceiveNotificationResponse: Bool = false
 
   private var notificationOptions: NotificationOptions
@@ -66,6 +66,7 @@ class BackgroundService: NSObject {
   
   override init() {
     notificationCenter = UNUserNotificationCenter.current()
+    notificationPermissionManager = NotificationPermissionManager()
     notificationOptions = NotificationOptions.getData()
     notificationContent = NotificationContent.getData()
     currBackgroundTaskOptions = BackgroundTaskOptions.getData()
@@ -83,7 +84,7 @@ class BackgroundService: NSObject {
     
     switch action {
       case .START:
-        requestNotificationAuthorization()
+        requestNotification()
         isRunningService = true
         if let callbackHandle = currBackgroundTaskData.callbackHandle {
           executeDartCallback(callbackHandle: callbackHandle)
@@ -119,7 +120,6 @@ class BackgroundService: NSObject {
           self.destroyFlutterEngine()
         }
         removeAllNotification()
-        isGrantedNotificationAuthorization = false
         isRunningService = false
         break
     }
@@ -172,52 +172,45 @@ class BackgroundService: NSObject {
     canReceiveNotificationResponse = true
   }
   
-  private func requestNotificationAuthorization() {
-    if notificationOptions.showNotification {
-      let options = UNAuthorizationOptions(arrayLiteral: .alert, .sound)
-      notificationCenter.requestAuthorization(options: options) { success, error in
-        if let error = error {
-          print("Authorization error: \(error)")
-        } else {
-          if (success) {
-            self.isGrantedNotificationAuthorization = true
-            self.requestNotification()
-          } else {
-            print("Notification authorization denied.")
-          }
-        }
-      }
+  private func setNotificationActions() {
+    var actions: [UNNotificationAction] = []
+    for button in notificationContent.buttons {
+      let action = UNNotificationAction(identifier: button.id, title: button.text)
+      actions.append(action)
     }
+    
+    let category = UNNotificationCategory(
+      identifier: NOTIFICATION_CATEGORY_ID,
+      actions: actions,
+      intentIdentifiers: [],
+      options: .customDismissAction
+    )
+    
+    notificationCenter.setNotificationCategories([category])
   }
   
   private func requestNotification() {
-    if isGrantedNotificationAuthorization && notificationOptions.showNotification {
-      // set notification actions
-      var actions: [UNNotificationAction] = []
-      for button in notificationContent.buttons {
-        let action = UNNotificationAction(identifier: button.id, title: button.text)
-        actions.append(action)
+    if !notificationOptions.showNotification {
+      return
+    }
+    
+    notificationPermissionManager.checkPermission { permission in
+      if permission == NotificationPermission.DENIED {
+        print("notification permission denied..")
+        return
       }
       
-      let category = UNNotificationCategory(
-        identifier: NOTIFICATION_CATEGORY_ID,
-        actions: actions,
-        intentIdentifiers: [],
-        options: .customDismissAction
-      )
-      notificationCenter.setNotificationCategories([category])
-      
-      // request notification
       let content = UNMutableNotificationContent()
-      content.title = notificationContent.title
-      content.body = notificationContent.text
+      content.title = self.notificationContent.title
+      content.body = self.notificationContent.text
       content.categoryIdentifier = NOTIFICATION_CATEGORY_ID
-      if notificationOptions.playSound {
-        content.sound = UNNotificationSound.default
+      if self.notificationOptions.playSound {
+        content.sound = .default
       }
+      self.setNotificationActions()
       
       let request = UNNotificationRequest(identifier: NOTIFICATION_ID, content: content, trigger: nil)
-      notificationCenter.add(request, withCompletionHandler: nil)
+      self.notificationCenter.add(request, withCompletionHandler: nil)
     }
   }
   
