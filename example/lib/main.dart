@@ -99,6 +99,15 @@ class ExamplePage extends StatefulWidget {
 
 class _ExamplePageState extends State<ExamplePage> {
   Future<void> _requestPermissions() async {
+    // Android 13+, you need to allow notification permission to display foreground service notification.
+    //
+    // iOS: If you need notification, ask for permission.
+    final NotificationPermission notificationPermissionStatus =
+        await FlutterForegroundTask.checkNotificationPermission();
+    if (notificationPermissionStatus != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+
     if (Platform.isAndroid) {
       // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
       // onNotificationPressed function to be called.
@@ -113,19 +122,12 @@ class _ExamplePageState extends State<ExamplePage> {
         await FlutterForegroundTask.openSystemAlertWindowSettings();
       }
 
-      // Android 12 or higher, there are restrictions on starting a foreground service.
+      // Android 12+, there are restrictions on starting a foreground service.
       //
       // To restart the service on device reboot or unexpected problem, you need to allow below permission.
       if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
         // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
         await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-      }
-
-      // Android 13 and higher, you need to allow notification permission to expose foreground service notification.
-      final NotificationPermission notificationPermissionStatus =
-          await FlutterForegroundTask.checkNotificationPermission();
-      if (notificationPermissionStatus != NotificationPermission.granted) {
-        await FlutterForegroundTask.requestNotificationPermission();
       }
     }
   }
