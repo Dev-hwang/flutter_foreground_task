@@ -66,8 +66,10 @@ class MyTaskHandler extends TaskHandler {
     print('onNotificationPressed');
   }
 
-  // Called when the notification itself on the Android platform is dismissed
-  // on Android 14 which allow this behaviour.
+  // Called when the notification itself is dismissed.
+  //
+  // AOS: only work Android 14+
+  // iOS: only work iOS 10+
   @override
   void onNotificationDismissed() {
     print('onNotificationDismissed');

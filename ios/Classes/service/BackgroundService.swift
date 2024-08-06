@@ -21,6 +21,7 @@ let ACTION_RECEIVE_DATA: String = "onReceiveData"
 
 let ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
 let ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
+let ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
 
 @available(iOS 10.0, *)
 class BackgroundService: NSObject {
@@ -148,6 +149,8 @@ class BackgroundService: NSObject {
       backgroundChannel?.invokeMethod(ACTION_NOTIFICATION_BUTTON_PRESSED, arguments: actionId)
     } else if actionId == UNNotificationDefaultActionIdentifier {
       backgroundChannel?.invokeMethod(ACTION_NOTIFICATION_PRESSED, arguments: nil)
+    } else if actionId == UNNotificationDismissActionIdentifier {
+      backgroundChannel?.invokeMethod(ACTION_NOTIFICATION_DISMISSED, arguments: nil)
     }
     
     completionHandler()
@@ -199,7 +202,8 @@ class BackgroundService: NSObject {
       let category = UNNotificationCategory(
         identifier: NOTIFICATION_CATEGORY_ID,
         actions: actions,
-        intentIdentifiers: []
+        intentIdentifiers: [],
+        options: .customDismissAction
       )
       notificationCenter.setNotificationCategories([category])
       
