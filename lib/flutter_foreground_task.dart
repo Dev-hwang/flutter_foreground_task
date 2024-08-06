@@ -57,8 +57,10 @@ abstract class TaskHandler {
   /// for this function to be called.
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
 
-  /// Called when the notification itself on the Android platform is dismissed
-  /// on Android 14 which allow this behaviour.
+  /// Called when the notification itself is dismissed.
+  ///
+  /// AOS: only work Android 14+
+  /// iOS: only work iOS 10+
   void onNotificationDismissed() {}
 }
 

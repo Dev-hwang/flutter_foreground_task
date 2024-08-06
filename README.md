@@ -205,7 +205,7 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when the notification itself is pressed.
   //
-  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
+  // AOS: "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
   // for this function to be called.
   @override
   void onNotificationPressed() {
@@ -213,8 +213,10 @@ class MyTaskHandler extends TaskHandler {
     print('onNotificationPressed');
   }
 
-  // Called when the notification itself on the Android platform is dismissed 
-  // on Android 14 which allow this behaviour.
+  // Called when the notification itself is dismissed.
+  //
+  // AOS: only work Android 14+
+  // iOS: only work iOS 10+
   @override
   void onNotificationDismissed() {
     print('onNotificationDismissed');
@@ -326,10 +328,10 @@ void initState() {
 ```
 
 5. Use `FlutterForegroundTask.startService` to start the service. `startService` provides the following options:
-* `notificationTitle`: The title that will be displayed in the notification.
-* `notificationText`: The text that will be displayed in the notification.
-* `notificationIcon`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
-* `notificationButtons`: A list of buttons to display in the notification. A maximum of 3 is allowed.
+* `notificationTitle`: The title to display in the notification.
+* `notificationText`: The text to display in the notification.
+* `notificationIcon`: The icon to display in the notification. (only work Android)
+* `notificationButtons`: The buttons to display in the notification. (can add 0~3 buttons)
 * `callback`: A top-level function that calls the setTaskHandler function.
 
 ```dart
@@ -617,11 +619,11 @@ The resource prefix of the notification icon.
 
 The button to display in the notification.
 
-| Property    | Description                        |
-|-------------|------------------------------------|
-| `id`        | The button identifier.             |
-| `text`      | The text to display on the button. |
-| `textColor` | The button text color.             |
+| Property    | Description                                |
+|-------------|--------------------------------------------|
+| `id`        | The button identifier.                     |
+| `text`      | The text to display on the button.         |
+| `textColor` | The button text color. (only work Android) |
 
 ### :chicken: IOSNotificationOptions
 
