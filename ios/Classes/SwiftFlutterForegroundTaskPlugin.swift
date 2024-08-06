@@ -4,7 +4,9 @@ import UIKit
 public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   static private(set) var registerPlugins: FlutterPluginRegistrantCallback? = nil
   
+  private var notificationPermissionManager: NotificationPermissionManager? = nil
   private var backgroundServiceManager: BackgroundServiceManager? = nil
+
   private var foregroundChannel: FlutterMethodChannel? = nil
   
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -27,6 +29,7 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   }
   
   private func initServices() {
+    notificationPermissionManager = NotificationPermissionManager()
     backgroundServiceManager = BackgroundServiceManager()
   }
   
@@ -39,6 +42,14 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     let args = call.arguments
     do {
       switch call.method {
+        case "checkNotificationPermission":
+          notificationPermissionManager!.checkPermission { permission in
+            result(permission.rawValue)
+          }
+        case "requestNotificationPermission":
+          notificationPermissionManager!.requestPermission { permission in
+            result(permission.rawValue)
+          }
         case "startService":
           try backgroundServiceManager!.start(arguments: args)
           result(true)
@@ -74,19 +85,19 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   public func userNotificationCenter(_ center: UNUserNotificationCenter,
                                      didReceive response: UNNotificationResponse,
                                      withCompletionHandler completionHandler: @escaping () -> Void) {
-    backgroundServiceManager?.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+    BackgroundService.sharedInstance.userNotificationCenter(center, response, completionHandler)
   }
   
   @available(iOS 10.0, *)
   public func userNotificationCenter(_ center: UNUserNotificationCenter,
                                      willPresent notification: UNNotification,
                                      withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-    backgroundServiceManager?.userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler)
+    BackgroundService.sharedInstance.userNotificationCenter(center, notification, completionHandler)
   }
   
   public func applicationWillTerminate(_ application: UIApplication) {
     do {
-      try backgroundServiceManager!.stop()
+      try backgroundServiceManager?.stop()
       sleep(2) // Chance to handle onDestroy before app terminates
     } catch {
       // ServiceError.ServiceNotStartedException

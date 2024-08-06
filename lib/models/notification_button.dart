@@ -16,7 +16,7 @@ class NotificationButton {
   /// The text to display on the button.
   final String text;
 
-  /// The button text color.
+  /// The button text color. (only work Android)
   final Color? textColor;
 
   /// Returns the data fields of [NotificationButton] in JSON format.

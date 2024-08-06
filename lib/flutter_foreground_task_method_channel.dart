@@ -247,21 +247,15 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<NotificationPermission> checkNotificationPermission() async {
-    if (Platform.isAndroid) {
-      final int result =
-          await methodChannel.invokeMethod('checkNotificationPermission');
-      return getNotificationPermissionFromIndex(result);
-    }
-    return NotificationPermission.granted;
+    final int result =
+        await methodChannel.invokeMethod('checkNotificationPermission');
+    return getNotificationPermissionFromIndex(result);
   }
 
   @override
   Future<NotificationPermission> requestNotificationPermission() async {
-    if (Platform.isAndroid) {
-      final int result =
-          await methodChannel.invokeMethod('requestNotificationPermission');
-      return getNotificationPermissionFromIndex(result);
-    }
-    return NotificationPermission.granted;
+    final int result =
+        await methodChannel.invokeMethod('requestNotificationPermission');
+    return getNotificationPermissionFromIndex(result);
   }
 }

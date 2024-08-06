@@ -1,3 +1,12 @@
+## 8.1.0
+
+* [**FIX-AOS**] Fixed an issue where notification text was not visible on Android 7.1 and below
+* [**FEAT-iOS**] Implement onNotificationButtonPressed
+* [**FEAT-iOS**] Implement onNotificationPressed
+* [**FEAT-iOS**] Implement onNotificationDismissed
+* [**FEAT-iOS**] Implement notification permission request and check function
+  - Request notification permission in the `Example._requestPermissions` function
+
 ## 8.0.0
 
 * [**BREAKING**] Redesign the communication method between TaskHandler and UI

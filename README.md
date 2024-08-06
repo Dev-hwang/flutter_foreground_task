@@ -15,7 +15,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.0.0
+  flutter_foreground_task: ^8.1.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
@@ -197,24 +197,26 @@ class MyTaskHandler extends TaskHandler {
     print('onReceiveData: $data');
   }
 
-  // Called when the notification button on the Android platform is pressed.
+  // Called when the notification button is pressed.
   @override
   void onNotificationButtonPressed(String id) {
     print('onNotificationButtonPressed: $id');
   }
 
-  // Called when the notification itself on the Android platform is pressed.
+  // Called when the notification itself is pressed.
   //
-  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-  // this function to be called.
+  // AOS: "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
+  // for this function to be called.
   @override
   void onNotificationPressed() {
     FlutterForegroundTask.launchApp('/');
     print('onNotificationPressed');
   }
 
-  // Called when the notification itself on the Android platform is dismissed 
-  // on Android 14 which allow this behaviour.
+  // Called when the notification itself is dismissed.
+  //
+  // AOS: only work Android 14+
+  // iOS: only work iOS 10+
   @override
   void onNotificationDismissed() {
     print('onNotificationDismissed');
@@ -255,6 +257,15 @@ void dispose() {
 
 ```dart
 Future<void> _requestPermissions() async {
+  // Android 13+, you need to allow notification permission to display foreground service notification.
+  //
+  // iOS: If you need notification, ask for permission.
+  final NotificationPermission notificationPermissionStatus =
+      await FlutterForegroundTask.checkNotificationPermission();
+  if (notificationPermissionStatus != NotificationPermission.granted) {
+    await FlutterForegroundTask.requestNotificationPermission();
+  }
+
   if (Platform.isAndroid) {
     // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
     // onNotificationPressed function to be called.
@@ -269,19 +280,12 @@ Future<void> _requestPermissions() async {
       await FlutterForegroundTask.openSystemAlertWindowSettings();
     }
 
-    // Android 12 or higher, there are restrictions on starting a foreground service.
+    // Android 12+, there are restrictions on starting a foreground service.
     //
     // To restart the service on device reboot or unexpected problem, you need to allow below permission.
     if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
       // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
       await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-    }
-
-    // Android 13 and higher, you need to allow notification permission to expose foreground service notification.
-    final NotificationPermission notificationPermissionStatus =
-        await FlutterForegroundTask.checkNotificationPermission();
-    if (notificationPermissionStatus != NotificationPermission.granted) {
-      await FlutterForegroundTask.requestNotificationPermission();
     }
   }
 }
@@ -297,7 +301,7 @@ Future<void> _initService() async {
       priority: NotificationPriority.LOW,
     ),
     iosNotificationOptions: const IOSNotificationOptions(
-      showNotification: false,
+      showNotification: true,
       playSound: false,
     ),
     foregroundTaskOptions: const ForegroundTaskOptions(
@@ -326,10 +330,10 @@ void initState() {
 ```
 
 5. Use `FlutterForegroundTask.startService` to start the service. `startService` provides the following options:
-* `notificationTitle`: The title that will be displayed in the notification.
-* `notificationText`: The text that will be displayed in the notification.
-* `notificationIcon`: The data of the icon to display in the notification. If the value is null, the app launcher icon is used.
-* `notificationButtons`: A list of buttons to display in the notification. A maximum of 3 is allowed.
+* `notificationTitle`: The title to display in the notification.
+* `notificationText`: The text to display in the notification.
+* `notificationIcon`: The icon to display in the notification. (only work Android)
+* `notificationButtons`: The buttons to display in the notification. (can add 0~3 buttons)
 * `callback`: A top-level function that calls the setTaskHandler function.
 
 ```dart
@@ -349,6 +353,13 @@ Future<ServiceRequestResult> _startService() async {
   }
 }
 ```
+
+> [!NOTE]
+> iOS Platform, `notificationButtons` is not displayed directly in notification.
+> When the user slides down the notification, the button is displayed, so you need to guide the user on how to use it.
+> https://developer.apple.com/documentation/usernotifications/declaring-your-actionable-notification-types
+>
+> If you know a better implementation, please let me know on [GitHub](https://github.com/Dev-hwang/flutter_foreground_task/issues) :)
 
 6. Use `FlutterForegroundTask.updateService` to update the service. The options are the same as the start function.
 
@@ -617,11 +628,11 @@ The resource prefix of the notification icon.
 
 The button to display in the notification.
 
-| Property    | Description                        |
-|-------------|------------------------------------|
-| `id`        | The button identifier.             |
-| `text`      | The text to display on the button. |
-| `textColor` | The button text color.             |
+| Property    | Description                                |
+|-------------|--------------------------------------------|
+| `id`        | The button identifier.                     |
+| `text`      | The text to display on the button.         |
+| `textColor` | The button text color. (only work Android) |
 
 ### :chicken: IOSNotificationOptions
 
@@ -691,7 +702,7 @@ Result of service request.
 
 ## Utility methods
 
-### :lollipop: minimizeApp (Both)
+### :lollipop: minimizeApp
 
 Minimize the app to the background.
 
@@ -704,10 +715,10 @@ void function() => FlutterForegroundTask.minimizeApp();
 
 ### :lollipop: launchApp (Android)
 
-Launch the app if it is not running otherwise open the current activity.
+Launch the app at `route` if it is not running otherwise open it.
 
 ```dart
-void function() => FlutterForegroundTask.launchApp();
+void function() => FlutterForegroundTask.launchApp([route]);
 ```
 
 It is also possible to pass a route to this function but the route will only
@@ -742,7 +753,9 @@ Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSe
 
 ### :lollipop: requestIgnoreBatteryOptimization (Android)
 
-Request to ignore battery optimization. This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+Request to ignore battery optimization.
+
+This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
 
 > **Warning**
 > It only works when the app is in the foreground.
@@ -753,7 +766,7 @@ Future<bool> function() => FlutterForegroundTask.requestIgnoreBatteryOptimizatio
 
 ### :lollipop: canDrawOverlays (Android)
 
-Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
+Returns whether the `android.permission.SYSTEM_ALERT_WINDOW` permission is granted.
 
 ```dart
 Future<bool> function() => FlutterForegroundTask.canDrawOverlays;
@@ -761,7 +774,7 @@ Future<bool> function() => FlutterForegroundTask.canDrawOverlays;
 
 ### :lollipop: openSystemAlertWindowSettings (Android)
 
-Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
+Open the settings page where you can allow/deny the `android.permission.SYSTEM_ALERT_WINDOW` permission.
 
 > **Warning**
 > It only works when the app is in the foreground.
@@ -770,7 +783,7 @@ Open the settings page where you can allow/deny the "android.permission.SYSTEM_A
 Future<bool> function() => FlutterForegroundTask.openSystemAlertWindowSettings();
 ```
 
-### :lollipop: isAppOnForeground (Both)
+### :lollipop: isAppOnForeground
 
 Returns whether the app is in the foreground.
 
@@ -789,11 +802,9 @@ Toggles lockScreen visibility.
 void function() => FlutterForegroundTask.setOnLockScreenVisibility(true);
 ```
 
-### :lollipop: checkNotificationPermission (Android)
+### :lollipop: checkNotificationPermission
 
-Returns "android.permission.POST_NOTIFICATIONS" permission status.
-
-for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+Returns notification permission status.
 
 > **Warning**
 > It only works when the app is in the foreground.
@@ -802,11 +813,9 @@ for Android 13, https://developer.android.com/develop/ui/views/notifications/not
 Future<NotificationPermission> function() => FlutterForegroundTask.checkNotificationPermission();
 ```
 
-### :lollipop: requestNotificationPermission (Android)
+### :lollipop: requestNotificationPermission
 
-Request "android.permission.POST_NOTIFICATIONS" permission.
-
-for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+Request notification permission.
 
 > **Warning**
 > It only works when the app is in the foreground.

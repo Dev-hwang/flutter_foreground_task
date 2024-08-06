@@ -50,24 +50,26 @@ class MyTaskHandler extends TaskHandler {
     print('onReceiveData: $data');
   }
 
-  // Called when the notification button on the Android platform is pressed.
+  // Called when the notification button is pressed.
   @override
   void onNotificationButtonPressed(String id) {
     print('onNotificationButtonPressed: $id');
   }
 
-  // Called when the notification itself on the Android platform is pressed.
+  // Called when the notification itself is pressed.
   //
-  // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-  // this function to be called.
+  // AOS: "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
+  // for this function to be called.
   @override
   void onNotificationPressed() {
     FlutterForegroundTask.launchApp('/');
     print('onNotificationPressed');
   }
 
-  // Called when the notification itself on the Android platform is dismissed
-  // on Android 14 which allow this behaviour.
+  // Called when the notification itself is dismissed.
+  //
+  // AOS: only work Android 14+
+  // iOS: only work iOS 10+
   @override
   void onNotificationDismissed() {
     print('onNotificationDismissed');
@@ -97,6 +99,15 @@ class ExamplePage extends StatefulWidget {
 
 class _ExamplePageState extends State<ExamplePage> {
   Future<void> _requestPermissions() async {
+    // Android 13+, you need to allow notification permission to display foreground service notification.
+    //
+    // iOS: If you need notification, ask for permission.
+    final NotificationPermission notificationPermissionStatus =
+        await FlutterForegroundTask.checkNotificationPermission();
+    if (notificationPermissionStatus != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+
     if (Platform.isAndroid) {
       // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
       // onNotificationPressed function to be called.
@@ -111,19 +122,12 @@ class _ExamplePageState extends State<ExamplePage> {
         await FlutterForegroundTask.openSystemAlertWindowSettings();
       }
 
-      // Android 12 or higher, there are restrictions on starting a foreground service.
+      // Android 12+, there are restrictions on starting a foreground service.
       //
       // To restart the service on device reboot or unexpected problem, you need to allow below permission.
       if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
         // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
         await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-      }
-
-      // Android 13 and higher, you need to allow notification permission to expose foreground service notification.
-      final NotificationPermission notificationPermissionStatus =
-          await FlutterForegroundTask.checkNotificationPermission();
-      if (notificationPermissionStatus != NotificationPermission.granted) {
-        await FlutterForegroundTask.requestNotificationPermission();
       }
     }
   }
@@ -139,7 +143,7 @@ class _ExamplePageState extends State<ExamplePage> {
         priority: NotificationPriority.LOW,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: false,
+        showNotification: true,
         playSound: false,
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(

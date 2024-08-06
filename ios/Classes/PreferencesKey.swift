@@ -15,3 +15,4 @@ let CALLBACK_HANDLE = "callbackHandle"
 
 let NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"
 let NOTIFICATION_CONTENT_TEXT = "notificationContentText"
+let NOTIFICATION_CONTENT_BUTTONS = "buttons"

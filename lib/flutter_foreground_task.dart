@@ -48,17 +48,19 @@ abstract class TaskHandler {
   /// Called when data is sent using [FlutterForegroundTask.sendDataToTask].
   void onReceiveData(Object data) {}
 
-  /// Called when the notification button on the Android platform is pressed.
+  /// Called when the notification button is pressed.
   void onNotificationButtonPressed(String id) {}
 
-  /// Called when the notification itself on the Android platform is pressed.
+  /// Called when the notification itself is pressed.
   ///
-  /// "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-  /// this function to be called.
+  /// AOS: "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
+  /// for this function to be called.
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
 
-  /// Called when the notification itself on the Android platform is dismissed
-  /// on Android 14 which allow this behaviour.
+  /// Called when the notification itself is dismissed.
+  ///
+  /// AOS: only work Android 14+
+  /// iOS: only work iOS 10+
   void onNotificationDismissed() {}
 }
 
@@ -310,7 +312,7 @@ class FlutterForegroundTask {
   static void launchApp([String? route]) =>
       FlutterForegroundTaskPlatform.instance.launchApp(route);
 
-  /// Toggles lockScreen visibility
+  /// Toggles lockScreen visibility.
   static void setOnLockScreenVisibility(bool isVisible) =>
       FlutterForegroundTaskPlatform.instance
           .setOnLockScreenVisibility(isVisible);
@@ -333,29 +335,27 @@ class FlutterForegroundTask {
           .openIgnoreBatteryOptimizationSettings();
 
   /// Request to ignore battery optimization.
+  ///
+  /// This function requires "android.permission.REQUEST\_IGNORE\_BATTERY\_OPTIMIZATIONS" permission.
   static Future<bool> requestIgnoreBatteryOptimization() =>
       FlutterForegroundTaskPlatform.instance.requestIgnoreBatteryOptimization();
 
-  /// Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
+  /// Returns whether the "android.permission.SYSTEM\_ALERT\_WINDOW" permission is granted.
   static Future<bool> get canDrawOverlays =>
       FlutterForegroundTaskPlatform.instance.canDrawOverlays;
 
-  /// Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
+  /// Open the settings page where you can allow/deny the "android.permission.SYSTEM\_ALERT\_WINDOW" permission.
   ///
-  /// Pass the `forceOpen` bool to open the permissions page even if granted.
+  /// Pass the [forceOpen] bool to open the permissions page even if granted.
   static Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) =>
       FlutterForegroundTaskPlatform.instance
           .openSystemAlertWindowSettings(forceOpen: forceOpen);
 
-  /// Returns "android.permission.POST_NOTIFICATIONS" permission status.
-  ///
-  /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+  /// Returns notification permission status.
   static Future<NotificationPermission> checkNotificationPermission() =>
       FlutterForegroundTaskPlatform.instance.checkNotificationPermission();
 
-  /// Request "android.permission.POST_NOTIFICATIONS" permission.
-  ///
-  /// for Android 13, https://developer.android.com/develop/ui/views/notifications/notification-permission
+  /// Request notification permission.
   static Future<NotificationPermission> requestNotificationPermission() =>
       FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
 }
