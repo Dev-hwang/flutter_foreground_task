@@ -13,6 +13,7 @@ data class NotificationOptions(
     val enableVibration: Boolean,
     val playSound: Boolean,
     val showWhen: Boolean,
+    val showBadge: Boolean,
     val visibility: Int
 ) {
     companion object {
@@ -29,6 +30,7 @@ data class NotificationOptions(
             val enableVibration = prefs.getBoolean(PrefsKey.ENABLE_VIBRATION, false)
             val playSound = prefs.getBoolean(PrefsKey.PLAY_SOUND, false)
             val showWhen = prefs.getBoolean(PrefsKey.SHOW_WHEN, false)
+            val showBadge = prefs.getBoolean(PrefsKey.SHOW_BADGE, true)
             val visibility = prefs.getInt(PrefsKey.VISIBILITY, 1)
 
             return NotificationOptions(
@@ -41,6 +43,7 @@ data class NotificationOptions(
                 enableVibration = enableVibration,
                 playSound = playSound,
                 showWhen = showWhen,
+                showBadge = showBadge,
                 visibility = visibility
             )
         }
@@ -58,6 +61,7 @@ data class NotificationOptions(
             val enableVibration = map?.get(PrefsKey.ENABLE_VIBRATION) as? Boolean ?: false
             val playSound = map?.get(PrefsKey.PLAY_SOUND) as? Boolean ?: false
             val showWhen = map?.get(PrefsKey.SHOW_WHEN) as? Boolean ?: false
+            val showBadge = map?.get(PrefsKey.SHOW_BADGE) as? Boolean ?: true
             val visibility = map?.get(PrefsKey.VISIBILITY) as? Int ?: 1
 
             with(prefs.edit()) {
@@ -70,6 +74,7 @@ data class NotificationOptions(
                 putBoolean(PrefsKey.ENABLE_VIBRATION, enableVibration)
                 putBoolean(PrefsKey.PLAY_SOUND, playSound)
                 putBoolean(PrefsKey.SHOW_WHEN, showWhen)
+                putBoolean(PrefsKey.SHOW_BADGE, showBadge)
                 putInt(PrefsKey.VISIBILITY, visibility)
                 commit()
             }
