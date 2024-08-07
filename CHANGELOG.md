@@ -1,3 +1,7 @@
+## 8.2.0
+
+* [**CHORE-AOS**] Down Android minSdkVersion to 21
+
 ## 8.1.0
 
 * [**FIX-AOS**] Fixed an issue where notification text was not visible on Android 7.1 and below
