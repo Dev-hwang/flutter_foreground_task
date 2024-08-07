@@ -531,6 +531,11 @@ class MyTaskHandler extends TaskHandler {
 }
 ```
 
+### :hatched_chick: other example
+
+* [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service)
+* [`location_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/location_service)
+
 ## Migration (ver 8.0.0)
 
 1. The `sendPort` parameter was removed from the service callback(onStart, onRepeatEvent, onDestroy)
