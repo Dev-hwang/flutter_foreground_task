@@ -15,6 +15,7 @@ class AndroidNotificationOptions {
     this.enableVibration = false,
     this.playSound = false,
     this.showWhen = false,
+    this.showBadge = true,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
   })  : assert(channelId.isNotEmpty),
         assert(channelName.isNotEmpty);
@@ -54,6 +55,10 @@ class AndroidNotificationOptions {
   /// The default is `false`.
   final bool showWhen;
 
+  /// Whether to show the badge near the app icon when service is started
+  /// The default is `true`.
+  final bool showBadge;
+
   /// Control the level of detail displayed in notifications on the lock screen.
   /// The default is `NotificationVisibility.VISIBILITY_PUBLIC`.
   final NotificationVisibility visibility;
@@ -70,6 +75,7 @@ class AndroidNotificationOptions {
       'enableVibration': enableVibration,
       'playSound': playSound,
       'showWhen': showWhen,
+      'showBadge': showBadge,
       'visibility': visibility.rawValue,
     };
   }
