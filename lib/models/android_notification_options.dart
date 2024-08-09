@@ -15,7 +15,7 @@ class AndroidNotificationOptions {
     this.enableVibration = false,
     this.playSound = false,
     this.showWhen = false,
-    this.showBadge = true,
+    this.showBadge = false,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
   })  : assert(channelId.isNotEmpty),
         assert(channelName.isNotEmpty);
@@ -24,19 +24,24 @@ class AndroidNotificationOptions {
   final int? id;
 
   /// Unique ID of the notification channel.
+  ///
+  /// It is set only once for the first time on Android 8.0+.
   final String channelId;
 
   /// The name of the notification channel.
-  /// This value is displayed to the user in the notification settings.
+  ///
+  /// It is set only once for the first time on Android 8.0+.
   final String channelName;
 
   /// The description of the notification channel.
-  /// This value is displayed to the user in the notification settings.
+  ///
+  /// It is set only once for the first time on Android 8.0+.
   final String? channelDescription;
 
   /// The importance of the notification channel.
-  /// See https://developer.android.com/training/notify-user/channels?hl=ko#importance
   /// The default is `NotificationChannelImportance.DEFAULT`.
+  ///
+  /// It is set only once for the first time on Android 8.0+.
   final NotificationChannelImportance channelImportance;
 
   /// Priority of notifications for Android 7.1 and lower.
@@ -45,18 +50,24 @@ class AndroidNotificationOptions {
 
   /// Whether to enable vibration when creating notifications.
   /// The default is `false`.
+  ///
+  /// It is set only once for the first time on Android 8.0+.
   final bool enableVibration;
 
   /// Whether to play sound when creating notifications.
   /// The default is `false`.
+  ///
+  /// It is set only once for the first time on Android 8.0+.
   final bool playSound;
 
   /// Whether to show the timestamp when the notification was created in the content view.
   /// The default is `false`.
   final bool showWhen;
 
-  /// Whether to show the badge near the app icon when service is started
-  /// The default is `true`.
+  /// Whether to show the badge near the app icon when service is started.
+  /// The default is `false`.
+  ///
+  /// It is set only once for the first time on Android 8.0+.
   final bool showBadge;
 
   /// Control the level of detail displayed in notifications on the lock screen.

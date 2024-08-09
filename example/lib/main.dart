@@ -141,7 +141,6 @@ class _ExamplePageState extends State<ExamplePage> {
             'This notification appears when the foreground service is running.',
         channelImportance: NotificationChannelImportance.LOW,
         priority: NotificationPriority.LOW,
-        showBadge: false,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,

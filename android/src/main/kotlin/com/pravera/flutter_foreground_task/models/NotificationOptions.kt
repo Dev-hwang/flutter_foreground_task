@@ -30,7 +30,7 @@ data class NotificationOptions(
             val enableVibration = prefs.getBoolean(PrefsKey.ENABLE_VIBRATION, false)
             val playSound = prefs.getBoolean(PrefsKey.PLAY_SOUND, false)
             val showWhen = prefs.getBoolean(PrefsKey.SHOW_WHEN, false)
-            val showBadge = prefs.getBoolean(PrefsKey.SHOW_BADGE, true)
+            val showBadge = prefs.getBoolean(PrefsKey.SHOW_BADGE, false)
             val visibility = prefs.getInt(PrefsKey.VISIBILITY, 1)
 
             return NotificationOptions(
@@ -61,7 +61,7 @@ data class NotificationOptions(
             val enableVibration = map?.get(PrefsKey.ENABLE_VIBRATION) as? Boolean ?: false
             val playSound = map?.get(PrefsKey.PLAY_SOUND) as? Boolean ?: false
             val showWhen = map?.get(PrefsKey.SHOW_WHEN) as? Boolean ?: false
-            val showBadge = map?.get(PrefsKey.SHOW_BADGE) as? Boolean ?: true
+            val showBadge = map?.get(PrefsKey.SHOW_BADGE) as? Boolean ?: false
             val visibility = map?.get(PrefsKey.VISIBILITY) as? Int ?: 1
 
             with(prefs.edit()) {
