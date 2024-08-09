@@ -1,3 +1,9 @@
+## 8.3.0
+
+* [**FEAT**] Add showBadge option to AndroidNotificationOptions.
+* [**DEPRECATED**] Deprecated AndroidNotificationOptions.id. Use startService(serviceId) instead.
+* [**DOCS**] Separate models, utility, migration documentation.
+
 ## 8.2.0
 
 * [**CHORE-AOS**] Down Android minSdkVersion to 21
