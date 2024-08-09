@@ -1,0 +1,124 @@
+## Utility
+
+### :lollipop: minimizeApp
+
+Minimize the app to the background.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+void function() => FlutterForegroundTask.minimizeApp();
+```
+
+### :lollipop: launchApp (Android)
+
+Launch the app at `route` if it is not running otherwise open it.
+
+It is also possible to pass a route to this function but the route will only
+be loaded if the app is not already running.
+
+```dart
+void function() => FlutterForegroundTask.launchApp([route]);
+```
+
+### :lollipop: setOnLockScreenVisibility (Android)
+
+Toggles lockScreen visibility.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+void function() => FlutterForegroundTask.setOnLockScreenVisibility(true);
+```
+
+### :lollipop: isAppOnForeground
+
+Returns whether the app is in the foreground.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.isAppOnForeground;
+```
+
+### :lollipop: wakeUpScreen (Android)
+
+Wake up the screen of a device that is turned off.
+
+```dart
+void function() => FlutterForegroundTask.wakeUpScreen();
+```
+
+### :lollipop: isIgnoringBatteryOptimizations (Android)
+
+Returns whether the app has been excluded from battery optimization.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.isIgnoringBatteryOptimizations;
+```
+
+### :lollipop: openIgnoreBatteryOptimizationSettings (Android)
+
+Open the settings page where you can set ignore battery optimization.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
+```
+
+### :lollipop: requestIgnoreBatteryOptimization (Android)
+
+Request to ignore battery optimization.
+
+This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.requestIgnoreBatteryOptimization();
+```
+
+### :lollipop: canDrawOverlays (Android)
+
+Returns whether the `android.permission.SYSTEM_ALERT_WINDOW` permission is granted.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.canDrawOverlays;
+```
+
+### :lollipop: openSystemAlertWindowSettings (Android)
+
+Open the settings page where you can allow/deny the `android.permission.SYSTEM_ALERT_WINDOW`
+permission.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.openSystemAlertWindowSettings();
+```
+
+### :lollipop: checkNotificationPermission
+
+Returns notification permission status.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<NotificationPermission> function() => FlutterForegroundTask.checkNotificationPermission();
+```
+
+### :lollipop: requestNotificationPermission
+
+Request notification permission.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<NotificationPermission> function() => FlutterForegroundTask.requestNotificationPermission();
+```
