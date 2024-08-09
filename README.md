@@ -328,6 +328,7 @@ void initState() {
 ```
 
 5. Use `FlutterForegroundTask.startService` to start the service. `startService` provides the following options:
+* `serviceId`: The unique ID that identifies the service.
 * `notificationTitle`: The title to display in the notification.
 * `notificationText`: The text to display in the notification.
 * `notificationIcon`: The icon to display in the notification. (only work Android)
@@ -340,6 +341,7 @@ Future<ServiceRequestResult> _startService() async {
     return FlutterForegroundTask.restartService();
   } else {
     return FlutterForegroundTask.startService(
+      serviceId: 256,
       notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
       notificationIcon: null,

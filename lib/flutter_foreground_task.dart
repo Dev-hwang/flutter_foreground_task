@@ -87,6 +87,7 @@ class FlutterForegroundTask {
 
   /// Start the foreground service with notification.
   static Future<ServiceRequestResult> startService({
+    int? serviceId,
     required String notificationTitle,
     required String notificationText,
     NotificationIconData? notificationIcon,
@@ -98,6 +99,7 @@ class FlutterForegroundTask {
     }
 
     return FlutterForegroundTaskPlatform.instance.startService(
+      serviceId: serviceId,
       androidNotificationOptions: _androidNotificationOptions,
       iosNotificationOptions: _iosNotificationOptions,
       foregroundTaskOptions: _foregroundTaskOptions,

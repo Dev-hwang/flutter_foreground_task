@@ -4,7 +4,7 @@ import android.content.Context
 import com.pravera.flutter_foreground_task.PreferencesKey as PrefsKey
 
 data class NotificationOptions(
-    val id: Int,
+    val serviceId: Int,
     val channelId: String,
     val channelName: String,
     val channelDescription: String?,
@@ -21,7 +21,7 @@ data class NotificationOptions(
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
-            val id = prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000)
+            val serviceId = prefs.getInt(PrefsKey.SERVICE_ID, prefs.getInt(PrefsKey.NOTIFICATION_ID, 1000))
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: "foreground_service"
             val channelName = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, null) ?: "Foreground Service"
             val channelDesc = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_DESC, null)
@@ -34,7 +34,7 @@ data class NotificationOptions(
             val visibility = prefs.getInt(PrefsKey.VISIBILITY, 1)
 
             return NotificationOptions(
-                id = id,
+                serviceId = serviceId,
                 channelId = channelId,
                 channelName = channelName,
                 channelDescription = channelDesc,
@@ -52,7 +52,9 @@ data class NotificationOptions(
             val prefs = context.getSharedPreferences(
                 PrefsKey.NOTIFICATION_OPTIONS_PREFS, Context.MODE_PRIVATE)
 
-            val id = map?.get(PrefsKey.NOTIFICATION_ID) as? Int ?: 1000
+            val serviceId = map?.get(PrefsKey.SERVICE_ID) as? Int
+                ?: map?.get(PrefsKey.NOTIFICATION_ID) as? Int
+                ?: 1000
             val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String
             val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String
             val channelDesc = map?.get(PrefsKey.NOTIFICATION_CHANNEL_DESC) as? String
@@ -65,7 +67,7 @@ data class NotificationOptions(
             val visibility = map?.get(PrefsKey.VISIBILITY) as? Int ?: 1
 
             with(prefs.edit()) {
-                putInt(PrefsKey.NOTIFICATION_ID, id)
+                putInt(PrefsKey.SERVICE_ID, serviceId)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_ID, channelId)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_NAME, channelName)
                 putString(PrefsKey.NOTIFICATION_CHANNEL_DESC, channelDesc)

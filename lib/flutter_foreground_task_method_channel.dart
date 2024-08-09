@@ -23,6 +23,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<ServiceRequestResult> startService({
+    int? serviceId,
     required AndroidNotificationOptions androidNotificationOptions,
     required IOSNotificationOptions iosNotificationOptions,
     required ForegroundTaskOptions foregroundTaskOptions,
@@ -47,6 +48,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
     try {
       final options = <String, dynamic>{
+        'serviceId': serviceId,
         if (Platform.isAndroid)
           ...androidNotificationOptions.toJson()
         else

@@ -252,16 +252,16 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             createNotificationChannel()
         }
 
-        val id = notificationOptions.id
+        val serviceId = notificationOptions.serviceId
         val notification = createNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
-                id,
+                serviceId,
                 notification,
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
             )
         } else {
-            startForeground(id, notification)
+            startForeground(serviceId, notification)
         }
 
         releaseLockMode()
@@ -389,7 +389,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     }
 
     private fun updateNotification() {
-        val id = notificationOptions.id
+        val serviceId = notificationOptions.serviceId
         val notification = createNotification()
         val nm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSystemService(NotificationManager::class.java)
@@ -397,7 +397,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             // crash 23+
             ContextCompat.getSystemService(this, NotificationManager::class.java)
         }
-        nm?.notify(id, notification)
+        nm?.notify(serviceId, notification)
     }
 
     @SuppressLint("WakelockTimeout")

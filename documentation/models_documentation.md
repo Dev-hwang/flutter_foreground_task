@@ -6,7 +6,6 @@ Notification options for Android platform.
 
 | Property             | Description                                                                                                                                                 |
 |----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `id`                 | Unique ID of the notification.                                                                                                                              |
 | `channelId`          | Unique ID of the notification channel. It is set only once for the first time on Android 8.0+.                                                              |
 | `channelName`        | The name of the notification channel. It is set only once for the first time on Android 8.0+.                                                               |
 | `channelDescription` | The description of the notification channel. It is set only once for the first time on Android 8.0+.                                                        |

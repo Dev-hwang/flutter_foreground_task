@@ -6,7 +6,7 @@ import 'package:flutter_foreground_task/models/notification_visibility.dart';
 class AndroidNotificationOptions {
   /// Constructs an instance of [AndroidNotificationOptions].
   AndroidNotificationOptions({
-    this.id,
+    @Deprecated('Use startService(serviceId) instead.') this.id,
     required this.channelId,
     required this.channelName,
     this.channelDescription,

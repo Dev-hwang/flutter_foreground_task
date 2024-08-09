@@ -32,6 +32,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   }
 
   Future<ServiceRequestResult> startService({
+    int? serviceId,
     required AndroidNotificationOptions androidNotificationOptions,
     required IOSNotificationOptions iosNotificationOptions,
     required ForegroundTaskOptions foregroundTaskOptions,
