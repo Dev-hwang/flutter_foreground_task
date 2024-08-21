@@ -129,6 +129,13 @@ class _ExamplePageState extends State<ExamplePage> {
         // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
         await FlutterForegroundTask.requestIgnoreBatteryOptimization();
       }
+
+      // Use this utility only if you provide services that require long-term survival,
+      // such as exact alarm service, healthcare service, or Bluetooth communication.
+      //
+      // This utility requires the "android.permission.SCHEDULE_EXACT_ALARM" permission.
+      // Using this permission may make app distribution difficult due to Google policy.
+      await FlutterForegroundTask.openAlarmsAndRemindersSettings();
     }
   }
 

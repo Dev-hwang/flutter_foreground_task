@@ -130,4 +130,9 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError(
         'requestNotificationPermission() has not been implemented.');
   }
+
+  Future<bool> openAlarmsAndRemindersSettings() {
+    throw UnimplementedError(
+        'openAlarmsAndRemindersSettings() has not been implemented.');
+  }
 }

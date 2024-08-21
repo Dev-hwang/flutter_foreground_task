@@ -405,10 +405,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         if (foregroundTaskOptions.allowWakeLock && (wakeLock == null || wakeLock?.isHeld == false)) {
             wakeLock =
                 (applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                    newWakeLock(
-                        PowerManager.PARTIAL_WAKE_LOCK,
-                        "ForegroundService:WakeLock"
-                    ).apply {
+                    newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ForegroundService:WakeLock").apply {
                         setReferenceCounted(false)
                         acquire()
                     }
@@ -418,10 +415,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         if (foregroundTaskOptions.allowWifiLock && (wifiLock == null || wifiLock?.isHeld == false)) {
             wifiLock =
                 (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).run {
-                    createWifiLock(
-                        WifiManager.WIFI_MODE_FULL_HIGH_PERF,
-                        "ForegroundService:WifiLock"
-                    ).apply {
+                    createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ForegroundService:WifiLock").apply {
                         setReferenceCounted(false)
                         acquire()
                     }
