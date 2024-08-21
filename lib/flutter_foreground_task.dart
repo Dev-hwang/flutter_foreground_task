@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:isolate';
 import 'dart:ui';
 
@@ -32,7 +34,7 @@ export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 const String _kPortName = 'flutter_foreground_task/isolateComPort';
 const String _kPrefsKeyPrefix = 'com.pravera.flutter_foreground_task.prefs.';
 
-typedef DataCallback = void Function(dynamic data);
+typedef DataCallback = void Function(Object data);
 
 /// A class that implements a task handler.
 abstract class TaskHandler {
@@ -168,10 +170,19 @@ class FlutterForegroundTask {
           handler.onDestroy(timestamp);
           break;
         case 'onReceiveData':
-          handler.onReceiveData(call.arguments);
+          dynamic data = call.arguments;
+          if (data is List || data is Map) {
+            try {
+              data = jsonDecode(jsonEncode(data));
+            } catch (e, s) {
+              dev.log('onReceiveData error: $e\n$s');
+            }
+          }
+          handler.onReceiveData(data);
           break;
         case 'onNotificationButtonPressed':
-          handler.onNotificationButtonPressed(call.arguments.toString());
+          final id = call.arguments.toString();
+          handler.onNotificationButtonPressed(id);
           break;
         case 'onNotificationDismissed':
           handler.onNotificationDismissed();
