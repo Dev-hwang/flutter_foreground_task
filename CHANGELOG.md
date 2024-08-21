@@ -1,3 +1,7 @@
+## 8.3.1
+
+* [**FIX**] Fixed an issue where Map collection could not be cast in onReceiveData [#258](https://github.com/Dev-hwang/flutter_foreground_task/issues/258)
+
 ## 8.3.0
 
 * [**FEAT**] Add showBadge option to AndroidNotificationOptions.
