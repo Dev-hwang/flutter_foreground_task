@@ -178,7 +178,7 @@ class _ExamplePageState extends State<ExamplePage> {
     return FlutterForegroundTask.stopService();
   }
 
-  void _onReceiveTaskData(dynamic data) {
+  void _onReceiveTaskData(Object data) {
     if (data is int) {
       print('count: $data');
     }

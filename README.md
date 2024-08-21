@@ -225,7 +225,7 @@ class MyTaskHandler extends TaskHandler {
 3. Add a callback to receive data sent from the TaskHandler. If the screen or controller is disposed, be sure to call the `removeTaskDataCallback` function.
 
 ```dart
-void _onReceiveTaskData(dynamic data) {
+void _onReceiveTaskData(Object data) {
   if (data is Map<String, dynamic>) {
     final dynamic timestampMillis = data["timestampMillis"];
     if (timestampMillis != null) {
@@ -442,7 +442,7 @@ Future<ServiceRequestResult> _stopService() async {
 
 This plugin supports two-way communication between TaskHandler and UI.
 
-The send function can only send primitive type(int, double), String, Collection provided by Flutter.
+The send function can only send primitive type(int, double, bool), String, Collection(Map, List) provided by Flutter.
 
 If you want to send a custom object, send it in String format using jsonEncode and jsonDecode.
 
@@ -453,11 +453,11 @@ JSON and serialization >> https://docs.flutter.dev/data-and-backend/serializatio
 @override
 void onStart(DateTime timestamp) {
   // TaskHandler -> UI
-  FlutterForegroundTask.sendDataToMain(Object); // this
+  FlutterForegroundTask.sendDataToMain(Object);
 }
 
 // Main(UI)::onReceiveTaskData
-void _onReceiveTaskData(dynamic data) {
+void _onReceiveTaskData(Object data) {
   if (data is Map<String, dynamic>) {
     final dynamic timestampMillis = data["timestampMillis"];
     if (timestampMillis != null) {
@@ -471,18 +471,22 @@ void _onReceiveTaskData(dynamic data) {
 
 ```dart
 // Main(UI)
-void _sendRandomData() {
-  final Random random = Random();
-  final int data = random.nextInt(100);
-
+void _sendDataToTask() {
   // UI -> TaskHandler
-  FlutterForegroundTask.sendDataToTask(data); // this
+  //
+  // The Map collection can only be sent in json format, such as Map<String, dynamic>.
+  FlutterForegroundTask.sendDataToTask(Object);
 }
 
 // TaskHandler::onReceiveData
 @override
 void onReceiveData(Object data) {
   print('onReceiveData: $data');
+
+  // You can cast it to any type you want using the Collection.cast<T> function.
+  if (data is List<dynamic>) {
+    final List<int> intList = data.cast<int>();
+  }
 }
 ```
 
