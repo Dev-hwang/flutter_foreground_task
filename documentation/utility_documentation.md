@@ -122,3 +122,20 @@ Request notification permission.
 ```dart
 Future<NotificationPermission> function() => FlutterForegroundTask.requestNotificationPermission();
 ```
+
+### :lollipop: openAlarmsAndRemindersSettings (Android)
+
+Open the alarms & reminders settings page.
+
+Use this utility only if you provide services that require long-term survival,
+such as exact alarm service, healthcare service, or Bluetooth communication.
+
+This utility requires the `android.permission.SCHEDULE_EXACT_ALARM` permission.
+Using this permission may make app distribution difficult due to Google policy.
+
+> **Warning**
+> It only works when the app is in the foreground.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.openAlarmsAndRemindersSettings();
+```

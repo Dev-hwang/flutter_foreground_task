@@ -25,7 +25,7 @@ class RestartReceiver : BroadcastReceiver() {
 		private val TAG = RestartReceiver::class.java.simpleName
 
 		fun setRestartAlarm(context: Context, millis: Int) {
-			val triggerAtMillis = System.currentTimeMillis() + millis
+			val triggerTime = System.currentTimeMillis() + millis
 
 			val intent = Intent(context, RestartReceiver::class.java)
 			var flags = PendingIntent.FLAG_UPDATE_CURRENT
@@ -36,7 +36,13 @@ class RestartReceiver : BroadcastReceiver() {
 					context, RequestCode.SET_RESTART_SERVICE_ALARM, intent, flags)
 
 			val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-			alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, operation)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+				PluginUtils.canScheduleExactAlarms(context)) {
+				val info = AlarmManager.AlarmClockInfo(triggerTime, operation)
+				alarmManager.setAlarmClock(info, operation)
+			} else {
+				alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, operation)
+			}
 		}
 
 		fun cancelRestartAlarm(context: Context) {

@@ -136,6 +136,14 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                     }
                 }
 
+                "openAlarmsAndRemindersSettings" -> {
+                    checkActivityNull().let {
+                        val reqCode = RequestCode.OPEN_ALARMS_AND_REMINDER_SETTINGS
+                        resultCallbacks[reqCode] = result
+                        PluginUtils.openAlarmsAndRemindersSettings(it, reqCode)
+                    }
+                }
+
                 else -> result.notImplemented()
             }
         } catch (e: Exception) {
@@ -153,6 +161,8 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                 resultCallback.success(PluginUtils.isIgnoringBatteryOptimizations(context))
             RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS ->
                 resultCallback.success(PluginUtils.canDrawOverlays(context))
+            RequestCode.OPEN_ALARMS_AND_REMINDER_SETTINGS ->
+                resultCallback.success(PluginUtils.canScheduleExactAlarms(context))
         }
 
         return true

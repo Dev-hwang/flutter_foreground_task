@@ -3,6 +3,7 @@ package com.pravera.flutter_foreground_task.utils
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -96,7 +97,7 @@ class PluginUtils {
                     .or(PowerManager.ACQUIRE_CAUSES_WAKEUP)
                     .or(PowerManager.ON_AFTER_RELEASE)
 
-            val newWakeLock = powerManager.newWakeLock(serviceFlag, "ForegroundServiceUtils:WakeLock")
+            val newWakeLock = powerManager.newWakeLock(serviceFlag, "PluginUtils:WakeLock")
             newWakeLock.acquire(1000)
             newWakeLock.release()
         }
@@ -137,8 +138,10 @@ class PluginUtils {
          */
         fun requestIgnoreBatteryOptimization(activity: Activity, requestCode: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = Uri.parse("package:" + activity.packageName)
+                val intent = Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:" + activity.packageName)
+                )
                 activity.startActivityForResult(intent, requestCode)
             }
         }
@@ -164,9 +167,32 @@ class PluginUtils {
          */
         fun openSystemAlertWindowSettings(activity: Activity, requestCode: Int, forceOpen: Boolean) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (forceOpen || !canDrawOverlays(activity.applicationContext)) {
-                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                    intent.data = Uri.parse("package:" + activity.packageName)
+                if (forceOpen || !canDrawOverlays(activity)) {
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + activity.packageName)
+                    )
+                    activity.startActivityForResult(intent, requestCode)
+                }
+            }
+        }
+
+        fun canScheduleExactAlarms(context: Context): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                alarmManager.canScheduleExactAlarms()
+            } else {
+                true
+            }
+        }
+
+        fun openAlarmsAndRemindersSettings(activity: Activity, requestCode: Int) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (!canScheduleExactAlarms(activity)) {
+                    val intent = Intent(
+                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                        Uri.parse("package:" + activity.packageName)
+                    )
                     activity.startActivityForResult(intent, requestCode)
                 }
             }

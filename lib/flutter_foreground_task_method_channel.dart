@@ -260,4 +260,12 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
         await methodChannel.invokeMethod('requestNotificationPermission');
     return getNotificationPermissionFromIndex(result);
   }
+
+  @override
+  Future<bool> openAlarmsAndRemindersSettings() async {
+    if (Platform.isAndroid) {
+      return await methodChannel.invokeMethod('openAlarmsAndRemindersSettings');
+    }
+    return true;
+  }
 }

@@ -371,4 +371,14 @@ class FlutterForegroundTask {
   /// Request notification permission.
   static Future<NotificationPermission> requestNotificationPermission() =>
       FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
+
+  /// Open the alarms & reminders settings page.
+  ///
+  /// Use this utility only if you provide services that require long-term survival,
+  /// such as exact alarm service, healthcare service, or Bluetooth communication.
+  ///
+  /// This utility requires the "android.permission.SCHEDULE\_EXACT\_ALARM" permission.
+  /// Using this permission may make app distribution difficult due to Google policy.
+  static Future<bool> openAlarmsAndRemindersSettings() =>
+      FlutterForegroundTaskPlatform.instance.openAlarmsAndRemindersSettings();
 }
