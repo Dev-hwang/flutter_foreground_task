@@ -123,6 +123,14 @@ Request notification permission.
 Future<NotificationPermission> function() => FlutterForegroundTask.requestNotificationPermission();
 ```
 
+### :lollipop: canScheduleExactAlarms (Android)
+
+Returns whether the `android.permission.SCHEDULE_EXACT_ALARM` permission is granted.
+
+```dart
+Future<bool> function() => FlutterForegroundTask.canScheduleExactAlarms;
+```
+
 ### :lollipop: openAlarmsAndRemindersSettings (Android)
 
 Open the alarms & reminders settings page.

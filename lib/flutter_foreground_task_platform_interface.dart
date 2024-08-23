@@ -77,16 +77,16 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   }
 
   void minimizeApp() {
-    throw UnimplementedError('minimizeApp has not been implemented.');
+    throw UnimplementedError('minimizeApp() has not been implemented.');
   }
 
   void launchApp([String? route]) {
-    throw UnimplementedError('launchApp has not been implemented.');
+    throw UnimplementedError('launchApp() has not been implemented.');
   }
 
   void setOnLockScreenVisibility(bool isVisible) {
     throw UnimplementedError(
-        'setOnLockScreenVisibility has not been implemented.');
+        'setOnLockScreenVisibility() has not been implemented.');
   }
 
   Future<bool> get isAppOnForeground {
@@ -94,7 +94,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   }
 
   void wakeUpScreen() {
-    throw UnimplementedError('wakeUpScreen has not been implemented.');
+    throw UnimplementedError('wakeUpScreen() has not been implemented.');
   }
 
   Future<bool> get isIgnoringBatteryOptimizations {
@@ -104,12 +104,12 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
 
   Future<bool> openIgnoreBatteryOptimizationSettings() {
     throw UnimplementedError(
-        'openIgnoreBatteryOptimizationSettings has not been implemented.');
+        'openIgnoreBatteryOptimizationSettings() has not been implemented.');
   }
 
   Future<bool> requestIgnoreBatteryOptimization() {
     throw UnimplementedError(
-        'requestIgnoreBatteryOptimization has not been implemented.');
+        'requestIgnoreBatteryOptimization() has not been implemented.');
   }
 
   Future<bool> get canDrawOverlays {
@@ -118,7 +118,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
 
   Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) {
     throw UnimplementedError(
-        'openSystemAlertWindowSettings has not been implemented.');
+        'openSystemAlertWindowSettings() has not been implemented.');
   }
 
   Future<NotificationPermission> checkNotificationPermission() {
@@ -129,6 +129,11 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   Future<NotificationPermission> requestNotificationPermission() {
     throw UnimplementedError(
         'requestNotificationPermission() has not been implemented.');
+  }
+
+  Future<bool> get canScheduleExactAlarms {
+    throw UnimplementedError(
+        'canScheduleExactAlarms has not been implemented.');
   }
 
   Future<bool> openAlarmsAndRemindersSettings() {
