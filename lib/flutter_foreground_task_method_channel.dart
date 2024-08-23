@@ -262,6 +262,14 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   }
 
   @override
+  Future<bool> get canScheduleExactAlarms async {
+    if (Platform.isAndroid) {
+      return await methodChannel.invokeMethod('canScheduleExactAlarms');
+    }
+    return true;
+  }
+
+  @override
   Future<bool> openAlarmsAndRemindersSettings() async {
     if (Platform.isAndroid) {
       return await methodChannel.invokeMethod('openAlarmsAndRemindersSettings');

@@ -292,7 +292,9 @@ Future<void> _requestPermissions() async {
     //
     // This utility requires the "android.permission.SCHEDULE_EXACT_ALARM" permission.
     // Using this permission may make app distribution difficult due to Google policy.
-    await FlutterForegroundTask.openAlarmsAndRemindersSettings();
+    if (!await FlutterForegroundTask.canScheduleExactAlarms) {
+      await FlutterForegroundTask.openAlarmsAndRemindersSettings();
+    }
   }
 }
 

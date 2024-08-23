@@ -372,6 +372,10 @@ class FlutterForegroundTask {
   static Future<NotificationPermission> requestNotificationPermission() =>
       FlutterForegroundTaskPlatform.instance.requestNotificationPermission();
 
+  /// Returns whether the "android.permission.SCHEDULE\_EXACT\_ALARM" permission is granted.
+  static Future<bool> get canScheduleExactAlarms =>
+      FlutterForegroundTaskPlatform.instance.canScheduleExactAlarms;
+
   /// Open the alarms & reminders settings page.
   ///
   /// Use this utility only if you provide services that require long-term survival,

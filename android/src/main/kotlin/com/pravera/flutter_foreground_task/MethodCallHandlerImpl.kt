@@ -136,6 +136,9 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                     }
                 }
 
+                "canScheduleExactAlarms" ->
+                    result.success(PluginUtils.canScheduleExactAlarms(context))
+
                 "openAlarmsAndRemindersSettings" -> {
                     checkActivityNull().let {
                         val reqCode = RequestCode.OPEN_ALARMS_AND_REMINDER_SETTINGS
