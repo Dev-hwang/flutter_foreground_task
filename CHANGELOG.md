@@ -1,10 +1,13 @@
-## 8.4.0
+## 8.5.0
 
 * [**FEAT**] Add `openAlarmsAndRemindersSettings` utility
   - This utility allows the Android OS to immediately restart service in doze mode.
   - required `android.permission.SCHEDULE_EXACT_ALARM` permission.
   - When you call this function, will be gone to the settings page. So you need to explain to the user why set it.
   - Check [utility_documentation](./documentation/utility_documentation.md) for more details.
+* [**FEAT**] Add `canScheduleExactAlarms` utility
+  - Returns whether the `android.permission.SCHEDULE_EXACT_ALARM` permission is granted.
+  - In some cases, permission is granted automatically. Don't worry :)
 
 ## 8.3.1
 
