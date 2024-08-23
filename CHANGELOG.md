@@ -1,3 +1,11 @@
+## 8.4.0
+
+* [**FEAT**] Add `openAlarmsAndRemindersSettings` utility
+  - This utility allows the Android OS to immediately restart service in doze mode.
+  - required `android.permission.SCHEDULE_EXACT_ALARM` permission.
+  - When you call this function, will be gone to the settings page. So you need to explain to the user why set it.
+  - Check [utility_documentation](./documentation/utility_documentation.md) for more details.
+
 ## 8.3.1
 
 * [**FIX**] Fixed an issue where Map collection could not be cast in onReceiveData [#258](https://github.com/Dev-hwang/flutter_foreground_task/issues/258)
@@ -26,7 +34,7 @@
 * [**BREAKING**] Redesign the communication method between TaskHandler and UI
   - Fixed an issue where `SendPort.send` does not work when calling `receivePort` getter function after app restart [#244](https://github.com/Dev-hwang/flutter_foreground_task/issues/244)
   - Allow task data to be listened on multiple pages
-  - Check [readme-Migration](https://github.com/Dev-hwang/flutter_foreground_task?tab=readme-ov-file#migration-ver-800) for changes
+  - Check [migration_documentation](./documentation/migration_documentation.md) for changes
 
 ## 7.5.2
 
@@ -78,44 +86,10 @@
 
 * [**CHORE**] Updates minimum supported SDK version to `Flutter 3.10` / `Dart 3.0`
 * [**BREAKING**] Change timezone(local > UTC) of timestamp in TaskHandler callback
-* [**BREAKING**] Remove `iconData`, `buttons` from AndroidNotificationOptions. Can use this options in the startService function
-
-```
-// before
-FlutterForegroundTask.init(
-  androidNotificationOptions: AndroidNotificationOptions(
-    channelId: 'foreground_service',
-    channelName: 'Foreground Service Notification',
-    iconData: null,
-    buttons: [
-      const NotificationButton(id: 'btn_hello', text: 'hello'),
-    ],
-  ),
-);
-
-// after
-FlutterForegroundTask.startService(
-  notificationTitle: 'Foreground Service is running',
-  notificationText: 'Tap to return to the app',
-  notificationIcon: null,
-  notificationButtons: [
-    const NotificationButton(id: 'btn_hello', text: 'hello'),
-  ],
-  callback: startCallback,
-)
-```
-
+* [**BREAKING**] Remove `iconData`, `buttons` from AndroidNotificationOptions
+  - Can use this options in the startService function
+  - Check [migration_documentation](./documentation/migration_documentation.md) for changes
 * [**FEAT**] Add ability to update notification icon and buttons for Android platform
-
-```
-FlutterForegroundTask.updateService(
-  notificationIcon: null,
-  notificationButtons: [
-    const NotificationButton(id: 'btn_bye', text: 'bye'),
-  ],
-)
-```
-
 * [**FEAT**] Add `onNotificationDismissed` callback for Android 14
 
 ## 6.5.0

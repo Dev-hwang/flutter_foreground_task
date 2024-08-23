@@ -15,7 +15,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.3.1
+  flutter_foreground_task: ^8.4.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
@@ -41,10 +41,11 @@ Change the type with your type (all types are listed in the link above).
 <!-- foregroundServiceType: remoteMessaging -->
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
 
+<!-- important: Do not change service name. -->
 <!-- Add android:stopWithTask option only when necessary. -->
 <service 
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-    android:foregroundServiceType="dataSync|remoteMessaging" <!-- Here, chose the type according to your app -->
+    android:foregroundServiceType="dataSync|remoteMessaging"
     android:exported="false" />
 ```
 
@@ -85,7 +86,7 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [GeneratedPluginRegistrant registerWithRegistry:self];
 
-  // here, Without this code the task will not work.
+  // here, without this code the task will not work.
   [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins];
   if (@available(iOS 10.0, *)) {
     [UNUserNotificationCenter currentNotificationCenter].delegate = (id<UNUserNotificationCenterDelegate>) self;
@@ -120,7 +121,7 @@ import Flutter
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
-    // here, Without this code the task will not work.
+    // here, without this code the task will not work.
     SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
@@ -285,6 +286,13 @@ Future<void> _requestPermissions() async {
       // This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
       await FlutterForegroundTask.requestIgnoreBatteryOptimization();
     }
+
+    // Use this utility only if you provide services that require long-term survival,
+    // such as exact alarm service, healthcare service, or Bluetooth communication.
+    //
+    // This utility requires the "android.permission.SCHEDULE_EXACT_ALARM" permission.
+    // Using this permission may make app distribution difficult due to Google policy.
+    await FlutterForegroundTask.openAlarmsAndRemindersSettings();
   }
 }
 
@@ -511,10 +519,8 @@ class MyTaskHandler extends TaskHandler {
   @override
   void onStart(DateTime timestamp) {
     _streamSubscription = FlLocation.getLocationStream().listen((location) {
-      FlutterForegroundTask.updateService(
-        notificationTitle: 'My Location',
-        notificationText: '${location.latitude}, ${location.longitude}',
-      );
+      final String message = '${location.latitude}, ${location.longitude}';
+      FlutterForegroundTask.updateService(notificationText: message);
 
       // Send data to main isolate.
       final String locationJson = jsonEncode(location.toJson());
@@ -537,8 +543,9 @@ class MyTaskHandler extends TaskHandler {
 
 ### :hatched_chick: other example
 
-* [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service)
+* [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service) (Recommended)
 * [`location_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/location_service)
+* [`record_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/record_service)
 
 ## More Documentation
 

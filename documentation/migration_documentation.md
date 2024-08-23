@@ -45,3 +45,32 @@ FlutterForegroundTask.sendData(Object);
 // after
 FlutterForegroundTask.sendDataToTask(Object);
 ```
+
+### ver 7.0.0
+
+- Remove `iconData`, `buttons` from AndroidNotificationOptions.
+
+```dart
+// before
+FlutterForegroundTask.init(
+  androidNotificationOptions: AndroidNotificationOptions(
+    channelId: 'foreground_service',
+    channelName: 'Foreground Service Notification',
+    iconData: null,
+    buttons: [
+      const NotificationButton(id: 'btn_hello', text: 'hello'),
+    ],
+  ),
+);
+
+// after
+FlutterForegroundTask.startService(
+  notificationTitle: 'Foreground Service is running',
+  notificationText: 'Tap to return to the app',
+  notificationIcon: null,
+  notificationButtons: [
+    const NotificationButton(id: 'btn_hello', text: 'hello'),
+  ],
+  callback: startCallback,
+)
+```
