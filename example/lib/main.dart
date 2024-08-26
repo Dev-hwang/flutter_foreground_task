@@ -136,6 +136,8 @@ class _ExamplePageState extends State<ExamplePage> {
       // This utility requires the "android.permission.SCHEDULE_EXACT_ALARM" permission.
       // Using this permission may make app distribution difficult due to Google policy.
       if (!await FlutterForegroundTask.canScheduleExactAlarms) {
+        // When you call this function, will be gone to the settings page.
+        // So you need to explain to the user why set it.
         await FlutterForegroundTask.openAlarmsAndRemindersSettings();
       }
     }

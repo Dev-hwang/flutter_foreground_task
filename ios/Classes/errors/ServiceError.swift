@@ -24,7 +24,7 @@ extension ServiceError : LocalizedError {
       case .ServiceNotStartedException:
         return NSLocalizedString("The service is not started.", comment: "ServiceNotStartedException")
       case .ServiceNotSupportedException:
-        return NSLocalizedString("The current iOS version cannot be used.", comment: "ServiceNotSupportedException")
+        return NSLocalizedString("The current iOS version does not support the service.", comment: "ServiceNotSupportedException")
     }
   }
 }

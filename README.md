@@ -24,7 +24,7 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
 
-As it is mentioned in the Android Guidelines, in Android 14, to start a FG service, you need to specify its type.
+As it is mentioned in the Android Guidelines, in Android 14, to start a FG service, you need to specify `android:foregroundServiceType`.
 
 You can read all the details in the Android Developer Page : https://developer.android.com/about/versions/14/changes/fgs-types-required
 
@@ -41,7 +41,7 @@ Change the type with your type (all types are listed in the link above).
 <!-- foregroundServiceType: remoteMessaging -->
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
 
-<!-- important: Do not change service name. -->
+<!-- Warning: Do not change service name. -->
 <!-- Add android:stopWithTask option only when necessary. -->
 <service 
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
@@ -293,6 +293,8 @@ Future<void> _requestPermissions() async {
     // This utility requires the "android.permission.SCHEDULE_EXACT_ALARM" permission.
     // Using this permission may make app distribution difficult due to Google policy.
     if (!await FlutterForegroundTask.canScheduleExactAlarms) {
+      // When you call this function, will be gone to the settings page. 
+      // So you need to explain to the user why set it.
       await FlutterForegroundTask.openAlarmsAndRemindersSettings();
     }
   }
@@ -383,7 +385,9 @@ class FirstTaskHandler extends TaskHandler {
   int _count = 0;
 
   @override
-  void onStart(DateTime timestamp) { }
+  void onStart(DateTime timestamp) {
+    // some code
+  }
 
   @override
   void onRepeatEvent(DateTime timestamp) {
@@ -409,7 +413,9 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp) { }
+  void onDestroy(DateTime timestamp) {
+    // some code
+  }
 }
 
 @pragma('vm:entry-point')
@@ -419,7 +425,9 @@ void updateCallback() {
 
 class SecondTaskHandler extends TaskHandler {
   @override
-  void onStart(DateTime timestamp) { }
+  void onStart(DateTime timestamp) {
+    // some code
+  }
 
   @override
   void onRepeatEvent(DateTime timestamp) {
@@ -436,7 +444,9 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp) { }
+  void onDestroy(DateTime timestamp) {
+    // some code
+  }
 }
 ```
 
@@ -545,7 +555,7 @@ class MyTaskHandler extends TaskHandler {
 
 ### :hatched_chick: other example
 
-* [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service) (Recommended)
+* [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service) (Recommend)
 * [`location_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/location_service)
 * [`record_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/record_service)
 

@@ -10,7 +10,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.PreferencesKey
 import com.pravera.flutter_foreground_task.RequestCode
-import com.pravera.flutter_foreground_task.errors.NotificationPermissionRequestCancelledException
+import com.pravera.flutter_foreground_task.errors.PermissionRequestCancelledException
 import com.pravera.flutter_foreground_task.models.NotificationPermission
 import io.flutter.plugin.common.PluginRegistry
 
@@ -83,7 +83,7 @@ class NotificationPermissionManager : PluginRegistry.RequestPermissionsResultLis
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
         if (grantResults.isEmpty()) {
-            callback?.onError(NotificationPermissionRequestCancelledException())
+            callback?.onError(PermissionRequestCancelledException())
             disposeReference()
             return false
         }

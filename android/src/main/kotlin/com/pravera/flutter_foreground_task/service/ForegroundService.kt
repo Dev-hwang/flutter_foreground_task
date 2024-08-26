@@ -141,7 +141,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                     // call: Android OS
                     startForegroundService()
                     executeDartCallback(foregroundTaskData.callbackHandle)
-                    Log.i(TAG, "Android OS has requested a service restart.")
+                    Log.d(TAG, "The service has been restarted by Android OS.")
                 } else {
                     // call: ForegroundServiceManager.kt
                     updateNotification()
@@ -184,7 +184,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
         if (!isCorrectlyStopped && !isSetStopWithTaskFlag()) {
-            Log.i(TAG, "The service was terminated due to an unexpected problem and requested to restart.")
+            Log.e(TAG, "The service was terminated due to an unexpected problem.")
             RestartReceiver.setRestartAlarm(this, 5000)
         }
     }

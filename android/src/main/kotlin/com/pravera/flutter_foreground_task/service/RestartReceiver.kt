@@ -43,6 +43,7 @@ class RestartReceiver : BroadcastReceiver() {
 			} else {
 				alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, operation)
 			}
+			Log.d(TAG, "The service will restart after $millis millis.")
 		}
 
 		fun cancelRestartAlarm(context: Context) {
@@ -72,12 +73,13 @@ class RestartReceiver : BroadcastReceiver() {
 		if (!isCorrectlyStopped && !isRunningService) {
 			val isIgnoringBatteryOptimizations = PluginUtils.isIgnoringBatteryOptimizations(context)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isIgnoringBatteryOptimizations) {
-				Log.i(TAG, "Turn off battery optimization to restart service in the background.")
+				Log.d(TAG, "Turn off battery optimization to restart service in the background.")
 			}
 
 			val nIntent = Intent(context, ForegroundService::class.java)
 			ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
 			ContextCompat.startForegroundService(context, nIntent)
+			Log.d(TAG, "Restart the service.")
 		}
 	}
 }
