@@ -19,6 +19,7 @@ import 'models/service_request_result.dart';
 
 export 'package:flutter_foreground_task/errors/service_not_initialized_exception.dart';
 export 'package:flutter_foreground_task/errors/service_timeout_exception.dart';
+export 'package:flutter_foreground_task/models/foreground_task_event_action.dart';
 export 'package:flutter_foreground_task/models/foreground_task_options.dart';
 export 'package:flutter_foreground_task/models/ios_notification_options.dart';
 export 'package:flutter_foreground_task/models/notification_button.dart';
@@ -41,7 +42,10 @@ abstract class TaskHandler {
   /// Called when the task is started.
   void onStart(DateTime timestamp);
 
-  /// Called every [ForegroundTaskOptions.interval] milliseconds.
+  /// Called by eventAction in [ForegroundTaskOptions].
+  /// - nothing() : Not use onRepeatEvent callback.
+  /// - once() : Call onRepeatEvent only once.
+  /// - repeat(interval) : Call onRepeatEvent at milliseconds interval.
   void onRepeatEvent(DateTime timestamp);
 
   /// Called when the task is destroyed.

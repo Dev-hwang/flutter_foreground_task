@@ -32,12 +32,21 @@ Data class with foreground task options.
 
 | Property                     | Description                                                                                                    |
 |------------------------------|----------------------------------------------------------------------------------------------------------------|
-| `interval`                   | The task call interval in milliseconds. The default is `5000`.                                                 |
-| `isOnceEvent`                | Whether to invoke the onRepeatEvent of `TaskHandler` only once. The default is `false`.                        |
+| `eventAction`                | The action of onRepeatEvent in `TaskHandler`.                                                                  |
 | `autoRunOnBoot`              | Whether to automatically run foreground task on boot. The default is `false`.                                  |
 | `autoRunOnMyPackageReplaced` | Whether to automatically run foreground task when the app is updated to a new version. The default is `false`. |
 | `allowWakeLock`              | Whether to keep the CPU turned on. The default is `true`.                                                      |
 | `allowWifiLock`              | Allows an application to keep the Wi-Fi radio awake. The default is `false`.                                   |
+
+### :chicken: ForegroundTaskEventAction
+
+A class that defines the action of onRepeatEvent in `TaskHandler`.
+
+| factory            | Description                                    |
+|--------------------|------------------------------------------------|
+| `nothing()`        | Not use onRepeatEvent callback.                |
+| `once()`           | Call onRepeatEvent only once.                  |
+| `repeat(interval)` | Call onRepeatEvent at milliseconds `interval`. |
 
 ### :chicken: NotificationIconData
 

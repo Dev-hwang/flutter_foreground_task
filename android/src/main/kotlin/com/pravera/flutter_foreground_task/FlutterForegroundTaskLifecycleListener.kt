@@ -15,7 +15,7 @@ interface FlutterForegroundTaskLifecycleListener {
     /** Called when the task is started. */
     fun onTaskStart()
 
-    /** Called every ForegroundTaskOptions.interval milliseconds. */
+    /** Called by eventAction in ForegroundTaskOptions. */
     fun onTaskRepeatEvent()
 
     /** Called when the task is destroyed. */

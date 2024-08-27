@@ -9,19 +9,19 @@ import Flutter
 import Foundation
 import UserNotifications
 
-let NOTIFICATION_ID: String = "flutter_foreground_task/notification"
-let NOTIFICATION_CATEGORY_ID: String = "flutter_foreground_task/notification_category"
-let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
-let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
+private let NOTIFICATION_ID: String = "flutter_foreground_task/notification"
+private let NOTIFICATION_CATEGORY_ID: String = "flutter_foreground_task/notification_category"
+private let BG_ISOLATE_NAME: String = "flutter_foreground_task/backgroundIsolate"
+private let BG_CHANNEL_NAME: String = "flutter_foreground_task/background"
 
-let ACTION_TASK_START: String = "onStart"
-let ACTION_TASK_REPEAT_EVENT: String = "onRepeatEvent"
-let ACTION_TASK_DESTROY: String = "onDestroy"
-let ACTION_RECEIVE_DATA: String = "onReceiveData"
+private let ACTION_TASK_START: String = "onStart"
+private let ACTION_TASK_REPEAT_EVENT: String = "onRepeatEvent"
+private let ACTION_TASK_DESTROY: String = "onDestroy"
+private let ACTION_RECEIVE_DATA: String = "onReceiveData"
 
-let ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
-let ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
-let ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
+private let ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
+private let ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
+private let ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
 
 @available(iOS 10.0, *)
 class BackgroundService: NSObject {
@@ -104,11 +104,9 @@ class BackgroundService: NSObject {
           if prevBackgroundTaskData?.callbackHandle != callbackHandle {
             executeDartCallback(callbackHandle: callbackHandle)
           } else {
-            let prevInterval = prevBackgroundTaskOptions?.interval
-            let currInterval = currBackgroundTaskOptions.interval
-            let prevIsOnceEvent = prevBackgroundTaskOptions?.isOnceEvent
-            let currIsOnceEvent = currBackgroundTaskOptions.isOnceEvent
-            if prevInterval != currInterval || prevIsOnceEvent != currIsOnceEvent {
+            let prevEventAction = prevBackgroundTaskOptions?.eventAction
+            let currEventAction = currBackgroundTaskOptions.eventAction
+            if prevEventAction != currEventAction {
               startRepeatTask()
             }
           }
@@ -291,24 +289,32 @@ class BackgroundService: NSObject {
     }
   }
   
+  private func invokeTaskRepeatEvent() {
+    backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
+      for listener in self.taskLifecycleListeners {
+        listener.onTaskRepeatEvent()
+      }
+    }
+  }
+  
   private func startRepeatTask() {
     stopRepeatTask()
     
-    if currBackgroundTaskOptions.isOnceEvent {
-      backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
-        for listener in self.taskLifecycleListeners {
-          listener.onTaskRepeatEvent()
-        }
-      }
-    } else {
-      let timeInterval = TimeInterval(currBackgroundTaskOptions.interval / 1000)
-      repeatTask = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
-        self.backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
-          for listener in self.taskLifecycleListeners {
-            listener.onTaskRepeatEvent()
-          }
-        }
-      }
+    let type = currBackgroundTaskOptions.eventAction.type
+    let interval = currBackgroundTaskOptions.eventAction.interval
+    
+    if type == .NOTHING {
+      return
+    }
+    
+    if type == .ONCE {
+      invokeTaskRepeatEvent()
+      return
+    }
+    
+    let timeInterval = TimeInterval(Double(interval) / 1000)
+    repeatTask = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { _ in
+      self.invokeTaskRepeatEvent()
     }
   }
   

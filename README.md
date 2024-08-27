@@ -4,10 +4,11 @@ This plugin is used to implement a foreground service on the Android platform.
 
 ## Features
 
-* Can perform repetitive tasks with foreground service.
-* Provides a widget that minimize the app without closing it when the user presses the soft back button.
+* Can perform repetitive tasks with the foreground service.
+* Supports two-way communication between the foreground service and UI.
+* Provides widget that minimize the app without closing it when the user presses the soft back button.
 * Provides useful utilities that can use while performing tasks.
-* Provides option to automatically resume foreground service on boot.
+* Provides option to automatically resume the foreground service on boot.
 
 ## Getting started
 
@@ -174,7 +175,10 @@ class MyTaskHandler extends TaskHandler {
     print('onStart');
   }
 
-  // Called every [ForegroundTaskOptions.interval] milliseconds.
+  // Called by eventAction in [ForegroundTaskOptions].
+  // - nothing() : Not use onRepeatEvent callback.
+  // - once() : Call onRepeatEvent only once.
+  // - repeat(interval) : Call onRepeatEvent at milliseconds interval.
   @override
   void onRepeatEvent(DateTime timestamp) {
     // Send data to main isolate.
@@ -314,9 +318,8 @@ Future<void> _initService() async {
       showNotification: true,
       playSound: false,
     ),
-    foregroundTaskOptions: const ForegroundTaskOptions(
-      interval: 5000,
-      isOnceEvent: false,
+    foregroundTaskOptions: ForegroundTaskOptions(
+      eventAction: ForegroundTaskEventAction.repeat(5000),
       autoRunOnBoot: true,
       autoRunOnMyPackageReplaced: true,
       allowWakeLock: true,
@@ -393,12 +396,14 @@ class FirstTaskHandler extends TaskHandler {
   void onRepeatEvent(DateTime timestamp) {
     if (_count == 10) {
       FlutterForegroundTask.updateService(
-        foregroundTaskOptions: const ForegroundTaskOptions(interval: 1000),
+        foregroundTaskOptions: ForegroundTaskOptions(
+          eventAction: ForegroundTaskEventAction.repeat(1000),
+        ),
         callback: updateCallback,
       );
     } else {
       FlutterForegroundTask.updateService(
-        notificationTitle: 'FirstTaskHandler',
+        notificationTitle: 'FirstTask',
         notificationText: timestamp.toString(),
       );
 
@@ -432,7 +437,7 @@ class SecondTaskHandler extends TaskHandler {
   @override
   void onRepeatEvent(DateTime timestamp) {
     FlutterForegroundTask.updateService(
-      notificationTitle: 'SecondTaskHandler',
+      notificationTitle: 'SecondTask',
       notificationText: timestamp.toString(),
     );
 

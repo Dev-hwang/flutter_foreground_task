@@ -150,11 +150,9 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                     if (prevCallbackHandle != currCallbackHandle) {
                         executeDartCallback(currCallbackHandle)
                     } else {
-                        val prevInterval = prevForegroundTaskOptions?.interval
-                        val currInterval = foregroundTaskOptions.interval
-                        val prevIsOnceEvent = prevForegroundTaskOptions?.isOnceEvent
-                        val currIsOnceEvent = foregroundTaskOptions.isOnceEvent
-                        if (prevInterval != currInterval || prevIsOnceEvent != currIsOnceEvent) {
+                        val prevEventAction = prevForegroundTaskOptions?.eventAction
+                        val currEventAction = foregroundTaskOptions.eventAction
+                        if (prevEventAction != currEventAction) {
                             startRepeatTask()
                         }
                     }
@@ -554,30 +552,38 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
     }
 
+    private fun invokeTaskRepeatEvent() {
+        backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
+        for (listener in taskLifecycleListeners) {
+            listener.onTaskRepeatEvent()
+        }
+    }
+
     private fun startRepeatTask() {
         stopRepeatTask()
 
-        if (foregroundTaskOptions.isOnceEvent) {
-            backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
-            for (listener in taskLifecycleListeners) {
-                listener.onTaskRepeatEvent()
-            }
-        } else {
-            repeatTask = CoroutineScope(Dispatchers.Default).launch {
-                val interval = foregroundTaskOptions.interval
-                while (isRunningService) {
-                    withContext(Dispatchers.Main) {
-                        try {
-                            backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
-                            for (listener in taskLifecycleListeners) {
-                                listener.onTaskRepeatEvent()
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "repeatTask", e)
-                        }
+        val type = foregroundTaskOptions.eventAction.type
+        val interval = foregroundTaskOptions.eventAction.interval
+
+        if (type == ForegroundTaskEventType.NOTHING) {
+            return
+        }
+
+        if (type == ForegroundTaskEventType.ONCE) {
+            invokeTaskRepeatEvent()
+            return
+        }
+
+        repeatTask = CoroutineScope(Dispatchers.Default).launch {
+            while (isRunningService) {
+                withContext(Dispatchers.Main) {
+                    try {
+                        invokeTaskRepeatEvent()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "repeatTask", e)
                     }
-                    delay(interval)
                 }
+                delay(interval)
             }
         }
     }
