@@ -34,8 +34,9 @@ object PreferencesKey {
     const val NOTIFICATION_CONTENT_BUTTONS = "buttons"
 
     const val FOREGROUND_TASK_OPTIONS_PREFS = prefix + "FOREGROUND_TASK_OPTIONS"
-    const val TASK_INTERVAL = "interval"
-    const val IS_ONCE_EVENT = "isOnceEvent"
+    const val TASK_EVENT_ACTION = "taskEventAction" // new
+    const val INTERVAL = "interval" // deprecated
+    const val IS_ONCE_EVENT = "isOnceEvent" // deprecated
     const val AUTO_RUN_ON_BOOT = "autoRunOnBoot"
     const val AUTO_RUN_ON_MY_PACKAGE_REPLACED = "autoRunOnMyPackageReplaced"
     const val ALLOW_WAKE_LOCK = "allowWakeLock"

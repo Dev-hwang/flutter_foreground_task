@@ -27,7 +27,10 @@ class MyTaskHandler extends TaskHandler {
     print('onStart');
   }
 
-  // Called every [ForegroundTaskOptions.interval] milliseconds.
+  // Called by eventAction in [ForegroundTaskOptions].
+  // - nothing() : Not use onRepeatEvent callback.
+  // - once() : Call onRepeatEvent only once.
+  // - repeat(interval) : Call onRepeatEvent at milliseconds interval.
   @override
   void onRepeatEvent(DateTime timestamp) {
     FlutterForegroundTask.updateService(notificationText: 'count: $_count');
@@ -157,9 +160,8 @@ class _ExamplePageState extends State<ExamplePage> {
         showNotification: true,
         playSound: false,
       ),
-      foregroundTaskOptions: const ForegroundTaskOptions(
-        interval: 5000,
-        isOnceEvent: false,
+      foregroundTaskOptions: ForegroundTaskOptions(
+        eventAction: ForegroundTaskEventAction.repeat(5000),
         autoRunOnBoot: true,
         autoRunOnMyPackageReplaced: true,
         allowWakeLock: true,

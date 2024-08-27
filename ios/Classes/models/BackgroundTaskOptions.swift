@@ -8,39 +8,56 @@
 import Foundation
 
 struct BackgroundTaskOptions {
-  let interval: Int
-  let isOnceEvent: Bool
+  let eventAction: ForegroundTaskEventAction
   
   static func getData() -> BackgroundTaskOptions {
     let prefs = UserDefaults.standard
-    let interval = prefs.integer(forKey: TASK_INTERVAL)
-    let isOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
     
-    return BackgroundTaskOptions(interval: interval, isOnceEvent: isOnceEvent)
+    let eventActionJsonString = prefs.string(forKey: TASK_EVENT_ACTION)
+    let eventAction: ForegroundTaskEventAction
+    if eventActionJsonString != nil {
+      eventAction = ForegroundTaskEventAction.fromJsonString(eventActionJsonString!)
+    } else {
+      let oldIsOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
+      let oldInterval = prefs.integer(forKey: INTERVAL)
+      if oldIsOnceEvent {
+        eventAction = ForegroundTaskEventAction(type: .ONCE, interval: oldInterval)
+      } else {
+        eventAction = ForegroundTaskEventAction(type: .REPEAT, interval: oldInterval)
+      }
+    }
+    
+    return BackgroundTaskOptions(eventAction: eventAction)
   }
   
   static func setData(args: Dictionary<String, Any>) {
-    let interval = args[TASK_INTERVAL] as? Int ?? 5000
-    let isOnceEvent = args[IS_ONCE_EVENT] as? Bool ?? false
-    
     let prefs = UserDefaults.standard
-    prefs.set(interval, forKey: TASK_INTERVAL)
-    prefs.set(isOnceEvent, forKey: IS_ONCE_EVENT)
+    
+    if let eventActionJson = args[TASK_EVENT_ACTION] as? Dictionary<String, Any> {
+      if let eventActionJsonData = try? JSONSerialization.data(withJSONObject: eventActionJson, options: []) {
+        if let eventActionJsonString = String(data: eventActionJsonData, encoding: .utf8) {
+          prefs.set(eventActionJsonString, forKey: TASK_EVENT_ACTION)
+        }
+      }
+    }
   }
   
   static func updateData(args: Dictionary<String, Any>) {
     let prefs = UserDefaults.standard
-    if let interval = args[TASK_INTERVAL] as? Int {
-      prefs.set(interval, forKey: TASK_INTERVAL)
-    }
-    if let isOnceEvent = args[IS_ONCE_EVENT] as? Bool {
-      prefs.set(isOnceEvent, forKey: IS_ONCE_EVENT)
+    
+    if let eventActionJson = args[TASK_EVENT_ACTION] as? Dictionary<String, Any> {
+      if let eventActionJsonData = try? JSONSerialization.data(withJSONObject: eventActionJson, options: []) {
+        if let eventActionJsonString = String(data: eventActionJsonData, encoding: .utf8) {
+          prefs.set(eventActionJsonString, forKey: TASK_EVENT_ACTION)
+        }
+      }
     }
   }
   
   static func clearData() {
     let prefs = UserDefaults.standard
-    prefs.removeObject(forKey: TASK_INTERVAL)
-    prefs.removeObject(forKey: IS_ONCE_EVENT)
+    prefs.removeObject(forKey: TASK_EVENT_ACTION) // new
+    prefs.removeObject(forKey: INTERVAL) // deprecated
+    prefs.removeObject(forKey: IS_ONCE_EVENT) // deprecated
   }
 }

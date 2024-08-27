@@ -1,22 +1,18 @@
+import 'foreground_task_event_action.dart';
+
 /// Data class with foreground task options.
 class ForegroundTaskOptions {
   /// Constructs an instance of [ForegroundTaskOptions].
   const ForegroundTaskOptions({
-    this.interval = 5000,
-    this.isOnceEvent = false,
+    required this.eventAction,
     this.autoRunOnBoot = false,
     this.autoRunOnMyPackageReplaced = false,
     this.allowWakeLock = true,
     this.allowWifiLock = false,
-  }) : assert(interval > 0);
+  });
 
-  /// The task call interval in milliseconds.
-  /// The default is `5000`.
-  final int interval;
-
-  /// Whether to invoke the onRepeatEvent of [TaskHandler] only once.
-  /// The default is `false`.
-  final bool isOnceEvent;
+  /// The action of onRepeatEvent in [TaskHandler].
+  final ForegroundTaskEventAction eventAction;
 
   /// Whether to automatically run foreground task on boot.
   /// The default is `false`.
@@ -39,8 +35,7 @@ class ForegroundTaskOptions {
   /// Returns the data fields of [ForegroundTaskOptions] in JSON format.
   Map<String, dynamic> toJson() {
     return {
-      'interval': interval,
-      'isOnceEvent': isOnceEvent,
+      'taskEventAction': eventAction.toJson(),
       'autoRunOnBoot': autoRunOnBoot,
       'autoRunOnMyPackageReplaced': autoRunOnMyPackageReplaced,
       'allowWakeLock': allowWakeLock,
