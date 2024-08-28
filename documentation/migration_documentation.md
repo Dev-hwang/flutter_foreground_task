@@ -1,5 +1,30 @@
 ## Migration
 
+### ver 8.6.0
+
+- Remove `interval`, `isOnceEvent` option in ForegroundTaskOptions model.
+- Add `eventAction` option with ForegroundTaskEventAction constructor.
+
+```dart
+// before
+FlutterForegroundTask.init(
+  foregroundTaskOptions: ForegroundTaskOptions(
+    interval: 5000,
+    isOnceEvent: false,
+  ),
+);
+
+// after
+FlutterForegroundTask.init(
+  // ForegroundTaskEventAction.nothing() : Not use onRepeatEvent callback.
+  // ForegroundTaskEventAction.once() : Call onRepeatEvent only once.
+  // ForegroundTaskEventAction.repeat(interval) : Call onRepeatEvent at milliseconds interval.
+  foregroundTaskOptions: ForegroundTaskOptions(
+    eventAction: ForegroundTaskEventAction.repeat(5000),
+  ),
+);
+```
+
 ### ver 8.0.0
 
 - The `sendPort` parameter was removed from the service callback(onStart, onRepeatEvent, onDestroy).
@@ -25,7 +50,7 @@ final ReceivePort? receivePort = FlutterForegroundTask.receivePort;
 receivePort?.listen(_onReceiveTaskData)
 receivePort?.close();
 
-// atfer
+// after
 void main() {
   // Initialize port for communication between TaskHandler and UI.
   FlutterForegroundTask.initCommunicationPort();

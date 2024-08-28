@@ -1,3 +1,10 @@
+## 8.6.0
+
+* [**BREAKING**] Change the way to set the task intervals (for increase scalability)
+  - Remove `interval`, `isOnceEvent` option in ForegroundTaskOptions model
+  - Add `eventAction` option with ForegroundTaskEventAction constructor
+  - Check [migration_documentation](./documentation/migration_documentation.md) for changes
+
 ## 8.5.0
 
 * [**FEAT**] Add `openAlarmsAndRemindersSettings` utility
