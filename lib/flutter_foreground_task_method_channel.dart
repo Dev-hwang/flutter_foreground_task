@@ -238,11 +238,9 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   }
 
   @override
-  Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) async {
+  Future<bool> openSystemAlertWindowSettings() async {
     if (Platform.isAndroid) {
-      return await methodChannel.invokeMethod('openSystemAlertWindowSettings', {
-        'forceOpen': forceOpen,
-      });
+      return await methodChannel.invokeMethod('openSystemAlertWindowSettings');
     }
     return true;
   }

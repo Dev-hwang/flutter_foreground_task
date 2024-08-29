@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.WindowManager
+import com.pravera.flutter_foreground_task.errors.NotSupportedException
 
 /**
  * Utilities supported in the plugin.
@@ -98,6 +99,8 @@ class PluginUtils {
                     Uri.parse("package:" + activity.packageName)
                 )
                 activity.startActivityForResult(intent, requestCode)
+            } else {
+                throw NotSupportedException("only supports Android 6.0+")
             }
         }
 
@@ -109,6 +112,8 @@ class PluginUtils {
                     Uri.parse("package:" + activity.packageName)
                 )
                 activity.startActivityForResult(intent, requestCode)
+            } else {
+                throw NotSupportedException("only supports Android 6.0+")
             }
         }
 
@@ -129,6 +134,8 @@ class PluginUtils {
                     Uri.parse("package:" + activity.packageName)
                 )
                 activity.startActivityForResult(intent, requestCode)
+            } else {
+                throw NotSupportedException("only supports Android 6.0+")
             }
         }
 
@@ -150,6 +157,8 @@ class PluginUtils {
                     Uri.parse("package:" + activity.packageName)
                 )
                 activity.startActivityForResult(intent, requestCode)
+            } else {
+                throw NotSupportedException("only supports Android 12.0+")
             }
         }
     }
