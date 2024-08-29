@@ -116,7 +116,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('canDrawOverlays has not been implemented.');
   }
 
-  Future<bool> openSystemAlertWindowSettings({bool forceOpen = false}) {
+  Future<bool> openSystemAlertWindowSettings() {
     throw UnimplementedError(
         'openSystemAlertWindowSettings() has not been implemented.');
   }
