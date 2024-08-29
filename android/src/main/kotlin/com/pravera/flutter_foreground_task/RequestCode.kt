@@ -1,7 +1,7 @@
 package com.pravera.flutter_foreground_task
 
 object RequestCode {
-    // permission
+    // permissions
     const val REQUEST_NOTIFICATION_PERMISSION = 100
 
     // utils

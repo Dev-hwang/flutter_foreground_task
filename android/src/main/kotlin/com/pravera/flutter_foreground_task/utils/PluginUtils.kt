@@ -20,11 +20,7 @@ import android.view.WindowManager
  */
 class PluginUtils {
     companion object {
-        /**
-         * Returns whether the app is in the foreground.
-         *
-         * @param context context
-         */
+        /** Returns whether the app is in the foreground. */
         fun isAppOnForeground(context: Context): Boolean {
             val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             val processes: MutableList<RunningAppProcessInfo> = am.runningAppProcesses
@@ -41,21 +37,12 @@ class PluginUtils {
             return false
         }
 
-        /**
-         * Minimize the app to the background.
-         *
-         * @param activity activity
-         */
+        /** Minimize the app to the background. */
         fun minimizeApp(activity: Activity) {
             activity.moveTaskToBack(true)
         }
 
-        /**
-         * Launch the app at [route] if it is not running otherwise open it.
-         *
-         * @param context context
-         * @param route Open this route if the app is closed
-         */
+        /** Launch the app at [route] if it is not running otherwise open it. */
         fun launchApp(context: Context, route: String?) {
             val pm = context.packageManager
             val launchIntent = pm.getLaunchIntentForPackage(context.packageName)
@@ -68,12 +55,7 @@ class PluginUtils {
             }
         }
 
-        /**
-         * Toggle on lockscreen visibility
-         *
-         * @param isVisible context
-         * @param activity activity
-         */
+        /** Toggle on lockscreen visibility. */
         fun setOnLockScreenVisibility(activity: Activity, isVisible: Boolean) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 activity.setShowWhenLocked(isVisible)
@@ -86,11 +68,7 @@ class PluginUtils {
             }
         }
 
-        /**
-         * Wake up the screen of a device that is turned off.
-         *
-         * @param context context
-         */
+        /** Wake up the screen of a device that is turned off. */
         fun wakeUpScreen(context: Context) {
             val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             val serviceFlag = PowerManager.SCREEN_BRIGHT_WAKE_LOCK
@@ -102,12 +80,7 @@ class PluginUtils {
             newWakeLock.release()
         }
 
-        /**
-         * Returns whether the app has been excluded from battery optimization.
-         *
-         * @param context context
-         * @return whether the app has been excluded from battery optimization.
-         */
+        /** Returns whether the app has been excluded from battery optimization. */
         fun isIgnoringBatteryOptimizations(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -117,25 +90,18 @@ class PluginUtils {
             }
         }
 
-        /**
-         * Open the settings page where you can set ignore battery optimization.
-         *
-         * @param activity activity
-         * @param requestCode the intent action request code.
-         */
+        /** Open the settings page where you can set ignore battery optimization. */
         fun openIgnoreBatteryOptimizationSettings(activity: Activity, requestCode: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                val intent = Intent(
+                    Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
+                    Uri.parse("package:" + activity.packageName)
+                )
                 activity.startActivityForResult(intent, requestCode)
             }
         }
 
-        /**
-         * Request to ignore battery optimization.
-         *
-         * @param activity activity
-         * @param requestCode the intent action request code.
-         */
+        /** Request to ignore battery optimization. */
         fun requestIgnoreBatteryOptimization(activity: Activity, requestCode: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val intent = Intent(
@@ -146,11 +112,7 @@ class PluginUtils {
             }
         }
 
-        /**
-         * Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted.
-         *
-         * @param context context
-         */
+        /** Returns whether the "android.permission.SYSTEM_ALERT_WINDOW" permission was granted. */
         fun canDrawOverlays(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 Settings.canDrawOverlays(context)
@@ -159,24 +121,18 @@ class PluginUtils {
             }
         }
 
-        /**
-         * Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission.
-         *
-         * @param activity activity
-         * @param requestCode the intent action request code
-         */
-        fun openSystemAlertWindowSettings(activity: Activity, requestCode: Int, forceOpen: Boolean) {
+        /** Open the settings page where you can allow/deny the "android.permission.SYSTEM_ALERT_WINDOW" permission. */
+        fun openSystemAlertWindowSettings(activity: Activity, requestCode: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (forceOpen || !canDrawOverlays(activity)) {
-                    val intent = Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + activity.packageName)
-                    )
-                    activity.startActivityForResult(intent, requestCode)
-                }
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + activity.packageName)
+                )
+                activity.startActivityForResult(intent, requestCode)
             }
         }
 
+        /** Returns whether the "android.permission.SCHEDULE_EXACT_ALARM" permission is granted. */
         fun canScheduleExactAlarms(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -186,15 +142,14 @@ class PluginUtils {
             }
         }
 
+        /** Open the alarms & reminders settings page. */
         fun openAlarmsAndRemindersSettings(activity: Activity, requestCode: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (!canScheduleExactAlarms(activity)) {
-                    val intent = Intent(
-                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                        Uri.parse("package:" + activity.packageName)
-                    )
-                    activity.startActivityForResult(intent, requestCode)
-                }
+                val intent = Intent(
+                    Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                    Uri.parse("package:" + activity.packageName)
+                )
+                activity.startActivityForResult(intent, requestCode)
             }
         }
     }

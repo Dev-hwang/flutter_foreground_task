@@ -129,10 +129,7 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                     checkActivityNull().let {
                         val reqCode = RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS
                         resultCallbacks[reqCode] = result
-
-                        val arguments = args as? Map<*, *>
-                        val forceOpen = arguments?.get("forceOpen") as? Boolean ?: false
-                        PluginUtils.openSystemAlertWindowSettings(it, reqCode, forceOpen)
+                        PluginUtils.openSystemAlertWindowSettings(it, reqCode)
                     }
                 }
 

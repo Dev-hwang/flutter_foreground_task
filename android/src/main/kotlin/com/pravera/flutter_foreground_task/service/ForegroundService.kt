@@ -320,7 +320,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 needsUpdateButtons = true
             } else {
                 for (i in currButtons.indices) {
-                    if (prevButtons[i].compareTo(currButtons[i]) != 0) {
+                    if (prevButtons[i] != currButtons[i]) {
                         needsUpdateButtons = true
                         break
                     }

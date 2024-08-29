@@ -7,8 +7,8 @@
 
 import Foundation
 
-private let TASK_EVENT_TYPE = "taskEventType"
-private let TASK_EVENT_INTERVAL = "taskEventInterval"
+private let TASK_EVENT_TYPE_KEY = "taskEventType"
+private let TASK_EVENT_INTERVAL_KEY = "taskEventInterval"
 
 struct ForegroundTaskEventAction: Equatable {
   let type: ForegroundTaskEventType
@@ -20,12 +20,12 @@ struct ForegroundTaskEventAction: Equatable {
     
     if let jsonData = jsonString.data(using: .utf8) {
       if let jsonObj = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? Dictionary<String, Any> {
-        if let typeValue = jsonObj[TASK_EVENT_TYPE] as? Int {
-          type = ForegroundTaskEventType.fromValue(typeValue)
+        if let _type = jsonObj[TASK_EVENT_TYPE_KEY] as? Int {
+          type = ForegroundTaskEventType.fromValue(_type)
         }
         
-        if let intervalValue = jsonObj[TASK_EVENT_INTERVAL] as? Int {
-          interval = intervalValue
+        if let _interval = jsonObj[TASK_EVENT_INTERVAL_KEY] as? Int {
+          interval = _interval
         }
       }
     }

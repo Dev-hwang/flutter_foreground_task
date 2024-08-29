@@ -22,7 +22,7 @@ class NotificationPermissionManager {
   }
   
   func requestPermission(completion: @escaping (NotificationPermission) -> Void) {
-    let options = UNAuthorizationOptions(arrayLiteral: .alert, .sound, .badge)
+    let options = UNAuthorizationOptions(arrayLiteral: .alert, .sound)
     UNUserNotificationCenter.current().requestAuthorization(options: options) { granted, error in
       if let error = error {
         completion(NotificationPermission.DENIED)
