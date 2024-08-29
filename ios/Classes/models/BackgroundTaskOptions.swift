@@ -18,6 +18,7 @@ struct BackgroundTaskOptions {
     if eventActionJsonString != nil {
       eventAction = ForegroundTaskEventAction.fromJsonString(eventActionJsonString!)
     } else {
+      // for deprecated api
       let oldIsOnceEvent = prefs.bool(forKey: IS_ONCE_EVENT)
       let oldInterval = prefs.integer(forKey: INTERVAL)
       if oldIsOnceEvent {

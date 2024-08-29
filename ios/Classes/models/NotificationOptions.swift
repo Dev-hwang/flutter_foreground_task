@@ -13,6 +13,7 @@ struct NotificationOptions {
   
   static func getData() -> NotificationOptions {
     let prefs = UserDefaults.standard
+    
     let showNotification = prefs.bool(forKey: SHOW_NOTIFICATION)
     let playSound = prefs.bool(forKey: PLAY_SOUND)
     
@@ -20,10 +21,11 @@ struct NotificationOptions {
   }
   
   static func setData(args: Dictionary<String, Any>) {
+    let prefs = UserDefaults.standard
+    
     let showNotification = args[SHOW_NOTIFICATION] as? Bool ?? false
     let playSound = args[PLAY_SOUND] as? Bool ?? false
-    
-    let prefs = UserDefaults.standard
+
     prefs.set(showNotification, forKey: SHOW_NOTIFICATION)
     prefs.set(playSound, forKey: PLAY_SOUND)
   }

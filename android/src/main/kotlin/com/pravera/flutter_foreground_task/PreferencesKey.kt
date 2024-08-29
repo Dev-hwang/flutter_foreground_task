@@ -9,11 +9,14 @@ package com.pravera.flutter_foreground_task
 object PreferencesKey {
     private const val prefix = "com.pravera.flutter_foreground_task.prefs."
 
+    // permissions
     const val NOTIFICATION_PERMISSION_STATUS_PREFS = prefix + "NOTIFICATION_PERMISSION_STATUS"
 
+    // service status
     const val FOREGROUND_SERVICE_STATUS_PREFS = prefix + "FOREGROUND_SERVICE_STATUS"
     const val FOREGROUND_SERVICE_ACTION = "foregroundServiceAction"
 
+    // notification options
     const val NOTIFICATION_OPTIONS_PREFS = prefix + "NOTIFICATION_OPTIONS"
     const val SERVICE_ID = "serviceId"
     const val NOTIFICATION_ID = "notificationId"
@@ -28,11 +31,13 @@ object PreferencesKey {
     const val SHOW_BADGE = "showBadge"
     const val VISIBILITY = "visibility"
 
+    // notification content
     const val NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"
     const val NOTIFICATION_CONTENT_TEXT = "notificationContentText"
     const val NOTIFICATION_CONTENT_ICON = "iconData"
     const val NOTIFICATION_CONTENT_BUTTONS = "buttons"
 
+    // task options
     const val FOREGROUND_TASK_OPTIONS_PREFS = prefix + "FOREGROUND_TASK_OPTIONS"
     const val TASK_EVENT_ACTION = "taskEventAction" // new
     const val INTERVAL = "interval" // deprecated
@@ -42,5 +47,6 @@ object PreferencesKey {
     const val ALLOW_WAKE_LOCK = "allowWakeLock"
     const val ALLOW_WIFI_LOCK = "allowWifiLock"
 
+    // task data
     const val CALLBACK_HANDLE = "callbackHandle"
 }
