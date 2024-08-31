@@ -7,7 +7,7 @@ import 'models/ios_notification_options.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon_data.dart';
 import 'models/notification_permission.dart';
-import 'models/service_request_result.dart';
+import 'task_handler.dart';
 
 abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   /// Constructs a FlutterForegroundTaskPlatform.
@@ -31,11 +31,13 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<ServiceRequestResult> startService({
-    int? serviceId,
+  // ====================== Service ======================
+
+  Future<void> startService({
     required AndroidNotificationOptions androidNotificationOptions,
     required IOSNotificationOptions iosNotificationOptions,
     required ForegroundTaskOptions foregroundTaskOptions,
+    int? serviceId,
     required String notificationTitle,
     required String notificationText,
     NotificationIconData? notificationIcon,
@@ -45,11 +47,11 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('startService() has not been implemented.');
   }
 
-  Future<ServiceRequestResult> restartService() {
+  Future<void> restartService() {
     throw UnimplementedError('restartService() has not been implemented.');
   }
 
-  Future<ServiceRequestResult> updateService({
+  Future<void> updateService({
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
@@ -60,12 +62,8 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     throw UnimplementedError('updateService() has not been implemented.');
   }
 
-  Future<ServiceRequestResult> stopService() {
+  Future<void> stopService() {
     throw UnimplementedError('stopService() has not been implemented.');
-  }
-
-  void sendData(Object data) {
-    throw UnimplementedError('sendData() has not been implemented.');
   }
 
   Future<bool> get isRunningService {
@@ -75,6 +73,18 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
   Future<bool> get attachedActivity {
     throw UnimplementedError('attachedActivity has not been implemented.');
   }
+
+  void setTaskHandler(TaskHandler handler) {
+    throw UnimplementedError('setTaskHandler() has not been implemented.');
+  }
+
+  // =================== Communication ===================
+
+  void sendDataToTask(Object data) {
+    throw UnimplementedError('sendDataToTask() has not been implemented.');
+  }
+
+  // ====================== Utility ======================
 
   void minimizeApp() {
     throw UnimplementedError('minimizeApp() has not been implemented.');
