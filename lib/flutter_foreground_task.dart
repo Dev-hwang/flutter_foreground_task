@@ -7,7 +7,9 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'flutter_foreground_task_platform_interface.dart';
+import 'errors/service_already_started_exception.dart';
 import 'errors/service_not_initialized_exception.dart';
+import 'errors/service_not_started_exception.dart';
 import 'errors/service_timeout_exception.dart';
 import 'models/android_notification_options.dart';
 import 'models/foreground_task_options.dart';
@@ -18,7 +20,9 @@ import 'models/notification_permission.dart';
 import 'models/service_request_result.dart';
 import 'task_handler.dart';
 
+export 'errors/service_already_started_exception.dart';
 export 'errors/service_not_initialized_exception.dart';
+export 'errors/service_not_started_exception.dart';
 export 'errors/service_timeout_exception.dart';
 export 'models/android_notification_options.dart';
 export 'models/foreground_task_event_action.dart';
@@ -44,13 +48,13 @@ class FlutterForegroundTask {
   // ====================== Service ======================
 
   @visibleForTesting
-  static late AndroidNotificationOptions androidNotificationOptions;
+  static AndroidNotificationOptions? androidNotificationOptions;
 
   @visibleForTesting
-  static late IOSNotificationOptions iosNotificationOptions;
+  static IOSNotificationOptions? iosNotificationOptions;
 
   @visibleForTesting
-  static late ForegroundTaskOptions foregroundTaskOptions;
+  static ForegroundTaskOptions? foregroundTaskOptions;
 
   @visibleForTesting
   static bool isInitialized = false;
@@ -58,6 +62,21 @@ class FlutterForegroundTask {
   // platform instance: MethodChannelFlutterForegroundTask
   static FlutterForegroundTaskPlatform get _platform =>
       FlutterForegroundTaskPlatform.instance;
+
+  /// Resets class's static values to allow for testing of service flow.
+  @visibleForTesting
+  static void resetStatic() {
+    androidNotificationOptions = null;
+    iosNotificationOptions = null;
+    foregroundTaskOptions = null;
+    isInitialized = false;
+
+    _receivePort?.close();
+    _receivePort = null;
+    _streamSubscription?.cancel();
+    _streamSubscription = null;
+    _dataCallbacks.clear();
+  }
 
   /// Initialize the [FlutterForegroundTask].
   static void init({
@@ -81,7 +100,7 @@ class FlutterForegroundTask {
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
-    if (isInitialized == false) {
+    if (!isInitialized) {
       return ServiceRequestResult.error(ServiceNotInitializedException());
     }
 
@@ -99,10 +118,14 @@ class FlutterForegroundTask {
     }
 
     try {
+      if (await isRunningService) {
+        throw ServiceAlreadyStartedException();
+      }
+
       await _platform.startService(
-        androidNotificationOptions: androidNotificationOptions,
-        iosNotificationOptions: iosNotificationOptions,
-        foregroundTaskOptions: foregroundTaskOptions,
+        androidNotificationOptions: androidNotificationOptions!,
+        iosNotificationOptions: iosNotificationOptions!,
+        foregroundTaskOptions: foregroundTaskOptions!,
         serviceId: serviceId,
         notificationTitle: notificationTitle,
         notificationText: notificationText,
@@ -128,7 +151,7 @@ class FlutterForegroundTask {
 
       // no response :(
       if (!isStarted) {
-        return ServiceRequestResult.error(ServiceTimeoutException());
+        throw ServiceTimeoutException();
       }
 
       return ServiceRequestResult.success();
@@ -140,6 +163,10 @@ class FlutterForegroundTask {
   /// Restart the foreground service.
   static Future<ServiceRequestResult> restartService() async {
     try {
+      if (!(await isRunningService)) {
+        throw ServiceNotStartedException();
+      }
+
       await _platform.restartService();
 
       return ServiceRequestResult.success();
@@ -158,6 +185,10 @@ class FlutterForegroundTask {
     Function? callback,
   }) async {
     try {
+      if (!(await isRunningService)) {
+        throw ServiceNotStartedException();
+      }
+
       await _platform.updateService(
         foregroundTaskOptions: foregroundTaskOptions,
         notificationText: notificationText,
@@ -176,12 +207,16 @@ class FlutterForegroundTask {
   /// Stop the foreground service.
   static Future<ServiceRequestResult> stopService() async {
     try {
+      if (!(await isRunningService)) {
+        throw ServiceNotStartedException();
+      }
+
       await _platform.stopService();
 
       final Stopwatch stopwatch = Stopwatch()..start();
       bool isStopped = false;
       await Future.doWhile(() async {
-        isStopped = !await isRunningService;
+        isStopped = !(await isRunningService);
 
         // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
         // ref: https://developer.android.com/guide/components/services#StartingAService
@@ -195,7 +230,7 @@ class FlutterForegroundTask {
 
       // no response :(
       if (!isStopped) {
-        return ServiceRequestResult.error(ServiceTimeoutException());
+        throw ServiceTimeoutException();
       }
 
       return ServiceRequestResult.success();
