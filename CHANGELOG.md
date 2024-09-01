@@ -1,3 +1,10 @@
+## 8.7.0
+
+* [**FEAT**] Allow permission settings page to be opened even if permission is granted
+  - openIgnoreBatteryOptimizationSettings()
+  - openSystemAlertWindowSettings()
+  - openAlarmsAndRemindersSettings()
+
 ## 8.6.0
 
 * [**BREAKING**] Change the way to set the task intervals (for increase scalability)
