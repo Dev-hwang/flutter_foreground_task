@@ -3,7 +3,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task_platform_interfa
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'service_dummy_data.dart';
+import 'dummy/service_dummy_data.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -46,13 +46,13 @@ void main() {
     expect(result.error, isNull);
   });
 
-  test('startService error(ServiceNotInitializedException)', () async {
+  test('startService (error: ServiceNotInitializedException)', () async {
     final ServiceRequestResult result = await _startService(dummyData);
     expect(result.success, false);
     expect(result.error, isA<ServiceNotInitializedException>());
   });
 
-  test('startService error(ServiceAlreadyStartedException)', () async {
+  test('startService (error: ServiceAlreadyStartedException)', () async {
     _init(dummyData);
 
     final ServiceRequestResult result1 = await _startService(dummyData);
@@ -64,7 +64,7 @@ void main() {
     expect(result2.error, isA<ServiceAlreadyStartedException>());
   });
 
-  test('startService error(ServiceTimeoutException)', () async {
+  test('startService (error: ServiceTimeoutException)', () async {
     _init(dummyData);
 
     // set timeoutTest
@@ -87,7 +87,7 @@ void main() {
     expect(result2.error, isNull);
   });
 
-  test('restartService error(ServiceNotStartedException)', () async {
+  test('restartService (error: ServiceNotStartedException)', () async {
     final ServiceRequestResult result = await _restartService();
     expect(result.success, false);
     expect(result.error, isA<ServiceNotStartedException>());
@@ -105,7 +105,7 @@ void main() {
     expect(result2.error, isNull);
   });
 
-  test('updateService error(ServiceNotStartedException)', () async {
+  test('updateService (error: ServiceNotStartedException)', () async {
     final ServiceRequestResult result = await _updateService(dummyData);
     expect(result.success, false);
     expect(result.error, isA<ServiceNotStartedException>());
@@ -123,13 +123,13 @@ void main() {
     expect(result2.error, isNull);
   });
 
-  test('stopService error(ServiceNotStartedException)', () async {
+  test('stopService (error: ServiceNotStartedException)', () async {
     final ServiceRequestResult result = await _stopService();
     expect(result.success, false);
     expect(result.error, isA<ServiceNotStartedException>());
   });
 
-  test('stopService error(ServiceTimeoutException)', () async {
+  test('stopService (error: ServiceTimeoutException)', () async {
     _init(dummyData);
 
     final ServiceRequestResult result1 = await _startService(dummyData);
