@@ -16,13 +16,16 @@ import 'models/notification_icon_data.dart';
 import 'models/notification_permission.dart';
 import 'task_handler.dart';
 
-const MethodChannel _kMDChannel =
-    MethodChannel('flutter_foreground_task/methods');
-const MethodChannel _kBGChannel =
-    MethodChannel('flutter_foreground_task/background');
-
 /// An implementation of [FlutterForegroundTaskPlatform] that uses method channels.
 class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
+  @visibleForTesting
+  final MethodChannel mMDChannel =
+      const MethodChannel('flutter_foreground_task/methods');
+
+  @visibleForTesting
+  final MethodChannel mBGChannel =
+      const MethodChannel('flutter_foreground_task/background');
+
   // ====================== Service ======================
 
   @override
@@ -55,12 +58,12 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    await _kMDChannel.invokeMethod('startService', options);
+    await mMDChannel.invokeMethod('startService', options);
   }
 
   @override
   Future<void> restartService() async {
-    await _kMDChannel.invokeMethod('restartService');
+    await mMDChannel.invokeMethod('restartService');
   }
 
   @override
@@ -85,23 +88,23 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
           PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
     }
 
-    await _kMDChannel.invokeMethod('updateService', options);
+    await mMDChannel.invokeMethod('updateService', options);
   }
 
   @override
   Future<void> stopService() async {
-    await _kMDChannel.invokeMethod('stopService');
+    await mMDChannel.invokeMethod('stopService');
   }
 
   @override
   Future<bool> get isRunningService async {
-    return await _kMDChannel.invokeMethod('isRunningService');
+    return await mMDChannel.invokeMethod('isRunningService');
   }
 
   @override
   Future<bool> get attachedActivity async {
     if (Platform.isAndroid) {
-      return await _kMDChannel.invokeMethod('attachedActivity');
+      return await mMDChannel.invokeMethod('attachedActivity');
     }
     return true;
   }
@@ -113,70 +116,76 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     DartPluginRegistrant.ensureInitialized();
 
     // Set the method call handler for the background channel.
-    _kBGChannel.setMethodCallHandler((call) async {
-      final DateTime timestamp = DateTime.timestamp();
-
-      switch (call.method) {
-        case 'onStart':
-          handler.onStart(timestamp);
-          break;
-        case 'onRepeatEvent':
-          handler.onRepeatEvent(timestamp);
-          break;
-        case 'onDestroy':
-          handler.onDestroy(timestamp);
-          break;
-        case 'onReceiveData':
-          dynamic data = call.arguments;
-          if (data is List || data is Map) {
-            try {
-              data = jsonDecode(jsonEncode(data));
-            } catch (e, s) {
-              dev.log('onReceiveData error: $e\n$s');
-            }
-          }
-          handler.onReceiveData(data);
-          break;
-        case 'onNotificationButtonPressed':
-          final String id = call.arguments.toString();
-          handler.onNotificationButtonPressed(id);
-          break;
-        case 'onNotificationDismissed':
-          handler.onNotificationDismissed();
-          break;
-        case 'onNotificationPressed':
-          handler.onNotificationPressed();
-      }
+    mBGChannel.setMethodCallHandler((call) async {
+      onBackgroundChannelMethodCall(call, handler);
     });
 
-    _kBGChannel.invokeMethod('startTask');
+    mBGChannel.invokeMethod('startTask');
+  }
+
+  @visibleForTesting
+  void onBackgroundChannelMethodCall(MethodCall call, TaskHandler handler) {
+    final DateTime timestamp = DateTime.timestamp();
+
+    switch (call.method) {
+      case 'onStart':
+        handler.onStart(timestamp);
+        break;
+      case 'onRepeatEvent':
+        handler.onRepeatEvent(timestamp);
+        break;
+      case 'onDestroy':
+        handler.onDestroy(timestamp);
+        break;
+      case 'onReceiveData':
+        dynamic data = call.arguments;
+        if (data is List || data is Map) {
+          try {
+            data = jsonDecode(jsonEncode(data));
+          } catch (e, s) {
+            dev.log('onReceiveData error: $e\n$s');
+          }
+        }
+        handler.onReceiveData(data);
+        break;
+      case 'onNotificationButtonPressed':
+        final String id = call.arguments.toString();
+        handler.onNotificationButtonPressed(id);
+        break;
+      case 'onNotificationDismissed':
+        handler.onNotificationDismissed();
+        break;
+      case 'onNotificationPressed':
+        handler.onNotificationPressed();
+        break;
+    }
   }
 
   // =================== Communication ===================
 
   @override
   void sendDataToTask(Object data) {
-    _kMDChannel.invokeMethod('sendData', data);
+    mMDChannel.invokeMethod('sendData', data);
   }
 
   // ====================== Utility ======================
 
   @override
   void minimizeApp() {
-    _kMDChannel.invokeMethod('minimizeApp');
+    mMDChannel.invokeMethod('minimizeApp');
   }
 
   @override
   void launchApp([String? route]) {
     if (Platform.isAndroid) {
-      _kMDChannel.invokeMethod('launchApp', route);
+      mMDChannel.invokeMethod('launchApp', route);
     }
   }
 
   @override
   void setOnLockScreenVisibility(bool isVisible) {
     if (Platform.isAndroid) {
-      _kMDChannel.invokeMethod('setOnLockScreenVisibility', {
+      mMDChannel.invokeMethod('setOnLockScreenVisibility', {
         'isVisible': isVisible,
       });
     }
@@ -184,20 +193,20 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> get isAppOnForeground async {
-    return await _kMDChannel.invokeMethod('isAppOnForeground');
+    return await mMDChannel.invokeMethod('isAppOnForeground');
   }
 
   @override
   void wakeUpScreen() {
     if (Platform.isAndroid) {
-      _kMDChannel.invokeMethod('wakeUpScreen');
+      mMDChannel.invokeMethod('wakeUpScreen');
     }
   }
 
   @override
   Future<bool> get isIgnoringBatteryOptimizations async {
     if (Platform.isAndroid) {
-      return await _kMDChannel.invokeMethod('isIgnoringBatteryOptimizations');
+      return await mMDChannel.invokeMethod('isIgnoringBatteryOptimizations');
     }
     return true;
   }
@@ -205,7 +214,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> openIgnoreBatteryOptimizationSettings() async {
     if (Platform.isAndroid) {
-      return await _kMDChannel
+      return await mMDChannel
           .invokeMethod('openIgnoreBatteryOptimizationSettings');
     }
     return true;
@@ -214,7 +223,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> requestIgnoreBatteryOptimization() async {
     if (Platform.isAndroid) {
-      return await _kMDChannel.invokeMethod('requestIgnoreBatteryOptimization');
+      return await mMDChannel.invokeMethod('requestIgnoreBatteryOptimization');
     }
     return true;
   }
@@ -222,7 +231,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> get canDrawOverlays async {
     if (Platform.isAndroid) {
-      return await _kMDChannel.invokeMethod('canDrawOverlays');
+      return await mMDChannel.invokeMethod('canDrawOverlays');
     }
     return true;
   }
@@ -230,7 +239,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> openSystemAlertWindowSettings() async {
     if (Platform.isAndroid) {
-      return await _kMDChannel.invokeMethod('openSystemAlertWindowSettings');
+      return await mMDChannel.invokeMethod('openSystemAlertWindowSettings');
     }
     return true;
   }
@@ -238,21 +247,21 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<NotificationPermission> checkNotificationPermission() async {
     final int result =
-        await _kMDChannel.invokeMethod('checkNotificationPermission');
+        await mMDChannel.invokeMethod('checkNotificationPermission');
     return NotificationPermission.fromIndex(result);
   }
 
   @override
   Future<NotificationPermission> requestNotificationPermission() async {
     final int result =
-        await _kMDChannel.invokeMethod('requestNotificationPermission');
+        await mMDChannel.invokeMethod('requestNotificationPermission');
     return NotificationPermission.fromIndex(result);
   }
 
   @override
   Future<bool> get canScheduleExactAlarms async {
     if (Platform.isAndroid) {
-      return await _kMDChannel.invokeMethod('canScheduleExactAlarms');
+      return await mMDChannel.invokeMethod('canScheduleExactAlarms');
     }
     return true;
   }
@@ -260,7 +269,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<bool> openAlarmsAndRemindersSettings() async {
     if (Platform.isAndroid) {
-      return await _kMDChannel.invokeMethod('openAlarmsAndRemindersSettings');
+      return await mMDChannel.invokeMethod('openAlarmsAndRemindersSettings');
     }
     return true;
   }

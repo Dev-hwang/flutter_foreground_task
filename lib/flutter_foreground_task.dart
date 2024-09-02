@@ -71,11 +71,11 @@ class FlutterForegroundTask {
     foregroundTaskOptions = null;
     isInitialized = false;
 
-    _receivePort?.close();
-    _receivePort = null;
-    _streamSubscription?.cancel();
-    _streamSubscription = null;
-    _dataCallbacks.clear();
+    receivePort?.close();
+    receivePort = null;
+    streamSubscription?.cancel();
+    streamSubscription = null;
+    dataCallbacks.clear();
   }
 
   /// Initialize the [FlutterForegroundTask].
@@ -250,24 +250,29 @@ class FlutterForegroundTask {
 
   // =================== Communication ===================
 
-  static ReceivePort? _receivePort;
-  static StreamSubscription? _streamSubscription;
-  static final List<DataCallback> _dataCallbacks = [];
+  @visibleForTesting
+  static ReceivePort? receivePort;
+
+  @visibleForTesting
+  static StreamSubscription? streamSubscription;
+
+  @visibleForTesting
+  static final List<DataCallback> dataCallbacks = [];
 
   /// Initialize port for communication between TaskHandler and UI.
   static void initCommunicationPort() {
-    final ReceivePort receivePort = ReceivePort();
-    final SendPort sendPort = receivePort.sendPort;
+    final ReceivePort newReceivePort = ReceivePort();
+    final SendPort newSendPort = newReceivePort.sendPort;
 
     IsolateNameServer.removePortNameMapping(_kPortName);
-    if (IsolateNameServer.registerPortWithName(sendPort, _kPortName)) {
-      _streamSubscription?.cancel();
-      _receivePort?.close();
+    if (IsolateNameServer.registerPortWithName(newSendPort, _kPortName)) {
+      streamSubscription?.cancel();
+      receivePort?.close();
 
-      _receivePort = receivePort;
-      _streamSubscription = _receivePort?.listen((data) {
-        for (final DataCallback dataCallback in _dataCallbacks.toList()) {
-          dataCallback.call(data);
+      receivePort = newReceivePort;
+      streamSubscription = receivePort?.listen((data) {
+        for (final DataCallback callback in dataCallbacks.toList()) {
+          callback.call(data);
         }
       });
     }
@@ -275,14 +280,14 @@ class FlutterForegroundTask {
 
   /// Add a callback to receive data sent from the [TaskHandler].
   static void addTaskDataCallback(DataCallback callback) {
-    if (!_dataCallbacks.contains(callback)) {
-      _dataCallbacks.add(callback);
+    if (!dataCallbacks.contains(callback)) {
+      dataCallbacks.add(callback);
     }
   }
 
   /// Remove a callback to receive data sent from the [TaskHandler].
   static void removeTaskDataCallback(DataCallback callback) {
-    _dataCallbacks.remove(callback);
+    dataCallbacks.remove(callback);
   }
 
   /// Send data to [TaskHandler].

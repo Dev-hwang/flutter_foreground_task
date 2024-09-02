@@ -17,14 +17,14 @@ void main() {
     storage = TestDataStorage();
   });
 
-  test('saveData test', () async {
+  test('saveData', () async {
     expect(await storage.saveData(data: testString), true);
     expect(await storage.saveData(data: testBool), true);
     expect(await storage.saveData(data: testInt), true);
     expect(await storage.saveData(data: testDouble), true);
   });
 
-  test('getData test', () async {
+  test('getData', () async {
     await storage.saveData(data: testString);
     await storage.saveData(data: testBool);
     await storage.saveData(data: testInt);
@@ -40,7 +40,7 @@ void main() {
     expect(actualDouble, testDouble);
   });
 
-  test('getAllData test', () async {
+  test('getAllData', () async {
     await storage.saveData(data: testString);
     await storage.saveData(data: testBool);
     await storage.saveData(data: testInt);
@@ -53,7 +53,7 @@ void main() {
     expect(allData, containsData(testDouble));
   });
 
-  test('removeData test', () async {
+  test('removeData', () async {
     await storage.saveData(data: testString);
     await storage.saveData(data: testInt);
 
@@ -64,7 +64,7 @@ void main() {
     expect(allData, isNot(containsData(testInt)));
   });
 
-  test('clearAllData test', () async {
+  test('clearAllData', () async {
     await storage.saveData(data: testString);
     await storage.saveData(data: testDouble);
 
