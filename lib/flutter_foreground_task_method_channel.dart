@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:platform/platform.dart';
 
 import 'flutter_foreground_task_platform_interface.dart';
 import 'models/android_notification_options.dart';
@@ -26,6 +26,9 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   final MethodChannel mBGChannel =
       const MethodChannel('flutter_foreground_task/background');
 
+  @visibleForTesting
+  Platform platform = const LocalPlatform();
+
   // ====================== Service ======================
 
   @override
@@ -42,9 +45,9 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   }) async {
     final Map<String, dynamic> options = {
       'serviceId': serviceId,
-      if (Platform.isAndroid)
+      if (platform.isAndroid)
         ...androidNotificationOptions.toJson()
-      else
+      else if (platform.isIOS)
         ...iosNotificationOptions.toJson(),
       ...foregroundTaskOptions.toJson(),
       'notificationContentTitle': notificationTitle,
@@ -103,7 +106,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> get attachedActivity async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel.invokeMethod('attachedActivity');
     }
     return true;
@@ -177,14 +180,14 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   void launchApp([String? route]) {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       mMDChannel.invokeMethod('launchApp', route);
     }
   }
 
   @override
   void setOnLockScreenVisibility(bool isVisible) {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       mMDChannel.invokeMethod('setOnLockScreenVisibility', {
         'isVisible': isVisible,
       });
@@ -198,14 +201,14 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   void wakeUpScreen() {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       mMDChannel.invokeMethod('wakeUpScreen');
     }
   }
 
   @override
   Future<bool> get isIgnoringBatteryOptimizations async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel.invokeMethod('isIgnoringBatteryOptimizations');
     }
     return true;
@@ -213,7 +216,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> openIgnoreBatteryOptimizationSettings() async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel
           .invokeMethod('openIgnoreBatteryOptimizationSettings');
     }
@@ -222,7 +225,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> requestIgnoreBatteryOptimization() async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel.invokeMethod('requestIgnoreBatteryOptimization');
     }
     return true;
@@ -230,7 +233,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> get canDrawOverlays async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel.invokeMethod('canDrawOverlays');
     }
     return true;
@@ -238,7 +241,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> openSystemAlertWindowSettings() async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel.invokeMethod('openSystemAlertWindowSettings');
     }
     return true;
@@ -260,7 +263,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> get canScheduleExactAlarms async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel.invokeMethod('canScheduleExactAlarms');
     }
     return true;
@@ -268,7 +271,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
   @override
   Future<bool> openAlarmsAndRemindersSettings() async {
-    if (Platform.isAndroid) {
+    if (platform.isAndroid) {
       return await mMDChannel.invokeMethod('openAlarmsAndRemindersSettings');
     }
     return true;
