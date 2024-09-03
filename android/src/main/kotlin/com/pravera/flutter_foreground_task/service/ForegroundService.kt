@@ -576,6 +576,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         repeatTask = CoroutineScope(Dispatchers.Default).launch {
             while (isRunningService) {
+                delay(interval)
                 withContext(Dispatchers.Main) {
                     try {
                         invokeTaskRepeatEvent()
@@ -583,7 +584,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                         Log.e(TAG, "repeatTask", e)
                     }
                 }
-                delay(interval)
             }
         }
     }
