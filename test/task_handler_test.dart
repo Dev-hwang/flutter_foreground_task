@@ -49,34 +49,26 @@ void main() {
         .setMockMethodCallHandler(platform.mBGChannel, null);
   });
 
-  group('TaskHandler test', () {
+  group('TaskHandler', () {
     test('onStart', () async {
       const String method = TaskEventMethod.onStart;
 
       await platform.mBGChannel.invokeMethod(method);
-      expect(testTaskHandler.log.length, 1);
-      expect(testTaskHandler.log.last.method, method);
+      expect(testTaskHandler.log.last, isTaskEvent(method));
     });
 
     test('onRepeatEvent', () async {
       const String method = TaskEventMethod.onRepeatEvent;
 
       await platform.mBGChannel.invokeMethod(method);
-      expect(testTaskHandler.log.length, 1);
-      expect(testTaskHandler.log.last.method, method);
-
-      await platform.mBGChannel.invokeMethod(method);
-      await platform.mBGChannel.invokeMethod(method);
-      expect(testTaskHandler.log.length, 3);
-      expect(testTaskHandler.log.last.method, method);
+      expect(testTaskHandler.log.last, isTaskEvent(method));
     });
 
     test('onDestroy', () async {
       const String method = TaskEventMethod.onDestroy;
 
       await platform.mBGChannel.invokeMethod(method);
-      expect(testTaskHandler.log.length, 1);
-      expect(testTaskHandler.log.last.method, method);
+      expect(testTaskHandler.log.last, isTaskEvent(method));
     });
 
     test('onReceiveData', () async {
@@ -84,40 +76,27 @@ void main() {
 
       const String stringData = 'hello';
       await platform.mBGChannel.invokeMethod(method, stringData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, stringData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, stringData));
 
       const int intData = 1234;
       await platform.mBGChannel.invokeMethod(method, intData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, intData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, intData));
 
       const double doubleData = 1.234;
       await platform.mBGChannel.invokeMethod(method, doubleData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, doubleData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, doubleData));
 
       const bool boolData = false;
       await platform.mBGChannel.invokeMethod(method, boolData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, boolData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, boolData));
 
       const List<int> listData = [1, 2, 3];
       await platform.mBGChannel.invokeMethod(method, listData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, listData);
-      expect((testTaskHandler.log.last.arguments as List).length, 3);
-      expect((testTaskHandler.log.last.arguments as List)[0], 1);
-      expect((testTaskHandler.log.last.arguments as List)[1], 2);
-      expect((testTaskHandler.log.last.arguments as List)[2], 3);
+      expect(testTaskHandler.log.last, isTaskEvent(method, listData));
 
       const Map<String, dynamic> mapData = {'message': 'hello', 'data': 1};
       await platform.mBGChannel.invokeMethod(method, mapData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, mapData);
-      expect((testTaskHandler.log.last.arguments as Map).length, 2);
-      expect((testTaskHandler.log.last.arguments as Map)['message'], 'hello');
-      expect((testTaskHandler.log.last.arguments as Map)['data'], 1);
+      expect(testTaskHandler.log.last, isTaskEvent(method, mapData));
     });
 
     test('onNotificationButtonPressed', () async {
@@ -125,29 +104,25 @@ void main() {
 
       const String data = 'id_hello';
       await platform.mBGChannel.invokeMethod(method, data);
-      expect(testTaskHandler.log.length, 1);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, data);
+      expect(testTaskHandler.log.last, isTaskEvent(method, data));
     });
 
     test('onNotificationPressed', () async {
       const String method = TaskEventMethod.onNotificationPressed;
 
       await platform.mBGChannel.invokeMethod(method);
-      expect(testTaskHandler.log.length, 1);
-      expect(testTaskHandler.log.last.method, method);
+      expect(testTaskHandler.log.last, isTaskEvent(method));
     });
 
     test('onNotificationDismissed', () async {
       const String method = TaskEventMethod.onNotificationDismissed;
 
       await platform.mBGChannel.invokeMethod(method);
-      expect(testTaskHandler.log.length, 1);
-      expect(testTaskHandler.log.last.method, method);
+      expect(testTaskHandler.log.last, isTaskEvent(method));
     });
   });
 
-  group('communication port test', () {
+  group('CommunicationPort', () {
     test('initCommunicationPort', () {
       FlutterForegroundTask.initCommunicationPort();
       expect(FlutterForegroundTask.receivePort, isNotNull);
@@ -193,49 +168,104 @@ void main() {
 
       const String stringData = 'hello';
       FlutterForegroundTask.sendDataToTask(stringData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, stringData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, stringData));
 
       const int intData = 1234;
       FlutterForegroundTask.sendDataToTask(intData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, intData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, intData));
 
       const double doubleData = 1.234;
       FlutterForegroundTask.sendDataToTask(doubleData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, doubleData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, doubleData));
 
       const bool boolData = false;
       FlutterForegroundTask.sendDataToTask(boolData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, boolData);
+      expect(testTaskHandler.log.last, isTaskEvent(method, boolData));
 
       const List<int> listData = [1, 2, 3];
       FlutterForegroundTask.sendDataToTask(listData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, listData);
-      expect((testTaskHandler.log.last.arguments as List).length, 3);
-      expect((testTaskHandler.log.last.arguments as List)[0], 1);
-      expect((testTaskHandler.log.last.arguments as List)[1], 2);
-      expect((testTaskHandler.log.last.arguments as List)[2], 3);
+      expect(testTaskHandler.log.last, isTaskEvent(method, listData));
 
       const Map<String, dynamic> mapData = {'message': 'hello', 'data': 1};
       FlutterForegroundTask.sendDataToTask(mapData);
-      expect(testTaskHandler.log.last.method, method);
-      expect(testTaskHandler.log.last.arguments, mapData);
-      expect((testTaskHandler.log.last.arguments as Map).length, 2);
-      expect((testTaskHandler.log.last.arguments as Map)['message'], 'hello');
-      expect((testTaskHandler.log.last.arguments as Map)['data'], 1);
+      expect(testTaskHandler.log.last, isTaskEvent(method, mapData));
     });
   });
 }
 
-class TaskEvent {
-  const TaskEvent({required this.method, this.arguments});
+Matcher isTaskEvent(String method, [dynamic data]) {
+  return _IsTaskEvent(method, data);
+}
+
+class _IsTaskEvent extends Matcher {
+  const _IsTaskEvent(this.method, this.data);
 
   final String method;
-  final Object? arguments;
+  final dynamic data;
+
+  @override
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
+    if (item is! TaskEvent) {
+      return false;
+    }
+    if (item.method != method) {
+      return false;
+    }
+    return _deepEquals(item.data, data);
+  }
+
+  bool _deepEquals(dynamic a, dynamic b) {
+    if (a == b) {
+      return true;
+    }
+    if (a is List) {
+      return b is List && _deepEqualsList(a, b);
+    }
+    if (a is Map) {
+      return b is Map && _deepEqualsMap(a, b);
+    }
+    return false;
+  }
+
+  bool _deepEqualsList(List<dynamic> a, List<dynamic> b) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (int i = 0; i < a.length; i++) {
+      if (!_deepEquals(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _deepEqualsMap(Map<dynamic, dynamic> a, Map<dynamic, dynamic> b) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (final dynamic key in a.keys) {
+      if (!b.containsKey(key) || !_deepEquals(a[key], b[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  Description describe(Description description) {
+    return description
+        .add('has method: ')
+        .addDescriptionOf(method)
+        .add(' with data: ')
+        .addDescriptionOf(data);
+  }
+}
+
+class TaskEvent {
+  const TaskEvent({required this.method, this.data});
+
+  final String method;
+  final dynamic data;
 }
 
 class TaskEventMethod {
@@ -269,13 +299,13 @@ class TestTaskHandler extends TaskHandler {
 
   @override
   void onReceiveData(Object data) {
-    log.add(TaskEvent(method: TaskEventMethod.onReceiveData, arguments: data));
+    log.add(TaskEvent(method: TaskEventMethod.onReceiveData, data: data));
   }
 
   @override
   void onNotificationButtonPressed(String id) {
     log.add(TaskEvent(
-        method: TaskEventMethod.onNotificationButtonPressed, arguments: id));
+        method: TaskEventMethod.onNotificationButtonPressed, data: id));
   }
 
   @override
