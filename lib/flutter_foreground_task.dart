@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
@@ -91,7 +90,7 @@ class FlutterForegroundTask {
     FlutterForegroundTask.isInitialized = true;
   }
 
-  /// Start the foreground service with notification.
+  /// Start the foreground service.
   static Future<ServiceRequestResult> startService({
     int? serviceId,
     required String notificationTitle,
@@ -102,19 +101,6 @@ class FlutterForegroundTask {
   }) async {
     if (!isInitialized) {
       return ServiceRequestResult.error(ServiceNotInitializedException());
-    }
-
-    // Notification Permission for Android 13+
-    try {
-      if (Platform.isAndroid && await _platform.attachedActivity) {
-        final NotificationPermission permission =
-            await checkNotificationPermission();
-        if (permission != NotificationPermission.granted) {
-          await requestNotificationPermission();
-        }
-      }
-    } catch (_) {
-      // permission denied..
     }
 
     try {
