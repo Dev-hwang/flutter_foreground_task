@@ -1,3 +1,12 @@
+## 8.8.0
+
+* [**REMOVE**] Remove notification permission request code in startService
+  - Notification permission request is required before starting the service
+  - Check step-4 of [readme](https://github.com/Dev-hwang/flutter_foreground_task?tab=readme-ov-file#hatched_chick-step-by-step)
+* [**FIX-Android**] Fix issue with calling onRepeatEvent without waiting for repeat delay after onStart
+  - If use the `eventAction: ForegroundTaskEventAction.repeat(millis)`
+  - flow: `onStart` - (millis) - `onRepeatEvent` - (millis) - `onRepeatEvent`..
+
 ## 8.7.0
 
 * [**FEAT**] Allow permission settings page to be opened even if permission is granted
