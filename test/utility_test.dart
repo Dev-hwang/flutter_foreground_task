@@ -9,30 +9,35 @@ import 'package:platform/platform.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MethodChannelFlutterForegroundTask platform;
+  late MethodChannelFlutterForegroundTask platformChannel;
   late UtilityMethodCallHandler methodCallHandler;
 
   setUp(() {
-    platform = MethodChannelFlutterForegroundTask();
-    FlutterForegroundTaskPlatform.instance = platform;
-    methodCallHandler = UtilityMethodCallHandler(() => platform.platform);
+    platformChannel = MethodChannelFlutterForegroundTask();
+    FlutterForegroundTaskPlatform.instance = platformChannel;
+    FlutterForegroundTask.resetStatic();
+
+    methodCallHandler =
+        UtilityMethodCallHandler(() => platformChannel.platform);
 
     // method channel
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      platform.mMDChannel,
+      platformChannel.mMDChannel,
       methodCallHandler.onMethodCall,
     );
   });
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(platform.mMDChannel, null);
+        .setMockMethodCallHandler(platformChannel.mMDChannel, null);
   });
 
   group('Android', () {
+    const String platform = Platform.android;
+
     test('minimizeApp', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.minimizeApp();
       expect(
@@ -42,7 +47,7 @@ void main() {
     });
 
     test('launchApp', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.launchApp();
       expect(
@@ -58,7 +63,7 @@ void main() {
     });
 
     test('setOnLockScreenVisibility', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.setOnLockScreenVisibility(true);
       expect(
@@ -80,7 +85,7 @@ void main() {
     });
 
     test('isAppOnForeground', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result = await FlutterForegroundTask.isAppOnForeground;
       expect(result, false);
@@ -91,7 +96,7 @@ void main() {
     });
 
     test('wakeUpScreen', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.wakeUpScreen();
       expect(
@@ -101,7 +106,7 @@ void main() {
     });
 
     test('isIgnoringBatteryOptimizations', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.isIgnoringBatteryOptimizations;
@@ -116,7 +121,7 @@ void main() {
     });
 
     test('openIgnoreBatteryOptimizationSettings', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
@@ -131,7 +136,7 @@ void main() {
     });
 
     test('requestIgnoreBatteryOptimization', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.requestIgnoreBatteryOptimization();
@@ -146,7 +151,7 @@ void main() {
     });
 
     test('canDrawOverlays', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result = await FlutterForegroundTask.canDrawOverlays;
       expect(result, false);
@@ -157,7 +162,7 @@ void main() {
     });
 
     test('openSystemAlertWindowSettings', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.openSystemAlertWindowSettings();
@@ -172,7 +177,7 @@ void main() {
     });
 
     test('checkNotificationPermission', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final NotificationPermission permission =
           await FlutterForegroundTask.checkNotificationPermission();
@@ -187,7 +192,7 @@ void main() {
     });
 
     test('requestNotificationPermission', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final NotificationPermission permission =
           await FlutterForegroundTask.requestNotificationPermission();
@@ -202,7 +207,7 @@ void main() {
     });
 
     test('canScheduleExactAlarms', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result = await FlutterForegroundTask.canScheduleExactAlarms;
       expect(result, false);
@@ -213,7 +218,7 @@ void main() {
     });
 
     test('openAlarmsAndRemindersSettings', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.android);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.openAlarmsAndRemindersSettings();
@@ -229,8 +234,10 @@ void main() {
   });
 
   group('iOS', () {
+    const String platform = Platform.iOS;
+
     test('minimizeApp', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.minimizeApp();
       expect(
@@ -240,7 +247,7 @@ void main() {
     });
 
     test('launchApp', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.launchApp();
       expect(methodCallHandler.log, isEmpty);
@@ -250,7 +257,7 @@ void main() {
     });
 
     test('setOnLockScreenVisibility', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.setOnLockScreenVisibility(true);
       expect(methodCallHandler.log, isEmpty);
@@ -260,7 +267,7 @@ void main() {
     });
 
     test('isAppOnForeground', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result = await FlutterForegroundTask.isAppOnForeground;
       expect(result, false);
@@ -271,14 +278,14 @@ void main() {
     });
 
     test('wakeUpScreen', () {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       FlutterForegroundTask.wakeUpScreen();
       expect(methodCallHandler.log, isEmpty);
     });
 
     test('isIgnoringBatteryOptimizations', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.isIgnoringBatteryOptimizations;
@@ -287,7 +294,7 @@ void main() {
     });
 
     test('openIgnoreBatteryOptimizationSettings', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
@@ -296,7 +303,7 @@ void main() {
     });
 
     test('requestIgnoreBatteryOptimization', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.requestIgnoreBatteryOptimization();
@@ -305,7 +312,7 @@ void main() {
     });
 
     test('canDrawOverlays', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result = await FlutterForegroundTask.canDrawOverlays;
       expect(result, true);
@@ -313,7 +320,7 @@ void main() {
     });
 
     test('openSystemAlertWindowSettings', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.openSystemAlertWindowSettings();
@@ -322,7 +329,7 @@ void main() {
     });
 
     test('checkNotificationPermission', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final NotificationPermission permission =
           await FlutterForegroundTask.checkNotificationPermission();
@@ -337,7 +344,7 @@ void main() {
     });
 
     test('requestNotificationPermission', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final NotificationPermission permission =
           await FlutterForegroundTask.requestNotificationPermission();
@@ -352,7 +359,7 @@ void main() {
     });
 
     test('canScheduleExactAlarms', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result = await FlutterForegroundTask.canScheduleExactAlarms;
       expect(result, true);
@@ -360,7 +367,7 @@ void main() {
     });
 
     test('openAlarmsAndRemindersSettings', () async {
-      platform.platform = FakePlatform(operatingSystem: Platform.iOS);
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
       final bool result =
           await FlutterForegroundTask.openAlarmsAndRemindersSettings();

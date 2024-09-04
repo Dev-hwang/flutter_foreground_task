@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task_method_channel.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:platform/platform.dart';
 
 import 'dummy/service_dummy_data.dart';
 
@@ -10,155 +13,468 @@ void main() {
 
   final ServiceDummyData dummyData = ServiceDummyData();
 
-  late MockFlutterForegroundTask mock;
+  late MethodChannelFlutterForegroundTask platformChannel;
+  late ServiceApiMethodCallHandler methodCallHandler;
 
   setUp(() {
-    mock = MockFlutterForegroundTask();
-    FlutterForegroundTaskPlatform.instance = mock;
+    platformChannel = MethodChannelFlutterForegroundTask();
+    FlutterForegroundTaskPlatform.instance = platformChannel;
     FlutterForegroundTask.resetStatic();
-  });
 
-  test('init', () {
-    expect(FlutterForegroundTask.isInitialized, false);
+    methodCallHandler =
+        ServiceApiMethodCallHandler(() => platformChannel.platform);
 
-    _init(dummyData);
-
-    expect(FlutterForegroundTask.isInitialized, true);
-    expect(
-      FlutterForegroundTask.androidNotificationOptions,
-      dummyData.androidNotificationOptions,
-    );
-    expect(
-      FlutterForegroundTask.iosNotificationOptions,
-      dummyData.iosNotificationOptions,
-    );
-    expect(
-      FlutterForegroundTask.foregroundTaskOptions,
-      dummyData.foregroundTaskOptions,
+    // method channel
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      platformChannel.mMDChannel,
+      methodCallHandler.onMethodCall,
     );
   });
 
-  test('startService', () async {
-    _init(dummyData);
-
-    final ServiceRequestResult result = await _startService(dummyData);
-    expect(result.success, true);
-    expect(result.error, isNull);
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(platformChannel.mMDChannel, null);
   });
 
-  test('startService (error: ServiceNotInitializedException)', () async {
-    final ServiceRequestResult result = await _startService(dummyData);
-    expect(result.success, false);
-    expect(result.error, isA<ServiceNotInitializedException>());
+  group('Android', () {
+    const String platform = Platform.android;
+
+    test('init', () {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      expect(FlutterForegroundTask.isInitialized, false);
+      expect(FlutterForegroundTask.androidNotificationOptions, isNull);
+      expect(FlutterForegroundTask.iosNotificationOptions, isNull);
+      expect(FlutterForegroundTask.foregroundTaskOptions, isNull);
+
+      _init(dummyData);
+
+      expect(FlutterForegroundTask.isInitialized, true);
+      expect(
+        FlutterForegroundTask.androidNotificationOptions,
+        dummyData.androidNotificationOptions,
+      );
+      expect(
+        FlutterForegroundTask.iosNotificationOptions,
+        dummyData.iosNotificationOptions,
+      );
+      expect(
+        FlutterForegroundTask.foregroundTaskOptions,
+        dummyData.foregroundTaskOptions,
+      );
+    });
+
+    test('startService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      FlutterForegroundTask.skipServiceResponseCheck = true;
+
+      _init(dummyData);
+
+      final ServiceRequestResult result = await _startService(dummyData);
+      expect(result.success, true);
+      expect(result.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(
+          ServiceApiMethod.startService,
+          arguments: dummyData.getStartServiceArgs(platform),
+        ),
+      );
+    });
+
+    test('startService (error: ServiceNotInitializedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      final ServiceRequestResult result = await _startService(dummyData);
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotInitializedException>());
+    });
+
+    test('startService (error: ServiceAlreadyStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      final ServiceRequestResult result2 = await _startService(dummyData);
+      expect(result2.success, false);
+      expect(result2.error, isA<ServiceAlreadyStartedException>());
+    });
+
+    test('startService (error: ServiceTimeoutException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+
+      // set test
+      methodCallHandler.timeoutTest = true;
+
+      final ServiceRequestResult result = await _startService(dummyData);
+      expect(result.success, false);
+      expect(result.error, isA<ServiceTimeoutException>());
+    });
+
+    test('restartService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      final ServiceRequestResult result2 = await _restartService();
+      expect(result2.success, true);
+      expect(result2.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.restartService, arguments: null),
+      );
+    });
+
+    test('restartService (error: ServiceNotStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      final ServiceRequestResult result = await _restartService();
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotStartedException>());
+    });
+
+    test('updateService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      final ServiceRequestResult result2 = await _updateService(dummyData);
+      expect(result2.success, true);
+      expect(result2.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(
+          ServiceApiMethod.updateService,
+          arguments: dummyData.getUpdateServiceArgs(),
+        ),
+      );
+    });
+
+    test('updateService (error: ServiceNotStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      final ServiceRequestResult result = await _updateService(dummyData);
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotStartedException>());
+    });
+
+    test('stopService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      FlutterForegroundTask.skipServiceResponseCheck = true;
+
+      _init(dummyData);
+
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      final ServiceRequestResult result2 = await _stopService();
+      expect(result2.success, true);
+      expect(result2.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.stopService, arguments: null),
+      );
+    });
+
+    test('stopService (error: ServiceNotStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      final ServiceRequestResult result = await _stopService();
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotStartedException>());
+    });
+
+    test('stopService (error: ServiceTimeoutException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      // set test
+      methodCallHandler.timeoutTest = true;
+
+      final ServiceRequestResult result2 = await _stopService();
+      expect(result2.success, false);
+      expect(result2.error, isA<ServiceTimeoutException>());
+    });
+
+    test('isRunningService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+      expect(await _isRunningService, false);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _startService(dummyData);
+      expect(await _isRunningService, true);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _restartService();
+      expect(await _isRunningService, true);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _updateService(dummyData);
+      expect(await _isRunningService, true);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _stopService();
+      expect(await _isRunningService, false);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+    });
   });
 
-  test('startService (error: ServiceAlreadyStartedException)', () async {
-    _init(dummyData);
+  group('iOS', () {
+    const String platform = Platform.iOS;
 
-    final ServiceRequestResult result1 = await _startService(dummyData);
-    expect(result1.success, true);
-    expect(result1.error, isNull);
+    test('init', () {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
-    final ServiceRequestResult result2 = await _startService(dummyData);
-    expect(result2.success, false);
-    expect(result2.error, isA<ServiceAlreadyStartedException>());
-  });
+      expect(FlutterForegroundTask.isInitialized, false);
+      expect(FlutterForegroundTask.androidNotificationOptions, isNull);
+      expect(FlutterForegroundTask.iosNotificationOptions, isNull);
+      expect(FlutterForegroundTask.foregroundTaskOptions, isNull);
 
-  test('startService (error: ServiceTimeoutException)', () async {
-    _init(dummyData);
+      _init(dummyData);
 
-    // set timeoutTest
-    mock.timeoutTest = true;
+      expect(FlutterForegroundTask.isInitialized, true);
+      expect(
+        FlutterForegroundTask.androidNotificationOptions,
+        dummyData.androidNotificationOptions,
+      );
+      expect(
+        FlutterForegroundTask.iosNotificationOptions,
+        dummyData.iosNotificationOptions,
+      );
+      expect(
+        FlutterForegroundTask.foregroundTaskOptions,
+        dummyData.foregroundTaskOptions,
+      );
+    });
 
-    final ServiceRequestResult result = await _startService(dummyData);
-    expect(result.success, false);
-    expect(result.error, isA<ServiceTimeoutException>());
-  });
+    test('startService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      FlutterForegroundTask.skipServiceResponseCheck = true;
 
-  test('restartService', () async {
-    _init(dummyData);
+      _init(dummyData);
 
-    final ServiceRequestResult result1 = await _startService(dummyData);
-    expect(result1.success, true);
-    expect(result1.error, isNull);
+      final ServiceRequestResult result = await _startService(dummyData);
+      expect(result.success, true);
+      expect(result.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(
+          ServiceApiMethod.startService,
+          arguments: dummyData.getStartServiceArgs(platform),
+        ),
+      );
+    });
 
-    final ServiceRequestResult result2 = await _restartService();
-    expect(result2.success, true);
-    expect(result2.error, isNull);
-  });
+    test('startService (error: ServiceNotInitializedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
-  test('restartService (error: ServiceNotStartedException)', () async {
-    final ServiceRequestResult result = await _restartService();
-    expect(result.success, false);
-    expect(result.error, isA<ServiceNotStartedException>());
-  });
+      final ServiceRequestResult result = await _startService(dummyData);
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotInitializedException>());
+    });
 
-  test('updateService', () async {
-    _init(dummyData);
+    test('startService (error: ServiceAlreadyStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
-    final ServiceRequestResult result1 = await _startService(dummyData);
-    expect(result1.success, true);
-    expect(result1.error, isNull);
+      _init(dummyData);
 
-    final ServiceRequestResult result2 = await _updateService(dummyData);
-    expect(result2.success, true);
-    expect(result2.error, isNull);
-  });
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
 
-  test('updateService (error: ServiceNotStartedException)', () async {
-    final ServiceRequestResult result = await _updateService(dummyData);
-    expect(result.success, false);
-    expect(result.error, isA<ServiceNotStartedException>());
-  });
+      final ServiceRequestResult result2 = await _startService(dummyData);
+      expect(result2.success, false);
+      expect(result2.error, isA<ServiceAlreadyStartedException>());
+    });
 
-  test('stopService', () async {
-    _init(dummyData);
+    test('startService (error: ServiceTimeoutException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
-    final ServiceRequestResult result1 = await _startService(dummyData);
-    expect(result1.success, true);
-    expect(result1.error, isNull);
+      _init(dummyData);
 
-    final ServiceRequestResult result2 = await _stopService();
-    expect(result2.success, true);
-    expect(result2.error, isNull);
-  });
+      // set test
+      methodCallHandler.timeoutTest = true;
 
-  test('stopService (error: ServiceNotStartedException)', () async {
-    final ServiceRequestResult result = await _stopService();
-    expect(result.success, false);
-    expect(result.error, isA<ServiceNotStartedException>());
-  });
+      final ServiceRequestResult result = await _startService(dummyData);
+      expect(result.success, false);
+      expect(result.error, isA<ServiceTimeoutException>());
+    });
 
-  test('stopService (error: ServiceTimeoutException)', () async {
-    _init(dummyData);
+    test('restartService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
-    final ServiceRequestResult result1 = await _startService(dummyData);
-    expect(result1.success, true);
-    expect(result1.error, isNull);
+      _init(dummyData);
 
-    // set timeoutTest
-    mock.timeoutTest = true;
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
 
-    final ServiceRequestResult result2 = await _stopService();
-    expect(result2.success, false);
-    expect(result2.error, isA<ServiceTimeoutException>());
-  });
+      final ServiceRequestResult result2 = await _restartService();
+      expect(result2.success, true);
+      expect(result2.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.restartService, arguments: null),
+      );
+    });
 
-  test('isRunningService', () async {
-    _init(dummyData);
-    expect(await _isRunningService, false);
+    test('restartService (error: ServiceNotStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
-    await _startService(dummyData);
-    expect(await _isRunningService, true);
+      final ServiceRequestResult result = await _restartService();
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotStartedException>());
+    });
 
-    await _restartService();
-    expect(await _isRunningService, true);
+    test('updateService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
 
-    await _updateService(dummyData);
-    expect(await _isRunningService, true);
+      _init(dummyData);
 
-    await _stopService();
-    expect(await _isRunningService, false);
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      final ServiceRequestResult result2 = await _updateService(dummyData);
+      expect(result2.success, true);
+      expect(result2.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(
+          ServiceApiMethod.updateService,
+          arguments: dummyData.getUpdateServiceArgs(),
+        ),
+      );
+    });
+
+    test('updateService (error: ServiceNotStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      final ServiceRequestResult result = await _updateService(dummyData);
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotStartedException>());
+    });
+
+    test('stopService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      FlutterForegroundTask.skipServiceResponseCheck = true;
+
+      _init(dummyData);
+
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      final ServiceRequestResult result2 = await _stopService();
+      expect(result2.success, true);
+      expect(result2.error, isNull);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.stopService, arguments: null),
+      );
+    });
+
+    test('stopService (error: ServiceNotStartedException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      final ServiceRequestResult result = await _stopService();
+      expect(result.success, false);
+      expect(result.error, isA<ServiceNotStartedException>());
+    });
+
+    test('stopService (error: ServiceTimeoutException)', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+
+      final ServiceRequestResult result1 = await _startService(dummyData);
+      expect(result1.success, true);
+      expect(result1.error, isNull);
+
+      // set test
+      methodCallHandler.timeoutTest = true;
+
+      final ServiceRequestResult result2 = await _stopService();
+      expect(result2.success, false);
+      expect(result2.error, isA<ServiceTimeoutException>());
+    });
+
+    test('isRunningService', () async {
+      platformChannel.platform = FakePlatform(operatingSystem: platform);
+
+      _init(dummyData);
+      expect(await _isRunningService, false);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _startService(dummyData);
+      expect(await _isRunningService, true);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _restartService();
+      expect(await _isRunningService, true);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _updateService(dummyData);
+      expect(await _isRunningService, true);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+
+      await _stopService();
+      expect(await _isRunningService, false);
+      expect(
+        methodCallHandler.log.last,
+        isMethodCall(ServiceApiMethod.isRunningService, arguments: null),
+      );
+    });
   });
 }
 
@@ -177,6 +493,7 @@ Future<ServiceRequestResult> _startService(ServiceDummyData dummyData) {
     notificationText: dummyData.notificationText,
     notificationIcon: dummyData.notificationIcon,
     notificationButtons: dummyData.notificationButtons,
+    callback: testCallback,
   );
 }
 
@@ -191,6 +508,7 @@ Future<ServiceRequestResult> _updateService(ServiceDummyData dummyData) {
     notificationText: dummyData.notificationText,
     notificationIcon: dummyData.notificationIcon,
     notificationButtons: dummyData.notificationButtons,
+    callback: testCallback,
   );
 }
 
@@ -202,123 +520,90 @@ Future<bool> get _isRunningService {
   return FlutterForegroundTask.isRunningService;
 }
 
-class MockFlutterForegroundTask
-    with MockPlatformInterfaceMixin
-    implements FlutterForegroundTaskPlatform {
-  // ====================== Service ======================
+class ServiceApiMethod {
+  static const String startService = 'startService';
+  static const String restartService = 'restartService';
+  static const String updateService = 'updateService';
+  static const String stopService = 'stopService';
+  static const String isRunningService = 'isRunningService';
+  static const String attachedActivity = 'attachedActivity';
 
-  // test options
+  static Set<String> getImplementation(Platform platform) {
+    if (platform.isAndroid) {
+      return {
+        startService,
+        restartService,
+        updateService,
+        stopService,
+        isRunningService,
+        attachedActivity,
+      };
+    } else if (platform.isIOS) {
+      return {
+        startService,
+        restartService,
+        updateService,
+        stopService,
+        isRunningService,
+      };
+    }
+
+    return {};
+  }
+}
+
+class ServiceApiMethodCallHandler {
+  ServiceApiMethodCallHandler(this._platformGetter);
+
+  final ValueGetter<Platform> _platformGetter;
+
+  final List<MethodCall> log = [];
+
   bool timeoutTest = false;
 
   bool _isRunningService = false;
 
-  @override
-  Future<void> startService({
-    required AndroidNotificationOptions androidNotificationOptions,
-    required IOSNotificationOptions iosNotificationOptions,
-    required ForegroundTaskOptions foregroundTaskOptions,
-    int? serviceId,
-    required String notificationTitle,
-    required String notificationText,
-    NotificationIconData? notificationIcon,
-    List<NotificationButton>? notificationButtons,
-    Function? callback,
-  }) async {
-    // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
-    // ref: https://developer.android.com/guide/components/services#StartingAService
-    if (timeoutTest) {
-      await Future.delayed(const Duration(milliseconds: 6000));
-      return;
+  // unimplemented: throw UnimplementedError
+  void _checkImplementation(String method) {
+    final Platform platform = _platformGetter();
+    if (!ServiceApiMethod.getImplementation(platform).contains(method)) {
+      throw UnimplementedError(
+          'Unimplemented method on ${platform.operatingSystem}: $method');
     }
-    _isRunningService = true;
   }
 
-  @override
-  Future<void> restartService() async {
-    _isRunningService = true;
-  }
+  Future<Object?>? onMethodCall(MethodCall methodCall) async {
+    final String method = methodCall.method;
+    _checkImplementation(method);
 
-  @override
-  Future<void> updateService({
-    ForegroundTaskOptions? foregroundTaskOptions,
-    String? notificationTitle,
-    String? notificationText,
-    NotificationIconData? notificationIcon,
-    List<NotificationButton>? notificationButtons,
-    Function? callback,
-  }) async {
-    _isRunningService = true;
-  }
+    log.add(methodCall);
 
-  @override
-  Future<void> stopService() async {
-    // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
-    // ref: https://developer.android.com/guide/components/services#StartingAService
-    if (timeoutTest) {
-      await Future.delayed(const Duration(milliseconds: 6000));
-      return;
+    if (method == ServiceApiMethod.startService) {
+      if (!timeoutTest) {
+        _isRunningService = true;
+      }
+      return Future.value();
+    } else if (method == ServiceApiMethod.restartService) {
+      if (!timeoutTest) {
+        _isRunningService = true;
+      }
+      return Future.value();
+    } else if (method == ServiceApiMethod.updateService) {
+      if (!timeoutTest) {
+        _isRunningService = true;
+      }
+      return Future.value();
+    } else if (method == ServiceApiMethod.stopService) {
+      if (!timeoutTest) {
+        _isRunningService = false;
+      }
+      return Future.value();
+    } else if (method == ServiceApiMethod.isRunningService) {
+      return _isRunningService;
+    } else if (method == ServiceApiMethod.attachedActivity) {
+      return true;
     }
-    _isRunningService = false;
+
+    throw UnimplementedError();
   }
-
-  @override
-  Future<bool> get isRunningService async => _isRunningService;
-
-  @override
-  Future<bool> get attachedActivity async => true;
-
-  @override
-  void setTaskHandler(TaskHandler handler) => throw UnimplementedError();
-
-  // =================== Communication ===================
-
-  @override
-  void sendDataToTask(Object data) => throw UnimplementedError();
-
-  // ====================== Utility ======================
-
-  @override
-  void minimizeApp() => throw UnimplementedError();
-
-  @override
-  void launchApp([String? route]) => throw UnimplementedError();
-
-  @override
-  void setOnLockScreenVisibility(bool isVisible) => throw UnimplementedError();
-
-  @override
-  Future<bool> get isAppOnForeground => throw UnimplementedError();
-
-  @override
-  void wakeUpScreen() => throw UnimplementedError();
-
-  @override
-  Future<bool> get isIgnoringBatteryOptimizations => throw UnimplementedError();
-
-  @override
-  Future<bool> openIgnoreBatteryOptimizationSettings() =>
-      throw UnimplementedError();
-
-  @override
-  Future<bool> requestIgnoreBatteryOptimization() => throw UnimplementedError();
-
-  @override
-  Future<bool> get canDrawOverlays => throw UnimplementedError();
-
-  @override
-  Future<bool> openSystemAlertWindowSettings() => throw UnimplementedError();
-
-  @override
-  Future<NotificationPermission> checkNotificationPermission() =>
-      throw UnimplementedError();
-
-  @override
-  Future<NotificationPermission> requestNotificationPermission() =>
-      throw UnimplementedError();
-
-  @override
-  Future<bool> get canScheduleExactAlarms => throw UnimplementedError();
-
-  @override
-  Future<bool> openAlarmsAndRemindersSettings() => throw UnimplementedError();
 }
