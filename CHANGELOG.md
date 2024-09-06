@@ -1,3 +1,7 @@
+## 8.8.1
+
+* [**FIX**] Fix issue related to `openIgnoreBatteryOptimizationSettings` [#275](https://github.com/Dev-hwang/flutter_foreground_task/issues/275)
+
 ## 8.8.0
 
 * [**REMOVE**] Remove notification permission request code in startService

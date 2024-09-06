@@ -1,6 +1,10 @@
 This plugin is used to implement a foreground service on the Android platform.
 
-[![pub package](https://img.shields.io/pub/v/flutter_foreground_task.svg)](https://pub.dev/packages/flutter_foreground_task)
+<p>
+<a href="https://pub.dev/packages/flutter_foreground_task"><img src="https://img.shields.io/pub/v/flutter_foreground_task.svg" alt="pub"></a>
+<a href="https://github.com/Dev-hwang/flutter_foreground_task/actions"><img src="https://github.com/Dev-hwang/flutter_foreground_task/workflows/master/badge.svg" alt="build"></a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-orange.svg" alt="MIT license"></a>
+</p>
 
 ## Features
 
@@ -16,7 +20,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.8.0
+  flutter_foreground_task: ^8.8.1
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
