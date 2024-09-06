@@ -94,10 +94,7 @@ class PluginUtils {
         /** Open the settings page where you can set ignore battery optimization. */
         fun openIgnoreBatteryOptimizationSettings(activity: Activity, requestCode: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val intent = Intent(
-                    Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
-                    Uri.parse("package:" + activity.packageName)
-                )
+                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                 activity.startActivityForResult(intent, requestCode)
             } else {
                 throw NotSupportedException("only supports Android 6.0+")
