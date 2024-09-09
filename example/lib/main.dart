@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -19,12 +18,28 @@ void startCallback() {
 }
 
 class MyTaskHandler extends TaskHandler {
+  static const String incrementCountCommand = 'incrementCount';
+
   int _count = 0;
+
+  void _incrementCount() {
+    _count++;
+
+    // Update notification content.
+    FlutterForegroundTask.updateService(
+      notificationTitle: 'Hello MyTaskHandler :)',
+      notificationText: 'count: $_count',
+    );
+
+    // Send data to main isolate.
+    FlutterForegroundTask.sendDataToMain(_count);
+  }
 
   // Called when the task is started.
   @override
   void onStart(DateTime timestamp) {
     print('onStart');
+    _incrementCount();
   }
 
   // Called by eventAction in [ForegroundTaskOptions].
@@ -33,12 +48,7 @@ class MyTaskHandler extends TaskHandler {
   // - repeat(interval) : Call onRepeatEvent at milliseconds interval.
   @override
   void onRepeatEvent(DateTime timestamp) {
-    FlutterForegroundTask.updateService(notificationText: 'count: $_count');
-
-    // Send data to main isolate.
-    FlutterForegroundTask.sendDataToMain(_count);
-
-    _count++;
+    _incrementCount();
   }
 
   // Called when the task is destroyed.
@@ -51,6 +61,9 @@ class MyTaskHandler extends TaskHandler {
   @override
   void onReceiveData(Object data) {
     print('onReceiveData: $data');
+    if (data == incrementCountCommand) {
+      _incrementCount();
+    }
   }
 
   // Called when the notification button is pressed.
@@ -80,7 +93,7 @@ class MyTaskHandler extends TaskHandler {
 }
 
 class ExampleApp extends StatelessWidget {
-  const ExampleApp({Key? key}) : super(key: key);
+  const ExampleApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -94,20 +107,22 @@ class ExampleApp extends StatelessWidget {
 }
 
 class ExamplePage extends StatefulWidget {
-  const ExamplePage({Key? key}) : super(key: key);
+  const ExamplePage({super.key});
 
   @override
   State<StatefulWidget> createState() => _ExamplePageState();
 }
 
 class _ExamplePageState extends State<ExamplePage> {
+  final ValueNotifier<Object?> _receivedTaskData = ValueNotifier(null);
+
   Future<void> _requestPermissions() async {
     // Android 13+, you need to allow notification permission to display foreground service notification.
     //
     // iOS: If you need notification, ask for permission.
-    final NotificationPermission notificationPermissionStatus =
+    final NotificationPermission notificationPermission =
         await FlutterForegroundTask.checkNotificationPermission();
-    if (notificationPermissionStatus != NotificationPermission.granted) {
+    if (notificationPermission != NotificationPermission.granted) {
       await FlutterForegroundTask.requestNotificationPermission();
     }
 
@@ -146,7 +161,7 @@ class _ExamplePageState extends State<ExamplePage> {
     }
   }
 
-  Future<void> _initService() async {
+  void _initService() {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'foreground_service',
@@ -157,7 +172,7 @@ class _ExamplePageState extends State<ExamplePage> {
         priority: NotificationPriority.LOW,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
-        showNotification: true,
+        showNotification: false,
         playSound: false,
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
@@ -192,15 +207,12 @@ class _ExamplePageState extends State<ExamplePage> {
   }
 
   void _onReceiveTaskData(Object data) {
-    if (data is int) {
-      print('count: $data');
-    }
+    print('onReceiveTaskData: $data');
+    _receivedTaskData.value = data;
   }
 
-  void _sendRandomData() {
-    final Random random = Random();
-    final int data = random.nextInt(100);
-    FlutterForegroundTask.sendDataToTask(data);
+  void _incrementCount() {
+    FlutterForegroundTask.sendDataToTask(MyTaskHandler.incrementCountCommand);
   }
 
   @override
@@ -220,6 +232,7 @@ class _ExamplePageState extends State<ExamplePage> {
   void dispose() {
     // Remove a callback to receive data sent from the TaskHandler.
     FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
+    _receivedTaskData.dispose();
     super.dispose();
   }
 
@@ -242,6 +255,32 @@ class _ExamplePageState extends State<ExamplePage> {
   }
 
   Widget _buildContentView() {
+    return Column(
+      children: [
+        Expanded(child: _buildCommunicationText()),
+        _buildServiceControlButtons(),
+      ],
+    );
+  }
+
+  Widget _buildCommunicationText() {
+    return ValueListenableBuilder(
+      valueListenable: _receivedTaskData,
+      builder: (context, data, _) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text('You received data from TaskHandler:'),
+              Text('$data', style: Theme.of(context).textTheme.headlineMedium),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildServiceControlButtons() {
     buttonBuilder(String text, {VoidCallback? onPressed}) {
       return ElevatedButton(
         onPressed: onPressed,
@@ -249,13 +288,14 @@ class _ExamplePageState extends State<ExamplePage> {
       );
     }
 
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           buttonBuilder('start service', onPressed: _startService),
           buttonBuilder('stop service', onPressed: _stopService),
-          buttonBuilder('send random data', onPressed: _sendRandomData),
+          buttonBuilder('increment count', onPressed: _incrementCount),
         ],
       ),
     );

@@ -27,7 +27,9 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 ### :baby_chick: Android
 
-Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows. If you want the foreground service to run only when the app is running, add `android:stopWithTask` option.
+Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows.
+
+If you want the foreground service to run only when the app is running, add `android:stopWithTask="true"` option.
 
 As it is mentioned in the Android Guidelines, in Android 14, to start a FG service, you need to specify `android:foregroundServiceType`.
 
@@ -47,7 +49,6 @@ Change the type with your type (all types are listed in the link above).
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
 
 <!-- Warning: Do not change service name. -->
-<!-- Add android:stopWithTask option only when necessary. -->
 <service 
     android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
     android:foregroundServiceType="dataSync|remoteMessaging"
@@ -267,9 +268,9 @@ Future<void> _requestPermissions() async {
   // Android 13+, you need to allow notification permission to display foreground service notification.
   //
   // iOS: If you need notification, ask for permission.
-  final NotificationPermission notificationPermissionStatus =
+  final NotificationPermission notificationPermission =
       await FlutterForegroundTask.checkNotificationPermission();
-  if (notificationPermissionStatus != NotificationPermission.granted) {
+  if (notificationPermission != NotificationPermission.granted) {
     await FlutterForegroundTask.requestNotificationPermission();
   }
 
@@ -308,7 +309,7 @@ Future<void> _requestPermissions() async {
   }
 }
 
-Future<void> _initService() async {
+void _initService() {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
       channelId: 'foreground_service',
@@ -319,7 +320,7 @@ Future<void> _initService() async {
       priority: NotificationPriority.LOW,
     ),
     iosNotificationOptions: const IOSNotificationOptions(
-      showNotification: true,
+      showNotification: false,
       playSound: false,
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
@@ -398,6 +399,8 @@ class FirstTaskHandler extends TaskHandler {
 
   @override
   void onRepeatEvent(DateTime timestamp) {
+    _count++;
+    
     if (_count == 10) {
       FlutterForegroundTask.updateService(
         foregroundTaskOptions: ForegroundTaskOptions(
@@ -417,8 +420,6 @@ class FirstTaskHandler extends TaskHandler {
       };
       FlutterForegroundTask.sendDataToMain(data);
     }
-
-    _count++;
   }
 
   @override
@@ -481,33 +482,26 @@ JSON and serialization >> https://docs.flutter.dev/data-and-backend/serializatio
 // TaskHandler
 @override
 void onStart(DateTime timestamp) {
-  // TaskHandler -> UI
+  // TaskHandler -> Main(UI)
   FlutterForegroundTask.sendDataToMain(Object);
 }
 
-// Main(UI)::onReceiveTaskData
+// Main(UI)
 void _onReceiveTaskData(Object data) {
-  if (data is Map<String, dynamic>) {
-    final dynamic timestampMillis = data["timestampMillis"];
-    if (timestampMillis != null) {
-      final DateTime timestamp =
-          DateTime.fromMillisecondsSinceEpoch(timestampMillis, isUtc: true);
-      print('timestamp: ${timestamp.toString()}');
-    }
-  }
+  print('onReceiveTaskData: $data');
 }
 ```
 
 ```dart
 // Main(UI)
 void _sendDataToTask() {
-  // UI -> TaskHandler
+  // Main(UI) -> TaskHandler
   //
   // The Map collection can only be sent in json format, such as Map<String, dynamic>.
   FlutterForegroundTask.sendDataToTask(Object);
 }
 
-// TaskHandler::onReceiveData
+// TaskHandler
 @override
 void onReceiveData(Object data) {
   print('onReceiveData: $data');
