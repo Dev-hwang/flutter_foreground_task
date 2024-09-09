@@ -1,3 +1,7 @@
+## 8.8.1+1
+
+* [**DOCS**] Update example to see two-way communication flow
+
 ## 8.8.1
 
 * [**FIX**] Fix issue related to `openIgnoreBatteryOptimizationSettings` [#275](https://github.com/Dev-hwang/flutter_foreground_task/issues/275)
