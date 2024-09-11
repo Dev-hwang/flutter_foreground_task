@@ -15,7 +15,9 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceAlreadyStartedException
       }
 
-      guard let args = arguments as? Dictionary<String, Any> else { throw ServiceError.ServiceArgumentNullException }
+      guard let args = arguments as? Dictionary<String, Any> else {
+        throw ServiceError.ServiceArgumentNullException
+      }
       NotificationOptions.setData(args: args)
       NotificationContent.setData(args: args)
       BackgroundTaskOptions.setData(args: args)
@@ -45,7 +47,9 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceNotStartedException
       }
       
-      guard let args = arguments as? Dictionary<String, Any> else { throw ServiceError.ServiceArgumentNullException }
+      guard let args = arguments as? Dictionary<String, Any> else { 
+        throw ServiceError.ServiceArgumentNullException
+      }
       NotificationContent.updateData(args: args)
       BackgroundTaskOptions.updateData(args: args)
       BackgroundTaskData.updateData(args: args)

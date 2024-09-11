@@ -1,7 +1,9 @@
 import Flutter
 import UIKit
+import BackgroundTasks
 
 public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
+  // ====================== Plugin ======================
   static private(set) var registerPlugins: FlutterPluginRegistrantCallback? = nil
   
   private var notificationPermissionManager: NotificationPermissionManager? = nil
@@ -81,6 +83,26 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     }
   }
   
+  // ================== App Lifecycle ===================
+  public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
+    SwiftFlutterForegroundTaskPlugin.registerAppRefresh()
+    return true
+  }
+  
+  public func applicationDidEnterBackground(_ application: UIApplication) {
+    SwiftFlutterForegroundTaskPlugin.scheduleAppRefresh()
+  }
+  
+  public func applicationWillTerminate(_ application: UIApplication) {
+    do {
+      try backgroundServiceManager?.stop()
+      sleep(2) // Chance to handle onDestroy before app terminates
+    } catch {
+      // ServiceError.ServiceNotStartedException
+    }
+  }
+  
+  // ================= Service Delegate =================
   @available(iOS 10.0, *)
   public func userNotificationCenter(_ center: UNUserNotificationCenter,
                                      didReceive response: UNNotificationResponse,
@@ -95,12 +117,54 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     BackgroundService.sharedInstance.userNotificationCenter(center, notification, completionHandler)
   }
   
-  public func applicationWillTerminate(_ application: UIApplication) {
+  // ============== Background App Refresh ==============
+  public static var refreshIdentifier: String = "com.pravera.flutter_foreground_task.refresh"
+
+  private static func registerAppRefresh() {
+    BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshIdentifier, using: nil) { task in
+      handleAppRefresh(task: task as! BGAppRefreshTask)
+    }
+  }
+  
+  private static func scheduleAppRefresh() {
+    let request = BGAppRefreshTaskRequest(identifier: refreshIdentifier)
+    request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
+    
     do {
-      try backgroundServiceManager?.stop()
-      sleep(2) // Chance to handle onDestroy before app terminates
+      try BGTaskScheduler.shared.submit(request)
     } catch {
-      // ServiceError.ServiceNotStartedException
+      print("Could not schedule app refresh: \(error)")
+    }
+  }
+  
+  private static func cancelAppRefresh() {
+    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshIdentifier)
+  }
+  
+  private static func handleAppRefresh(task: BGAppRefreshTask) {
+    let queue = OperationQueue()
+    let operation = AppRefreshOperation()
+    
+    task.expirationHandler = {
+      operation.cancel()
+    }
+    
+    operation.completionBlock = {
+      // Schedule a new refresh task
+      scheduleAppRefresh()
+
+      task.setTaskCompleted(success: true)
+    }
+    
+    queue.addOperation(operation)
+  }
+}
+
+class AppRefreshOperation: Operation {
+  override func main() {
+    // avoid non-platform thread
+    DispatchQueue.main.async {
+      // BackgroundService.sharedInstance.run(action: BackgroundServiceAction.RESTART)
     }
   }
 }
