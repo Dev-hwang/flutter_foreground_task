@@ -182,7 +182,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
         val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
         if (!isCorrectlyStopped && !isSetStopWithTaskFlag()) {
-            Log.e(TAG, "The service was terminated due to an unexpected problem.")
+            Log.e(TAG, "The service was terminated due to an unexpected problem. The service will restart after 5 seconds.")
             RestartReceiver.setRestartAlarm(this, 5000)
         }
     }

@@ -18,6 +18,12 @@ class RebootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
 
+        // Whether the service is stopped by the developer.
+        val serviceStatus = ForegroundServiceStatus.getData(context)
+        if (serviceStatus.action == ForegroundServiceAction.STOP) {
+            return
+        }
+
         val options = ForegroundTaskOptions.getData(context)
 
         // Check whether to start the service at boot intent.

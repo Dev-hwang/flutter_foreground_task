@@ -43,7 +43,6 @@ class RestartReceiver : BroadcastReceiver() {
 			} else {
 				alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, operation)
 			}
-			Log.d(TAG, "The service will restart after $millis millis.")
 		}
 
 		fun cancelRestartAlarm(context: Context) {
