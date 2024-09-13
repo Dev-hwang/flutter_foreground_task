@@ -18,12 +18,13 @@ class BackgroundServiceManager: NSObject {
       guard let args = arguments as? Dictionary<String, Any> else {
         throw ServiceError.ServiceArgumentNullException
       }
+      
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.START)
       NotificationOptions.setData(args: args)
       NotificationContent.setData(args: args)
       BackgroundTaskOptions.setData(args: args)
       BackgroundTaskData.setData(args: args)
-      
-      BackgroundService.sharedInstance.run(action: BackgroundServiceAction.START)
+      BackgroundService.sharedInstance.run()
     } else {
       throw ServiceError.ServiceNotSupportedException
     }
@@ -35,7 +36,8 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceNotStartedException
       }
       
-      BackgroundService.sharedInstance.run(action: BackgroundServiceAction.RESTART)
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.RESTART)
+      BackgroundService.sharedInstance.run()
     } else {
       throw ServiceError.ServiceNotSupportedException
     }
@@ -50,11 +52,12 @@ class BackgroundServiceManager: NSObject {
       guard let args = arguments as? Dictionary<String, Any> else { 
         throw ServiceError.ServiceArgumentNullException
       }
+      
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.UPDATE)
       NotificationContent.updateData(args: args)
       BackgroundTaskOptions.updateData(args: args)
       BackgroundTaskData.updateData(args: args)
-      
-      BackgroundService.sharedInstance.run(action: BackgroundServiceAction.UPDATE)
+      BackgroundService.sharedInstance.run()
     } else {
       throw ServiceError.ServiceNotSupportedException
     }
@@ -66,12 +69,12 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceNotStartedException
       }
       
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.STOP)
       NotificationOptions.clearData()
       NotificationContent.clearData()
       BackgroundTaskOptions.clearData()
       BackgroundTaskData.clearData()
-      
-      BackgroundService.sharedInstance.run(action: BackgroundServiceAction.STOP)
+      BackgroundService.sharedInstance.run()
     } else {
       throw ServiceError.ServiceNotSupportedException
     }

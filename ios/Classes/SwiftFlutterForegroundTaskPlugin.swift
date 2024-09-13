@@ -162,9 +162,13 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
 
 class AppRefreshOperation: Operation {
   override func main() {
+    let semaphore = DispatchSemaphore(value: 0)
+    
     // avoid non-platform thread
-    DispatchQueue.main.async {
-      // BackgroundService.sharedInstance.run(action: BackgroundServiceAction.RESTART)
+    DispatchQueue.main.asyncAfter(deadline: .now() + 25) {
+      semaphore.signal()
     }
+    
+    semaphore.wait()
   }
 }

@@ -5,6 +5,9 @@
 //  Created by WOO JIN HWANG on 2021/08/11.
 //
 
+// service status
+let BACKGROUND_SERVICE_ACTION = "backgroundServiceAction"
+
 // notification options
 let SHOW_NOTIFICATION = "showNotification"
 let PLAY_SOUND = "playSound"

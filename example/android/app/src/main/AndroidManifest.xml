@@ -10,6 +10,7 @@
     <!-- foregroundServiceType: remoteMessaging -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
 
+    <!-- for utils -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -40,7 +41,6 @@
         </activity>
 
         <!-- Warning: Do not change service name. -->
-        <!-- Add android:stopWithTask option only when necessary. -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
             android:foregroundServiceType="dataSync|remoteMessaging"

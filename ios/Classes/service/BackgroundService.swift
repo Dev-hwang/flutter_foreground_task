@@ -57,6 +57,7 @@ class BackgroundService: NSObject {
   private let notificationPermissionManager: NotificationPermissionManager
   private var canReceiveNotificationResponse: Bool = false
 
+  private var backgroundServiceStatus: BackgroundServiceStatus
   private var notificationOptions: NotificationOptions
   private var notificationContent: NotificationContent
   private var prevBackgroundTaskOptions: BackgroundTaskOptions?
@@ -67,6 +68,7 @@ class BackgroundService: NSObject {
   override init() {
     notificationCenter = UNUserNotificationCenter.current()
     notificationPermissionManager = NotificationPermissionManager()
+    backgroundServiceStatus = BackgroundServiceStatus.getData()
     notificationOptions = NotificationOptions.getData()
     notificationContent = NotificationContent.getData()
     currBackgroundTaskOptions = BackgroundTaskOptions.getData()
@@ -74,15 +76,16 @@ class BackgroundService: NSObject {
     super.init()
   }
   
-  func run(action: BackgroundServiceAction) {
+  func run() {
+    backgroundServiceStatus = BackgroundServiceStatus.getData()
     notificationOptions = NotificationOptions.getData()
     notificationContent = NotificationContent.getData()
     prevBackgroundTaskOptions = currBackgroundTaskOptions
     currBackgroundTaskOptions = BackgroundTaskOptions.getData()
     prevBackgroundTaskData = currBackgroundTaskData
     currBackgroundTaskData = BackgroundTaskData.getData()
-    
-    switch action {
+
+    switch backgroundServiceStatus.action {
       case .START:
         requestNotification()
         isRunningService = true
@@ -113,7 +116,7 @@ class BackgroundService: NSObject {
         }
         break
       case .STOP:
-        destroyBackgroundTask() { _ in
+        destroyBackgroundTask {
           self.disposeBackgroundChannel()
           self.destroyFlutterEngine()
         }
@@ -194,7 +197,6 @@ class BackgroundService: NSObject {
     
     notificationPermissionManager.checkPermission { permission in
       if permission == NotificationPermission.DENIED {
-        print("notification permission denied..")
         return
       }
       
@@ -218,9 +220,11 @@ class BackgroundService: NSObject {
   }
   
   private func executeDartCallback(callbackHandle: Int64) {
-    destroyBackgroundTask() { _ in
-      // The backgroundChannel cannot be registered unless the registerPlugins function is called.
-      if (SwiftFlutterForegroundTaskPlugin.registerPlugins == nil) { return }
+    destroyBackgroundTask {
+      if SwiftFlutterForegroundTaskPlugin.registerPlugins == nil {
+        print("Please register the registerPlugins function using the SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback.")
+        return
+      }
       
       self.destroyFlutterEngine()
       self.createFlutterEngine()
@@ -262,38 +266,46 @@ class BackgroundService: NSObject {
     backgroundChannel = nil
   }
   
-  private func startBackgroundTask() {
+  private func startBackgroundTask(onComplete: @escaping () -> Void = {}) {
     stopRepeatTask()
+    
+    if backgroundChannel == nil {
+      onComplete()
+      return
+    }
     
     backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: nil) { _ in
       self.startRepeatTask()
-      for listener in self.taskLifecycleListeners {
-        listener.onTaskStart()
-      }
+      onComplete()
+    }
+    
+    for listener in self.taskLifecycleListeners {
+      listener.onTaskStart()
     }
   }
   
-  private func destroyBackgroundTask(onComplete: @escaping (Bool) -> Void) {
+  private func destroyBackgroundTask(onComplete: @escaping () -> Void = {}) {
     stopRepeatTask()
-    
-    // The background task destruction is complete and a new background task can be started.
+
     if backgroundChannel == nil {
-      onComplete(true)
-    } else {
-      backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
-        for listener in self.taskLifecycleListeners {
-          listener.onTaskDestroy()
-        }
-        onComplete(true)
-      }
+      onComplete()
+      return
+    }
+    
+    backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
+      onComplete()
+    }
+    
+    for listener in self.taskLifecycleListeners {
+      listener.onTaskDestroy()
     }
   }
   
   private func invokeTaskRepeatEvent() {
-    backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil) { _ in
-      for listener in self.taskLifecycleListeners {
-        listener.onTaskRepeatEvent()
-      }
+    backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
+    
+    for listener in self.taskLifecycleListeners {
+      listener.onTaskRepeatEvent()
     }
   }
   

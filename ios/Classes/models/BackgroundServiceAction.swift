@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum BackgroundServiceAction {
+enum BackgroundServiceAction: String {
   case START
   case RESTART
   case UPDATE

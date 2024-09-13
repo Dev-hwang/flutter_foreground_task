@@ -40,6 +40,7 @@ import java.util.*
 class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     companion object {
         private val TAG = ForegroundService::class.java.simpleName
+
         private const val ACTION_TASK_START = "onStart"
         private const val ACTION_TASK_REPEAT_EVENT = "onRepeatEvent"
         private const val ACTION_TASK_DESTROY = "onDestroy"
@@ -493,62 +494,36 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         flutterLoader = null
     }
 
-    private fun startForegroundTask(callback: () -> Unit = {}) {
+    private fun startForegroundTask(onComplete: () -> Unit = {}) {
         stopRepeatTask()
 
         if (backgroundChannel == null) {
-            // TODO: callback.notInitialized
-            callback()
+            onComplete()
             return
         }
 
-        val channelCallback = object : MethodChannel.Result {
-            override fun success(result: Any?) {
-                startRepeatTask()
-                callback()
-            }
-
-            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                // TODO: callback.error
-                callback()
-            }
-
-            override fun notImplemented() {
-                // TODO: callback.notImplemented
-                callback()
-            }
+        backgroundChannel?.invokeMethod(ACTION_TASK_START, null) {
+            startRepeatTask()
+            onComplete()
         }
-        backgroundChannel?.invokeMethod(ACTION_TASK_START, null, channelCallback)
+
         for (listener in taskLifecycleListeners) {
             listener.onTaskStart()
         }
     }
 
-    private fun destroyForegroundTask(callback: () -> Unit = {}) {
+    private fun destroyForegroundTask(onComplete: () -> Unit = {}) {
         stopRepeatTask()
 
         if (backgroundChannel == null) {
-            // TODO: callback.notInitialized
-            callback()
+            onComplete()
             return
         }
 
-        val channelCallback = object : MethodChannel.Result {
-            override fun success(result: Any?) {
-                callback()
-            }
-
-            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                // TODO: callback.error
-                callback()
-            }
-
-            override fun notImplemented() {
-                // TODO: callback.notImplemented
-                callback()
-            }
+        backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null) {
+            onComplete()
         }
-        backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null, channelCallback)
+
         for (listener in taskLifecycleListeners) {
             listener.onTaskDestroy()
         }
@@ -556,6 +531,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     private fun invokeTaskRepeatEvent() {
         backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
+
         for (listener in taskLifecycleListeners) {
             listener.onTaskRepeatEvent()
         }
@@ -577,7 +553,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
 
         repeatTask = CoroutineScope(Dispatchers.Default).launch {
-            while (isRunningService) {
+            while (true) {
                 delay(interval)
                 withContext(Dispatchers.Main) {
                     try {
@@ -722,5 +698,22 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
 
         return actions
+    }
+
+    private fun MethodChannel.invokeMethod(method: String, arguments: Any?, onComplete: () -> Unit = {}) {
+        val callback = object : MethodChannel.Result {
+            override fun success(result: Any?) {
+                onComplete()
+            }
+
+            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                onComplete()
+            }
+
+            override fun notImplemented() {
+                onComplete()
+            }
+        }
+        invokeMethod(method, arguments, callback)
     }
 }
