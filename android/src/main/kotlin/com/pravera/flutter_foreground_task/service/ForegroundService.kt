@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListener
 import com.pravera.flutter_foreground_task.RequestCode
 import com.pravera.flutter_foreground_task.models.*
+import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import com.pravera.flutter_foreground_task.utils.PluginUtils
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
@@ -123,7 +124,15 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         loadDataFromPreferences()
 
-        when (foregroundServiceStatus.action) {
+        val action = foregroundServiceStatus.action
+        val isSetStopWithTaskFlag = ForegroundServiceUtils.isSetStopWithTaskFlag(this)
+        val result = if (action == ForegroundServiceAction.STOP || isSetStopWithTaskFlag) {
+            START_NOT_STICKY
+        } else {
+            START_STICKY
+        }
+
+        when (action) {
             ForegroundServiceAction.START -> {
                 startForegroundService()
                 executeDartCallback(foregroundTaskData.callbackHandle)
@@ -161,11 +170,10 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             ForegroundServiceAction.STOP -> {
                 RestartReceiver.cancelRestartAlarm(this)
                 stopForegroundService()
-                return START_NOT_STICKY
             }
         }
 
-        return if (isSetStopWithTaskFlag()) START_NOT_STICKY else START_STICKY
+        return result
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -181,7 +189,8 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         unregisterBroadcastReceiver()
 
         val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
-        if (!isCorrectlyStopped && !isSetStopWithTaskFlag()) {
+        val isSetStopWithTaskFlag = ForegroundServiceUtils.isSetStopWithTaskFlag(this)
+        if (!isCorrectlyStopped && !isSetStopWithTaskFlag) {
             Log.e(TAG, "The service was terminated due to an unexpected problem. The service will restart after 5 seconds.")
             RestartReceiver.setRestartAlarm(this, 5000)
         }
@@ -189,7 +198,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        if (isSetStopWithTaskFlag()) {
+        if (ForegroundServiceUtils.isSetStopWithTaskFlag(this)) {
             stopSelf()
         } else {
             RestartReceiver.setRestartAlarm(this, 1000)
@@ -435,13 +444,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
                 wifiLock = null
             }
         }
-    }
-
-    private fun isSetStopWithTaskFlag(): Boolean {
-        val pm = applicationContext.packageManager
-        val cName = ComponentName(this, this.javaClass)
-        val flags = pm.getServiceInfo(cName, PackageManager.GET_META_DATA).flags
-        return (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
     }
 
     private fun executeDartCallback(callbackHandle: Long?) {

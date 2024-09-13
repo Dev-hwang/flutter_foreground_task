@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
+import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 
 /**
  * The receiver that receives the BOOT_COMPLETED and MY_PACKAGE_REPLACED intent.
@@ -18,7 +19,12 @@ class RebootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
 
-        // Whether the service is stopped by the developer.
+        // Ignore autoRunOnBoot option when android:stopWithTask is set to true.
+        if (ForegroundServiceUtils.isSetStopWithTaskFlag(context)) {
+            return
+        }
+
+        // Ignore autoRunOnBoot option when service is stopped by developer.
         val serviceStatus = ForegroundServiceStatus.getData(context)
         if (serviceStatus.action == ForegroundServiceAction.STOP) {
             return

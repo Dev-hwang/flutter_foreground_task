@@ -62,8 +62,8 @@ class RestartReceiver : BroadcastReceiver() {
 	override fun onReceive(context: Context?, intent: Intent?) {
 		if (context == null) return
 
-		val foregroundServiceStatus = ForegroundServiceStatus.getData(context)
-		val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
+		val serviceStatus = ForegroundServiceStatus.getData(context)
+		val isCorrectlyStopped = (serviceStatus.action == ForegroundServiceAction.STOP)
 
 		val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 		val isRunningService = manager.getRunningServices(Integer.MAX_VALUE)
