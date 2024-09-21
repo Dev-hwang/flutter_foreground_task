@@ -42,7 +42,7 @@ Data class with foreground task options.
 
 A class that defines the action of onRepeatEvent in `TaskHandler`.
 
-| factory            | Description                                    |
+| Constructor        | Description                                    |
 |--------------------|------------------------------------------------|
 | `nothing()`        | Not use onRepeatEvent callback.                |
 | `once()`           | Call onRepeatEvent only once.                  |
@@ -130,3 +130,12 @@ Result of service request.
 |-----------|-------------------------------------|
 | `success` | Whether the request was successful. |
 | `error`   | Error when the request failed.      |
+
+### :chicken: TaskStarter
+
+The starter that started the task.
+
+| Value       | Description                                 |
+|-------------|---------------------------------------------|
+| `developer` | The task has been started by the developer. |
+| `system`    | The task has been started by the system.    |

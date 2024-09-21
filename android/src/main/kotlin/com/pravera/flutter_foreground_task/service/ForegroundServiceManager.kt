@@ -27,7 +27,7 @@ class ForegroundServiceManager {
 
 		val nIntent = Intent(context, ForegroundService::class.java)
 		val argsMap = arguments as? Map<*, *>
-		ForegroundServiceStatus.setData(context, ForegroundServiceAction.START)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.API_START)
 		NotificationOptions.setData(context, argsMap)
 		ForegroundTaskOptions.setData(context, argsMap)
 		ForegroundTaskData.setData(context, argsMap)
@@ -42,7 +42,7 @@ class ForegroundServiceManager {
 		}
 
 		val nIntent = Intent(context, ForegroundService::class.java)
-		ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.API_RESTART)
 		ContextCompat.startForegroundService(context, nIntent)
 	}
 
@@ -54,7 +54,7 @@ class ForegroundServiceManager {
 
 		val nIntent = Intent(context, ForegroundService::class.java)
 		val argsMap = arguments as? Map<*, *>
-		ForegroundServiceStatus.setData(context, ForegroundServiceAction.UPDATE)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.API_UPDATE)
 		ForegroundTaskOptions.updateData(context, argsMap)
 		ForegroundTaskData.updateData(context, argsMap)
 		NotificationContent.updateData(context, argsMap)
@@ -68,7 +68,7 @@ class ForegroundServiceManager {
 		}
 
 		val nIntent = Intent(context, ForegroundService::class.java)
-		ForegroundServiceStatus.setData(context, ForegroundServiceAction.STOP)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.API_STOP)
 		NotificationOptions.clearData(context)
 		ForegroundTaskOptions.clearData(context)
 		ForegroundTaskData.clearData(context)

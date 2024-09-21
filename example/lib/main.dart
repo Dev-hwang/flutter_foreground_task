@@ -37,8 +37,8 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when the task is started.
   @override
-  void onStart(DateTime timestamp) {
-    print('onStart');
+  void onStart(DateTime timestamp, TaskStarter starter) {
+    print('onStart(starter: ${starter.name})');
     _incrementCount();
   }
 

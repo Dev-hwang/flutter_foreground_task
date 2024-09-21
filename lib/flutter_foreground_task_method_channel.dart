@@ -132,7 +132,8 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
     switch (call.method) {
       case 'onStart':
-        handler.onStart(timestamp);
+        final TaskStarter starter = TaskStarter.fromIndex(call.arguments);
+        handler.onStart(timestamp, starter);
         break;
       case 'onRepeatEvent':
         handler.onRepeatEvent(timestamp);

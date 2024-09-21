@@ -13,7 +13,7 @@ interface FlutterForegroundTaskLifecycleListener {
     fun onEngineCreate(flutterEngine: FlutterEngine?)
 
     /** Called when the task is started. */
-    fun onTaskStart()
+    fun onTaskStart(starter: FlutterForegroundTaskStarter)
 
     /** Called by eventAction in ForegroundTaskOptions. */
     fun onTaskRepeatEvent()

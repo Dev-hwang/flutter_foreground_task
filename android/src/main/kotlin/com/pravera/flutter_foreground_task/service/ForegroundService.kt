@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListener
 import com.pravera.flutter_foreground_task.RequestCode
+import com.pravera.flutter_foreground_task.FlutterForegroundTaskStarter
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import com.pravera.flutter_foreground_task.utils.PluginUtils
@@ -98,7 +99,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             try {
                 // No intent ??
                 if (intent == null) {
-                    throw Exception("Intent is Null.")
+                    throw Exception("Intent is null.")
                 }
 
                 // This intent has not sent from the current package.
@@ -125,56 +126,54 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         loadDataFromPreferences()
 
-        val action = foregroundServiceStatus.action
+        var action = foregroundServiceStatus.action
         val isSetStopWithTaskFlag = ForegroundServiceUtils.isSetStopWithTaskFlag(this)
-        val result = if (action == ForegroundServiceAction.STOP || isSetStopWithTaskFlag) {
+
+        if (action == ForegroundServiceAction.API_STOP) {
+            RestartReceiver.cancelRestartAlarm(this)
+            stopForegroundService()
+            return START_NOT_STICKY
+        }
+
+        if (intent == null) {
+            ForegroundServiceStatus.setData(this, ForegroundServiceAction.RESTART)
+            foregroundServiceStatus = ForegroundServiceStatus.getData(this)
+            action = foregroundServiceStatus.action
+        }
+
+        when (action) {
+            ForegroundServiceAction.API_START,
+            ForegroundServiceAction.API_RESTART -> {
+                startForegroundService()
+                executeDartCallback(foregroundTaskData.callbackHandle)
+            }
+            ForegroundServiceAction.API_UPDATE -> {
+                updateNotification()
+                val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
+                val currCallbackHandle = foregroundTaskData.callbackHandle
+                if (prevCallbackHandle != currCallbackHandle) {
+                    executeDartCallback(currCallbackHandle)
+                } else {
+                    val prevEventAction = prevForegroundTaskOptions?.eventAction
+                    val currEventAction = foregroundTaskOptions.eventAction
+                    if (prevEventAction != currEventAction) {
+                        startRepeatTask()
+                    }
+                }
+            }
+            ForegroundServiceAction.REBOOT,
+            ForegroundServiceAction.RESTART -> {
+                startForegroundService()
+                executeDartCallback(foregroundTaskData.callbackHandle)
+                Log.d(TAG, "The service has been restarted by Android OS.")
+            }
+        }
+
+        return if (isSetStopWithTaskFlag) {
             START_NOT_STICKY
         } else {
             START_STICKY
         }
-
-        when (action) {
-            ForegroundServiceAction.START -> {
-                startForegroundService()
-                executeDartCallback(foregroundTaskData.callbackHandle)
-            }
-            ForegroundServiceAction.REBOOT -> {
-                startForegroundService()
-                executeDartCallback(foregroundTaskData.callbackHandle)
-            }
-            ForegroundServiceAction.RESTART -> {
-                startForegroundService()
-                executeDartCallback(foregroundTaskData.callbackHandle)
-            }
-            ForegroundServiceAction.UPDATE -> {
-                if (intent == null) {
-                    // call: Android OS
-                    startForegroundService()
-                    executeDartCallback(foregroundTaskData.callbackHandle)
-                    Log.d(TAG, "The service has been restarted by Android OS.")
-                } else {
-                    // call: ForegroundServiceManager.kt
-                    updateNotification()
-                    val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
-                    val currCallbackHandle = foregroundTaskData.callbackHandle
-                    if (prevCallbackHandle != currCallbackHandle) {
-                        executeDartCallback(currCallbackHandle)
-                    } else {
-                        val prevEventAction = prevForegroundTaskOptions?.eventAction
-                        val currEventAction = foregroundTaskOptions.eventAction
-                        if (prevEventAction != currEventAction) {
-                            startRepeatTask()
-                        }
-                    }
-                }
-            }
-            ForegroundServiceAction.STOP -> {
-                RestartReceiver.cancelRestartAlarm(this)
-                stopForegroundService()
-            }
-        }
-
-        return result
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -189,7 +188,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         stopForegroundService()
         unregisterBroadcastReceiver()
 
-        val isCorrectlyStopped = (foregroundServiceStatus.action == ForegroundServiceAction.STOP)
+        val isCorrectlyStopped = foregroundServiceStatus.isCorrectlyStopped()
         val isSetStopWithTaskFlag = ForegroundServiceUtils.isSetStopWithTaskFlag(this)
         if (!isCorrectlyStopped && !isSetStopWithTaskFlag) {
             Log.e(TAG, "The service was terminated due to an unexpected problem. The service will restart after 5 seconds.")
@@ -502,13 +501,22 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             return
         }
 
-        backgroundChannel?.invokeMethod(ACTION_TASK_START, null) {
+        val serviceAction = foregroundServiceStatus.action
+        val starter = if (serviceAction == ForegroundServiceAction.API_START ||
+            serviceAction == ForegroundServiceAction.API_RESTART ||
+            serviceAction == ForegroundServiceAction.API_UPDATE) {
+            FlutterForegroundTaskStarter.DEVELOPER
+        } else {
+            FlutterForegroundTaskStarter.SYSTEM
+        }
+
+        backgroundChannel?.invokeMethod(ACTION_TASK_START, starter.ordinal) {
             startRepeatTask()
             onComplete()
         }
 
         for (listener in taskLifecycleListeners) {
-            listener.onTaskStart()
+            listener.onTaskStart(starter)
         }
     }
 

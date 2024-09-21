@@ -8,8 +8,10 @@
 import Foundation
 
 enum BackgroundServiceAction: String {
-  case START
-  case RESTART
-  case UPDATE
-  case STOP
+  case API_START
+  case API_RESTART
+  case API_UPDATE
+  case API_STOP
+  
+  case APP_TERMINATE
 }

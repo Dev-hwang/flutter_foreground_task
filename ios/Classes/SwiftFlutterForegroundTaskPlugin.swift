@@ -94,12 +94,15 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   }
   
   public func applicationWillTerminate(_ application: UIApplication) {
-    do {
-      try backgroundServiceManager?.stop()
-      sleep(2) // Chance to handle onDestroy before app terminates
-    } catch {
-      // ServiceError.ServiceNotStartedException
+    if !BackgroundService.sharedInstance.isRunningService {
+      return
     }
+    
+    BackgroundServiceStatus.setData(action: BackgroundServiceAction.APP_TERMINATE)
+    BackgroundService.sharedInstance.run()
+    
+    // Chance to handle onDestroy before app terminates
+    sleep(2)
   }
   
   // ================= Service Delegate =================

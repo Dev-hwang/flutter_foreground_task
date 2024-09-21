@@ -53,9 +53,10 @@ void main() {
   group('TaskHandler', () {
     test('onStart', () async {
       const String method = TaskEventMethod.onStart;
+      const TaskStarter starter = TaskStarter.developer;
 
-      await platformChannel.mBGChannel.invokeMethod(method);
-      expect(taskHandler.log.last, isTaskEvent(method));
+      await platformChannel.mBGChannel.invokeMethod(method, starter.index);
+      expect(taskHandler.log.last, isTaskEvent(method, starter.index));
     });
 
     test('onRepeatEvent', () async {
@@ -284,8 +285,8 @@ class TestTaskHandler extends TaskHandler {
   final List<TaskEvent> log = [];
 
   @override
-  void onStart(DateTime timestamp) {
-    log.add(const TaskEvent(method: TaskEventMethod.onStart));
+  void onStart(DateTime timestamp, TaskStarter starter) {
+    log.add(TaskEvent(method: TaskEventMethod.onStart, data: starter.index));
   }
 
   @override
