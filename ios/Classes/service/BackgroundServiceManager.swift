@@ -19,7 +19,7 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceArgumentNullException
       }
       
-      BackgroundServiceStatus.setData(action: BackgroundServiceAction.START)
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.API_START)
       NotificationOptions.setData(args: args)
       NotificationContent.setData(args: args)
       BackgroundTaskOptions.setData(args: args)
@@ -36,7 +36,7 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceNotStartedException
       }
       
-      BackgroundServiceStatus.setData(action: BackgroundServiceAction.RESTART)
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.API_RESTART)
       BackgroundService.sharedInstance.run()
     } else {
       throw ServiceError.ServiceNotSupportedException
@@ -53,7 +53,7 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceArgumentNullException
       }
       
-      BackgroundServiceStatus.setData(action: BackgroundServiceAction.UPDATE)
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.API_UPDATE)
       NotificationContent.updateData(args: args)
       BackgroundTaskOptions.updateData(args: args)
       BackgroundTaskData.updateData(args: args)
@@ -69,7 +69,7 @@ class BackgroundServiceManager: NSObject {
         throw ServiceError.ServiceNotStartedException
       }
       
-      BackgroundServiceStatus.setData(action: BackgroundServiceAction.STOP)
+      BackgroundServiceStatus.setData(action: BackgroundServiceAction.API_STOP)
       NotificationOptions.clearData()
       NotificationContent.clearData()
       BackgroundTaskOptions.clearData()

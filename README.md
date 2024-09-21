@@ -176,8 +176,8 @@ void startCallback() {
 class MyTaskHandler extends TaskHandler {
   // Called when the task is started.
   @override
-  void onStart(DateTime timestamp) {
-    print('onStart');
+  void onStart(DateTime timestamp, TaskStarter starter) {
+    print('onStart(starter: ${starter.name})');
   }
 
   // Called by eventAction in [ForegroundTaskOptions].
@@ -393,7 +393,7 @@ class FirstTaskHandler extends TaskHandler {
   int _count = 0;
 
   @override
-  void onStart(DateTime timestamp) {
+  void onStart(DateTime timestamp, TaskStarter starter) {
     // some code
   }
 
@@ -435,7 +435,7 @@ void updateCallback() {
 
 class SecondTaskHandler extends TaskHandler {
   @override
-  void onStart(DateTime timestamp) {
+  void onStart(DateTime timestamp, TaskStarter starter) {
     // some code
   }
 
@@ -481,7 +481,7 @@ JSON and serialization >> https://docs.flutter.dev/data-and-backend/serializatio
 ```dart
 // TaskHandler
 @override
-void onStart(DateTime timestamp) {
+void onStart(DateTime timestamp, TaskStarter starter) {
   // TaskHandler -> Main(UI)
   FlutterForegroundTask.sendDataToMain(Object);
 }
@@ -532,7 +532,7 @@ class MyTaskHandler extends TaskHandler {
   StreamSubscription<Location>? _streamSubscription;
 
   @override
-  void onStart(DateTime timestamp) {
+  void onStart(DateTime timestamp, TaskStarter starter) {
     _streamSubscription = FlLocation.getLocationStream().listen((location) {
       final String message = '${location.latitude}, ${location.longitude}';
       FlutterForegroundTask.updateService(notificationText: message);

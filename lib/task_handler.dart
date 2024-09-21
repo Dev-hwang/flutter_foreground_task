@@ -3,9 +3,10 @@ import 'flutter_foreground_task.dart';
 /// A class that implements a task handler.
 abstract class TaskHandler {
   /// Called when the task is started.
-  void onStart(DateTime timestamp);
+  void onStart(DateTime timestamp, TaskStarter starter);
 
   /// Called by eventAction in [ForegroundTaskOptions].
+  ///
   /// - nothing() : Not use onRepeatEvent callback.
   /// - once() : Call onRepeatEvent only once.
   /// - repeat(interval) : Call onRepeatEvent at milliseconds interval.
@@ -31,4 +32,15 @@ abstract class TaskHandler {
   /// AOS: only work Android 14+
   /// iOS: only work iOS 10+
   void onNotificationDismissed() {}
+}
+
+/// The starter that started the task.
+enum TaskStarter {
+  /// The task has been started by the developer.
+  developer,
+
+  /// The task has been started by the system.
+  system;
+
+  static TaskStarter fromIndex(int index) => TaskStarter.values[index];
 }

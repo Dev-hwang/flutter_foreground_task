@@ -26,7 +26,7 @@ class RebootReceiver : BroadcastReceiver() {
 
         // Ignore autoRunOnBoot option when service is stopped by developer.
         val serviceStatus = ForegroundServiceStatus.getData(context)
-        if (serviceStatus.action == ForegroundServiceAction.STOP) {
+        if (serviceStatus.isCorrectlyStopped()) {
             return
         }
 

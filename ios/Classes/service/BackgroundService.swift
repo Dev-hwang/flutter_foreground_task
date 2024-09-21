@@ -86,21 +86,14 @@ class BackgroundService: NSObject {
     currBackgroundTaskData = BackgroundTaskData.getData()
 
     switch backgroundServiceStatus.action {
-      case .START:
+      case .API_START, .API_RESTART:
         requestNotification()
         isRunningService = true
         if let callbackHandle = currBackgroundTaskData.callbackHandle {
           executeDartCallback(callbackHandle: callbackHandle)
         }
         break
-      case .RESTART:
-        requestNotification()
-        isRunningService = true
-        if let callbackHandle = currBackgroundTaskData.callbackHandle {
-          executeDartCallback(callbackHandle: callbackHandle)
-        }
-        break
-      case .UPDATE:
+      case .API_UPDATE:
         requestNotification()
         isRunningService = true
         if let callbackHandle = currBackgroundTaskData.callbackHandle {
@@ -115,7 +108,7 @@ class BackgroundService: NSObject {
           }
         }
         break
-      case .STOP:
+      case .API_STOP, .APP_TERMINATE:
         destroyBackgroundTask {
           self.disposeBackgroundChannel()
           self.destroyFlutterEngine()
@@ -274,13 +267,24 @@ class BackgroundService: NSObject {
       return
     }
     
-    backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: nil) { _ in
+    let serviceAction = backgroundServiceStatus.action
+    let starter: FlutterForegroundTaskStarter
+    switch serviceAction {
+      case .API_START, .API_RESTART, .API_UPDATE:
+        starter = .DEVELOPER
+        break
+      default:
+        starter = .SYSTEM
+        break
+    }
+    
+    backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: starter.rawValue) { _ in
       self.startRepeatTask()
       onComplete()
     }
     
     for listener in self.taskLifecycleListeners {
-      listener.onTaskStart()
+      listener.onTaskStart(starter: starter)
     }
   }
   

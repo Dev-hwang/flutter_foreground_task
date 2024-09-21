@@ -10,7 +10,7 @@ data class ForegroundServiceStatus(val action: String) {
                 PrefsKey.FOREGROUND_SERVICE_STATUS_PREFS, Context.MODE_PRIVATE)
 
             val action = prefs.getString(PrefsKey.FOREGROUND_SERVICE_ACTION, null)
-                ?: ForegroundServiceAction.STOP
+                ?: ForegroundServiceAction.API_STOP
 
             return ForegroundServiceStatus(action = action)
         }
@@ -24,5 +24,9 @@ data class ForegroundServiceStatus(val action: String) {
                 commit()
             }
         }
+    }
+
+    fun isCorrectlyStopped(): Boolean {
+        return action == ForegroundServiceAction.API_STOP
     }
 }

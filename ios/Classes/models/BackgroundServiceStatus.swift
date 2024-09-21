@@ -12,7 +12,7 @@ struct BackgroundServiceStatus {
   
   static func getData() -> BackgroundServiceStatus {
     let prefs = UserDefaults.standard
-    let actionValue = prefs.string(forKey: BACKGROUND_SERVICE_ACTION) ?? BackgroundServiceAction.STOP.rawValue
+    let actionValue = prefs.string(forKey: BACKGROUND_SERVICE_ACTION) ?? BackgroundServiceAction.API_STOP.rawValue
     let action = BackgroundServiceAction(rawValue: actionValue)!
     
     return BackgroundServiceStatus(action: action)

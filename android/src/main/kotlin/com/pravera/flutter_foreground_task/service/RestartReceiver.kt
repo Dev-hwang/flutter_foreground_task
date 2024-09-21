@@ -33,7 +33,7 @@ class RestartReceiver : BroadcastReceiver() {
 				flags = flags or PendingIntent.FLAG_MUTABLE
 			}
 			val operation = PendingIntent.getBroadcast(
-					context, RequestCode.SET_RESTART_SERVICE_ALARM, intent, flags)
+				context, RequestCode.SET_RESTART_SERVICE_ALARM, intent, flags)
 
 			val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
@@ -52,7 +52,7 @@ class RestartReceiver : BroadcastReceiver() {
 				flags = flags or PendingIntent.FLAG_MUTABLE
 			}
 			val operation = PendingIntent.getBroadcast(
-					context, RequestCode.SET_RESTART_SERVICE_ALARM, intent, flags)
+				context, RequestCode.SET_RESTART_SERVICE_ALARM, intent, flags)
 
 			val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 			alarmManager.cancel(operation)
@@ -63,22 +63,24 @@ class RestartReceiver : BroadcastReceiver() {
 		if (context == null) return
 
 		val serviceStatus = ForegroundServiceStatus.getData(context)
-		val isCorrectlyStopped = (serviceStatus.action == ForegroundServiceAction.STOP)
+		if (serviceStatus.isCorrectlyStopped()) {
+			return
+		}
 
 		val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 		val isRunningService = manager.getRunningServices(Integer.MAX_VALUE)
-				.any { it.service.className == ForegroundService::class.java.name }
-
-		if (!isCorrectlyStopped && !isRunningService) {
-			val isIgnoringBatteryOptimizations = PluginUtils.isIgnoringBatteryOptimizations(context)
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isIgnoringBatteryOptimizations) {
-				Log.d(TAG, "Turn off battery optimization to restart service in the background.")
-			}
-
-			val nIntent = Intent(context, ForegroundService::class.java)
-			ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
-			ContextCompat.startForegroundService(context, nIntent)
-			Log.d(TAG, "Restart the service.")
+			.any { it.service.className == ForegroundService::class.java.name }
+		if (isRunningService) {
+			return
 		}
+
+		val isIgnoringBatteryOptimizations = PluginUtils.isIgnoringBatteryOptimizations(context)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isIgnoringBatteryOptimizations) {
+			Log.w(TAG, "Turn off battery optimization to restart service in the background.")
+		}
+
+		val nIntent = Intent(context, ForegroundService::class.java)
+		ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
+		ContextCompat.startForegroundService(context, nIntent)
 	}
 }
