@@ -1,3 +1,16 @@
+## 8.9.0
+
+* [**CHANGE**] Ignore `autoRunOnBoot` option when service is stopped by developer
+* [**CHANGE**] Ignore `autoRunOnBoot` option when android:stopWithTask is set to true
+* [**FEAT**] Add TaskStarter to check who started the task [#276](https://github.com/Dev-hwang/flutter_foreground_task/issues/276)
+  - Add `starter` parameter to `onStart` callback of TaskHandler
+  - `.developer`: The task has been started by the developer (startService, restartService, updateService)
+  - `.system`: The task has been started by the system (reboot, app-updates, AlarmManager-restart)
+* [**FEAT-iOS**] Allow background app refresh
+  - Bump iOS minimumVersion to 13.0
+  - You need to add `BGTaskSchedulerPermittedIdentifiers` key in `ios/Runner/info.plist` file
+  - Check [Getting started-iOS](https://pub.dev/packages/flutter_foreground_task#baby_chick-ios) for more details
+
 ## 8.8.1+1
 
 * [**DOCS**] Update example to see two-way communication flow
