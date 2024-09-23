@@ -14,29 +14,33 @@ This plugin is used to implement a foreground service on the Android platform.
 * Provides useful utilities that can use while performing tasks.
 * Provides option to automatically resume the foreground service on boot.
 
+## Support version
+
+- Flutter: `3.10.0+`
+- Dart: `3.0.0+`
+- Android: `5.0+ (minSdkVersion: 21)`
+- iOS: `13.0+`
+
 ## Getting started
 
 To use this plugin, add `flutter_foreground_task` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/). For example:
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.8.1+1
+  flutter_foreground_task: ^8.9.0
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
 
 ### :baby_chick: Android
 
-Open the `AndroidManifest.xml` file and specify the service inside the `<application>` tag as follows.
+Open the `AndroidManifest.xml` file and specify the service tag inside the `<application>` tag as follows.
 
 If you want the foreground service to run only when the app is running, add `android:stopWithTask="true"` option.
 
-As it is mentioned in the Android Guidelines, in Android 14, to start a FG service, you need to specify `android:foregroundServiceType`.
+As mentioned in the Android guidelines, to start a FG service on Android 14+, you must specify `android:foregroundServiceType`.
 
 You can read all the details in the Android Developer Page : https://developer.android.com/about/versions/14/changes/fgs-types-required
-
-If you want to target Android 14 phones, you need to add a few lines to your manifest.
-Change the type with your type (all types are listed in the link above).
 
 ```
 <!-- required -->
@@ -57,22 +61,37 @@ Change the type with your type (all types are listed in the link above).
 
 Check runtime requirements before starting the service. If this requirement is not met, the foreground service cannot be started.
 
-<img src="https://github.com/Dev-hwang/flutter_foreground_task/assets/47127353/2a35dada-2c82-41f4-8a45-56776c88e9d3" width="720">
+<img src="https://github.com/Dev-hwang/flutter_foreground_task/assets/47127353/2a35dada-2c82-41f4-8a45-56776c88e9d3" width="700">
 
 ### :baby_chick: iOS
 
 We can also launch `flutter_foreground_task` on the iOS platform. However, it has the following limitations.
 
-* Works only on iOS 12.0 or later.
 * If you force close an app in recent apps, the task will be destroyed immediately.
 * The task cannot be started automatically on boot like Android OS.
-* The task will run in the background for approximately 30 seconds due to background processing limitations. but it works fine in the foreground.
+* The task runs in the background for approximately 30 seconds every 15 minutes. This may take longer than 15 minutes due to iOS limitations.
+
+**Info.plist**:
+
+Add the key below to `ios/Runner/info.plist` file so that the task can run in the background.
+
+```text
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.pravera.flutter_foreground_task.refresh</string>
+</array>
+<key>UIBackgroundModes</key>
+<array>
+    <string>fetch</string>
+</array>
+```
 
 **Objective-C**:
 
-1. To use this plugin developed in Swift language in a project using Objective-C, you need to add a bridge header. If you don't have an `ios/Runner/Runner-Bridging-Header.h` file in your project, check this [page](https://developer.apple.com/documentation/swift/imported_c_and_objective-c_apis/importing_objective-c_into_swift).
+To use this plugin developed in Swift in a project using Objective-C, you need to add a bridge header.
+If there is no `ios/Runner/Runner-Bridging-Header.h` file in your project, check this [page](https://developer.apple.com/documentation/swift/imported_c_and_objective-c_apis/importing_objective-c_into_swift).
 
-2. Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
+Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
 
 ```objc
 #import "AppDelegate.h"
@@ -92,7 +111,7 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [GeneratedPluginRegistrant registerWithRegistry:self];
 
-  // here, without this code the task will not work.
+  // here
   [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins];
   if (@available(iOS 10.0, *)) {
     [UNUserNotificationCenter currentNotificationCenter].delegate = (id<UNUserNotificationCenterDelegate>) self;
@@ -102,18 +121,17 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
 }
 
 @end
-
 ```
 
 **Swift**:
 
-1. Declare the import statement below in the `ios/Runner/Runner-Bridging-Header.h` file.
+Declare the import statement below in the `ios/Runner/Runner-Bridging-Header.h` file.
 
 ```objc
 #import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
 ```
 
-2. Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
+Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
 
 ```swift
 import UIKit
@@ -127,7 +145,7 @@ import Flutter
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
-    // here, without this code the task will not work.
+    // here
     SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
@@ -142,12 +160,6 @@ func registerPlugins(registry: FlutterPluginRegistry) {
   GeneratedPluginRegistrant.register(with: registry)
 }
 ```
-
-**Configuring background execution modes**
-
-Background mode settings are required for tasks to be processed in the background. 
-
-See this [page](https://developer.apple.com/documentation/xcode/configuring-background-execution-modes) for settings.
 
 ## How to use
 
