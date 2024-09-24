@@ -18,17 +18,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListener
 import com.pravera.flutter_foreground_task.RequestCode
-import com.pravera.flutter_foreground_task.FlutterForegroundTaskStarter
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import com.pravera.flutter_foreground_task.utils.PluginUtils
-import io.flutter.FlutterInjector
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.embedding.engine.loader.FlutterLoader
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.view.FlutterCallbackInformation
 import kotlinx.coroutines.*
 import java.util.*
 
@@ -38,15 +30,11 @@ import java.util.*
  * @author Dev-hwang
  * @version 1.0
  */
-class ForegroundService : Service(), MethodChannel.MethodCallHandler {
+class ForegroundService : Service() {
     companion object {
         private val TAG = ForegroundService::class.java.simpleName
 
-        private const val ACTION_TASK_START = "onStart"
-        private const val ACTION_TASK_REPEAT_EVENT = "onRepeatEvent"
-        private const val ACTION_TASK_DESTROY = "onDestroy"
         private const val ACTION_RECEIVE_DATA = "onReceiveData"
-
         private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
         private const val ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
@@ -56,27 +44,21 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         var isRunningService = false
             private set
 
-        private var taskLifecycleListeners: MutableList<FlutterForegroundTaskLifecycleListener> = mutableListOf()
-
-        fun addTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
-            if (!taskLifecycleListeners.contains(listener)) {
-                taskLifecycleListeners.add(listener)
-            }
-        }
-
-        fun removeTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
-            taskLifecycleListeners.remove(listener)
-        }
-
-        private var flutterEngine: FlutterEngine? = null
-        private var flutterLoader: FlutterLoader? = null
-        private var backgroundChannel: MethodChannel? = null
-        private var repeatTask: Job? = null
+        private var foregroundTask: ForegroundTask? = null
+        private var taskLifecycleListeners = ForegroundTaskLifecycleListeners()
 
         fun sendData(data: Any?) {
             if (isRunningService) {
-                backgroundChannel?.invokeMethod(ACTION_RECEIVE_DATA, data)
+                foregroundTask?.invokeMethod(ACTION_RECEIVE_DATA, data)
             }
+        }
+
+        fun addTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
+            taskLifecycleListeners.addListener(listener)
+        }
+
+        fun removeTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
+            taskLifecycleListeners.removeListener(listener)
         }
     }
 
@@ -111,7 +93,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
                 val action = intent.action ?: return
                 val data = intent.getStringExtra(INTENT_DATA_FIELD_NAME)
-                backgroundChannel?.invokeMethod(action, data)
+                foregroundTask?.invokeMethod(action, data)
             } catch (e: Exception) {
                 Log.e(TAG, e.message, e)
             }
@@ -145,26 +127,26 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             ForegroundServiceAction.API_START,
             ForegroundServiceAction.API_RESTART -> {
                 startForegroundService()
-                executeDartCallback(foregroundTaskData.callbackHandle)
+                createForegroundTask()
             }
             ForegroundServiceAction.API_UPDATE -> {
                 updateNotification()
                 val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
                 val currCallbackHandle = foregroundTaskData.callbackHandle
                 if (prevCallbackHandle != currCallbackHandle) {
-                    executeDartCallback(currCallbackHandle)
+                    createForegroundTask()
                 } else {
                     val prevEventAction = prevForegroundTaskOptions?.eventAction
                     val currEventAction = foregroundTaskOptions.eventAction
                     if (prevEventAction != currEventAction) {
-                        startRepeatTask()
+                        updateForegroundTask()
                     }
                 }
             }
             ForegroundServiceAction.REBOOT,
             ForegroundServiceAction.RESTART -> {
                 startForegroundService()
-                executeDartCallback(foregroundTaskData.callbackHandle)
+                createForegroundTask()
                 Log.d(TAG, "The service has been restarted by Android OS.")
             }
         }
@@ -182,9 +164,7 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
 
     override fun onDestroy() {
         super.onDestroy()
-        destroyForegroundTask {
-            destroyFlutterEngine()
-        }
+        destroyForegroundTask()
         stopForegroundService()
         unregisterBroadcastReceiver()
 
@@ -202,13 +182,6 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
             stopSelf()
         } else {
             RestartReceiver.setRestartAlarm(this, 1000)
-        }
-    }
-
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when (call.method) {
-            "startTask" -> startForegroundTask()
-            else -> result.notImplemented()
         }
     }
 
@@ -446,137 +419,25 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
     }
 
-    private fun executeDartCallback(callbackHandle: Long?) {
-        // If there is no callbackHandle, the code below will not be executed.
-        if (callbackHandle == null) return
+    private fun createForegroundTask() {
+        destroyForegroundTask()
 
-        destroyForegroundTask {
-            destroyFlutterEngine()
-            createFlutterEngine()
-
-            val bundlePath = flutterLoader?.findAppBundlePath()
-            if (bundlePath != null) {
-                val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-                val dartCallback = DartExecutor.DartCallback(assets, bundlePath, callbackInfo)
-                flutterEngine?.dartExecutor?.executeDartCallback(dartCallback)
-            }
-        }
+        foregroundTask = ForegroundTask(
+            context = this,
+            serviceStatus = foregroundServiceStatus,
+            taskData = foregroundTaskData,
+            taskEventAction = foregroundTaskOptions.eventAction,
+            taskLifecycleListener = taskLifecycleListeners
+        )
     }
 
-    private fun createFlutterEngine() {
-        flutterEngine = FlutterEngine(this)
-        flutterLoader = FlutterInjector.instance().flutterLoader()
-        if (flutterLoader?.initialized() == false) {
-            flutterLoader?.startInitialization(this)
-        }
-        flutterLoader?.ensureInitializationComplete(this, null)
-        for (listener in taskLifecycleListeners) {
-            listener.onEngineCreate(flutterEngine!!)
-        }
-
-        val messenger = flutterEngine?.dartExecutor?.binaryMessenger
-        if (messenger != null) {
-            backgroundChannel = MethodChannel(messenger, "flutter_foreground_task/background")
-            backgroundChannel?.setMethodCallHandler(this)
-        }
+    private fun updateForegroundTask() {
+        foregroundTask?.update(taskEventAction = foregroundTaskOptions.eventAction)
     }
 
-    private fun destroyFlutterEngine() {
-        backgroundChannel?.setMethodCallHandler(null)
-        backgroundChannel = null
-
-        for (listener in taskLifecycleListeners) {
-            listener.onEngineWillDestroy()
-        }
-        flutterEngine?.destroy()
-        flutterEngine = null
-        flutterLoader = null
-    }
-
-    private fun startForegroundTask(onComplete: () -> Unit = {}) {
-        stopRepeatTask()
-
-        if (backgroundChannel == null) {
-            onComplete()
-            return
-        }
-
-        val serviceAction = foregroundServiceStatus.action
-        val starter = if (serviceAction == ForegroundServiceAction.API_START ||
-            serviceAction == ForegroundServiceAction.API_RESTART ||
-            serviceAction == ForegroundServiceAction.API_UPDATE) {
-            FlutterForegroundTaskStarter.DEVELOPER
-        } else {
-            FlutterForegroundTaskStarter.SYSTEM
-        }
-
-        backgroundChannel?.invokeMethod(ACTION_TASK_START, starter.ordinal) {
-            startRepeatTask()
-            onComplete()
-        }
-
-        for (listener in taskLifecycleListeners) {
-            listener.onTaskStart(starter)
-        }
-    }
-
-    private fun destroyForegroundTask(onComplete: () -> Unit = {}) {
-        stopRepeatTask()
-
-        if (backgroundChannel == null) {
-            onComplete()
-            return
-        }
-
-        backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, null) {
-            onComplete()
-        }
-
-        for (listener in taskLifecycleListeners) {
-            listener.onTaskDestroy()
-        }
-    }
-
-    private fun invokeTaskRepeatEvent() {
-        backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
-
-        for (listener in taskLifecycleListeners) {
-            listener.onTaskRepeatEvent()
-        }
-    }
-
-    private fun startRepeatTask() {
-        stopRepeatTask()
-
-        val type = foregroundTaskOptions.eventAction.type
-        val interval = foregroundTaskOptions.eventAction.interval
-
-        if (type == ForegroundTaskEventType.NOTHING) {
-            return
-        }
-
-        if (type == ForegroundTaskEventType.ONCE) {
-            invokeTaskRepeatEvent()
-            return
-        }
-
-        repeatTask = CoroutineScope(Dispatchers.Default).launch {
-            while (true) {
-                delay(interval)
-                withContext(Dispatchers.Main) {
-                    try {
-                        invokeTaskRepeatEvent()
-                    } catch (e: Exception) {
-                        Log.e(TAG, "repeatTask", e)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun stopRepeatTask() {
-        repeatTask?.cancel()
-        repeatTask = null
+    private fun destroyForegroundTask() {
+        foregroundTask?.destroy()
+        foregroundTask = null
     }
 
     private fun getIconResId(): Int {
@@ -706,22 +567,5 @@ class ForegroundService : Service(), MethodChannel.MethodCallHandler {
         }
 
         return actions
-    }
-
-    private fun MethodChannel.invokeMethod(method: String, arguments: Any?, onComplete: () -> Unit = {}) {
-        val callback = object : MethodChannel.Result {
-            override fun success(result: Any?) {
-                onComplete()
-            }
-
-            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                onComplete()
-            }
-
-            override fun notImplemented() {
-                onComplete()
-            }
-        }
-        invokeMethod(method, arguments, callback)
     }
 }

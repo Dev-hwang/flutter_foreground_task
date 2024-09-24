@@ -102,7 +102,7 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     BackgroundService.sharedInstance.run()
     
     // Chance to handle onDestroy before app terminates
-    sleep(2)
+    sleep(5)
   }
   
   // ================= Service Delegate =================

@@ -120,26 +120,26 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
 
     // Set the method call handler for the background channel.
     mBGChannel.setMethodCallHandler((call) async {
-      onBackgroundChannelMethodCall(call, handler);
+      await onBackgroundChannel(call, handler);
     });
 
-    mBGChannel.invokeMethod('startTask');
+    mBGChannel.invokeMethod('start');
   }
 
   @visibleForTesting
-  void onBackgroundChannelMethodCall(MethodCall call, TaskHandler handler) {
+  Future<void> onBackgroundChannel(MethodCall call, TaskHandler handler) async {
     final DateTime timestamp = DateTime.timestamp();
 
     switch (call.method) {
       case 'onStart':
         final TaskStarter starter = TaskStarter.fromIndex(call.arguments);
-        handler.onStart(timestamp, starter);
+        await handler.onStart(timestamp, starter);
         break;
       case 'onRepeatEvent':
         handler.onRepeatEvent(timestamp);
         break;
       case 'onDestroy':
-        handler.onDestroy(timestamp);
+        await handler.onDestroy(timestamp);
         break;
       case 'onReceiveData':
         dynamic data = call.arguments;

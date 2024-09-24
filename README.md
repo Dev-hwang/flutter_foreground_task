@@ -188,7 +188,7 @@ void startCallback() {
 class MyTaskHandler extends TaskHandler {
   // Called when the task is started.
   @override
-  void onStart(DateTime timestamp, TaskStarter starter) {
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     print('onStart(starter: ${starter.name})');
   }
 
@@ -207,7 +207,7 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when the task is destroyed.
   @override
-  void onDestroy(DateTime timestamp) {
+  Future<void> onDestroy(DateTime timestamp) async {
     print('onDestroy');
   }
 
@@ -405,7 +405,7 @@ class FirstTaskHandler extends TaskHandler {
   int _count = 0;
 
   @override
-  void onStart(DateTime timestamp, TaskStarter starter) {
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     // some code
   }
 
@@ -435,7 +435,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp) {
+  Future<void> onDestroy(DateTime timestamp) async {
     // some code
   }
 }
@@ -447,7 +447,7 @@ void updateCallback() {
 
 class SecondTaskHandler extends TaskHandler {
   @override
-  void onStart(DateTime timestamp, TaskStarter starter) {
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     // some code
   }
 
@@ -466,7 +466,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp) {
+  Future<void> onDestroy(DateTime timestamp) async {
     // some code
   }
 }
@@ -493,7 +493,7 @@ JSON and serialization >> https://docs.flutter.dev/data-and-backend/serializatio
 ```dart
 // TaskHandler
 @override
-void onStart(DateTime timestamp, TaskStarter starter) {
+Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
   // TaskHandler -> Main(UI)
   FlutterForegroundTask.sendDataToMain(Object);
 }
@@ -544,7 +544,7 @@ class MyTaskHandler extends TaskHandler {
   StreamSubscription<Location>? _streamSubscription;
 
   @override
-  void onStart(DateTime timestamp, TaskStarter starter) {
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     _streamSubscription = FlLocation.getLocationStream().listen((location) {
       final String message = '${location.latitude}, ${location.longitude}';
       FlutterForegroundTask.updateService(notificationText: message);
@@ -561,7 +561,7 @@ class MyTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp) {
+  Future<void> onDestroy(DateTime timestamp) async {
     _streamSubscription?.cancel();
     _streamSubscription = null;
   }
