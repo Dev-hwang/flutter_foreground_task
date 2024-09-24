@@ -3,7 +3,7 @@ import 'flutter_foreground_task.dart';
 /// A class that implements a task handler.
 abstract class TaskHandler {
   /// Called when the task is started.
-  void onStart(DateTime timestamp, TaskStarter starter);
+  Future<void> onStart(DateTime timestamp, TaskStarter starter);
 
   /// Called by eventAction in [ForegroundTaskOptions].
   ///
@@ -13,7 +13,7 @@ abstract class TaskHandler {
   void onRepeatEvent(DateTime timestamp);
 
   /// Called when the task is destroyed.
-  void onDestroy(DateTime timestamp);
+  Future<void> onDestroy(DateTime timestamp);
 
   /// Called when data is sent using [FlutterForegroundTask.sendDataToTask].
   void onReceiveData(Object data) {}

@@ -1,16 +1,16 @@
 //
-//  BackgroundTaskOptions.swift
+//  ForegroundTaskOptions.swift
 //  flutter_foreground_task
 //
-//  Created by Woo Jin Hwang on 8/2/24.
+//  Created by Woo Jin Hwang on 9/24/24.
 //
 
 import Foundation
 
-struct BackgroundTaskOptions {
+struct ForegroundTaskOptions {
   let eventAction: ForegroundTaskEventAction
   
-  static func getData() -> BackgroundTaskOptions {
+  static func getData() -> ForegroundTaskOptions {
     let prefs = UserDefaults.standard
     
     let eventActionJsonString = prefs.string(forKey: TASK_EVENT_ACTION)
@@ -28,7 +28,7 @@ struct BackgroundTaskOptions {
       }
     }
     
-    return BackgroundTaskOptions(eventAction: eventAction)
+    return ForegroundTaskOptions(eventAction: eventAction)
   }
   
   static func setData(args: Dictionary<String, Any>) {

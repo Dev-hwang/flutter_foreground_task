@@ -1,21 +1,21 @@
 //
-//  BackgroundTaskData.swift
+//  ForegroundTaskData.swift
 //  flutter_foreground_task
 //
-//  Created by Woo Jin Hwang on 8/2/24.
+//  Created by Woo Jin Hwang on 9/24/24.
 //
 
 import Foundation
 
-struct BackgroundTaskData {
+struct ForegroundTaskData {
   let callbackHandle: Int64?
   
-  static func getData() -> BackgroundTaskData {
+  static func getData() -> ForegroundTaskData {
     let prefs = UserDefaults.standard
     
     let callbackHandle = prefs.object(forKey: CALLBACK_HANDLE) as? Int64
     
-    return BackgroundTaskData(callbackHandle: callbackHandle)
+    return ForegroundTaskData(callbackHandle: callbackHandle)
   }
   
   static func setData(args: Dictionary<String, Any>) {

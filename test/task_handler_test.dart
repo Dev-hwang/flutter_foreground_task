@@ -36,9 +36,8 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
       platformChannel.mBGChannel,
-      (MethodCall methodCall) async {
-        platformChannel.onBackgroundChannelMethodCall(methodCall, taskHandler);
-        return;
+      (MethodCall methodCall) {
+        return platformChannel.onBackgroundChannel(methodCall, taskHandler);
       },
     );
   });
@@ -285,7 +284,7 @@ class TestTaskHandler extends TaskHandler {
   final List<TaskEvent> log = [];
 
   @override
-  void onStart(DateTime timestamp, TaskStarter starter) {
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     log.add(TaskEvent(method: TaskEventMethod.onStart, data: starter.index));
   }
 
@@ -295,7 +294,7 @@ class TestTaskHandler extends TaskHandler {
   }
 
   @override
-  void onDestroy(DateTime timestamp) {
+  Future<void> onDestroy(DateTime timestamp) async {
     log.add(const TaskEvent(method: TaskEventMethod.onDestroy));
   }
 
