@@ -1,3 +1,10 @@
+## 8.10.0
+
+* [**BREAKING**] Change `onStart`, `onDestroy` callback return type from `void` to `Future<void>`
+  - The onRepeatEvent callback is called when the onStart asynchronous operation has finished
+  - Now you can access network, database, and other plugins in onDestroy callback [#276](https://github.com/Dev-hwang/flutter_foreground_task/issues/276)
+  - Check [migration_documentation](./documentation/migration_documentation.md) for changes
+
 ## 8.9.0
 
 * [**CHANGE**] Ignore `autoRunOnBoot` option when service is stopped by developer
