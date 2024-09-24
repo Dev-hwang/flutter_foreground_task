@@ -1,5 +1,25 @@
 ## Migration
 
+### ver 8.10.0
+
+- Change onStart, onDestroy callback return type from `void` to `Future<void>`.
+
+```dart
+// before
+@override
+void onStart(DateTime timestamp, TaskStarter starter) { }
+
+@override
+void onDestroy(DateTime timestamp) { }
+
+// after
+@override
+Future<void> onStart(DateTime timestamp, TaskStarter starter) async { }
+
+@override
+Future<void> onDestroy(DateTime timestamp) async { }
+```
+
 ### ver 8.6.0
 
 - Remove `interval`, `isOnceEvent` option in ForegroundTaskOptions model.
