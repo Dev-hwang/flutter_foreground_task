@@ -20,8 +20,8 @@ class ForegroundTask {
   private var taskEventAction: ForegroundTaskEventAction
   private let taskLifecycleListener: FlutterForegroundTaskLifecycleListener
   
-  private let flutterEngine: FlutterEngine
-  private let backgroundChannel: FlutterMethodChannel
+  private var flutterEngine: FlutterEngine? = nil
+  private var backgroundChannel: FlutterMethodChannel? = nil
   private var repeatTask: Timer? = nil
   private var isDestroyed: Bool = false
   
@@ -36,29 +36,37 @@ class ForegroundTask {
     self.taskEventAction = taskEventAction
     self.taskLifecycleListener = taskLifecycleListener
     
-    // create flutter engine
-    flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
-    taskLifecycleListener.onEngineCreate(flutterEngine: flutterEngine)
-    
-    // execute callback
-    if let callbackHandle = taskData.callbackHandle {
-      let callbackInfo = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-      let dartCallback = callbackInfo?.callbackName
-      let libraryPath = callbackInfo?.callbackLibraryPath
-      flutterEngine.run(withEntrypoint: dartCallback, libraryURI: libraryPath)
-    }
-    
-    // register plugin for creating channel
     if let registerPlugins = SwiftFlutterForegroundTaskPlugin.registerPlugins {
-      registerPlugins(flutterEngine)
+      // create flutter engine
+      let flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
+      
+      // lookup callback
+      var entrypoint: String? = nil
+      var libraryURI: String? = nil
+      if let callbackHandle = taskData.callbackHandle {
+        let callbackInfo = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+        entrypoint = callbackInfo?.callbackName
+        libraryURI = callbackInfo?.callbackLibraryPath
+      }
+      
+      // run flutter engine & execute callback
+      let isRunningEngine = flutterEngine.run(withEntrypoint: entrypoint, libraryURI: libraryURI)
+      if isRunningEngine {
+        // register plugins
+        registerPlugins(flutterEngine)
+        taskLifecycleListener.onEngineCreate(flutterEngine: flutterEngine)
+        
+        // create background channel
+        let messenger = flutterEngine.binaryMessenger
+        let backgroundChannel = FlutterMethodChannel(name: BG_CHANNEL_NAME, binaryMessenger: messenger)
+        backgroundChannel.setMethodCallHandler(onMethodCall)
+        
+        self.flutterEngine = flutterEngine
+        self.backgroundChannel = backgroundChannel
+      }
     } else {
       print("Please register the registerPlugins function using the SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback.")
     }
-    
-    // create background channel
-    let messenger = flutterEngine.binaryMessenger
-    backgroundChannel = FlutterMethodChannel(name: BG_CHANNEL_NAME, binaryMessenger: messenger)
-    backgroundChannel.setMethodCallHandler(onMethodCall)
   }
   
   func onMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -79,7 +87,7 @@ class ForegroundTask {
       starter = .SYSTEM
     }
     
-    backgroundChannel.invokeMethod(ACTION_TASK_START, arguments: starter.rawValue) { _ in
+    backgroundChannel?.invokeMethod(ACTION_TASK_START, arguments: starter.rawValue) { _ in
       self.callSafely { self.startRepeatTask() }
     }
     
@@ -87,7 +95,7 @@ class ForegroundTask {
   }
   
   private func invokeTaskRepeatEvent() {
-    backgroundChannel.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
+    backgroundChannel?.invokeMethod(ACTION_TASK_REPEAT_EVENT, arguments: nil)
     
     taskLifecycleListener.onTaskRepeatEvent()
   }
@@ -119,7 +127,7 @@ class ForegroundTask {
   
   func invokeMethod(_ method: String, arguments: Any?) {
     callSafely(onlyCheckDestroyed: true) {
-      backgroundChannel.invokeMethod(method, arguments: arguments)
+      backgroundChannel?.invokeMethod(method, arguments: arguments)
     }
   }
   
@@ -134,9 +142,10 @@ class ForegroundTask {
     callSafely(onlyCheckDestroyed: true) {
       stopRepeatTask()
       
-      backgroundChannel.setMethodCallHandler(nil)
-      backgroundChannel.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
-        self.flutterEngine.destroyContext()
+      backgroundChannel?.setMethodCallHandler(nil)
+      backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
+        self.flutterEngine?.destroyContext()
+        self.flutterEngine = nil
       }
       
       taskLifecycleListener.onTaskDestroy()
