@@ -1,3 +1,8 @@
+## 8.10.2
+
+* [**FIX**] Fixed an issue where exception was thrown when flutterEngine failed to start [#282](https://github.com/Dev-hwang/flutter_foreground_task/issues/282)
+* [**FIX**] Fixed an issue with flutterEngine not being destroyed properly
+
 ## 8.10.0
 
 * [**BREAKING**] Change `onStart`, `onDestroy` callback return type from `void` to `Future<void>`

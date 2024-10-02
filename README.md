@@ -27,7 +27,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.10.0
+  flutter_foreground_task: ^8.10.2
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
@@ -40,7 +40,21 @@ If you want the foreground service to run only when the app is running, add `and
 
 As mentioned in the Android guidelines, to start a FG service on Android 14+, you must specify `android:foregroundServiceType`.
 
-You can read all the details in the Android Developer Page : https://developer.android.com/about/versions/14/changes/fgs-types-required
+* [`camera`](https://developer.android.com/about/versions/14/changes/fgs-types-required#camera)
+* [`connectedDevice`](https://developer.android.com/about/versions/14/changes/fgs-types-required#connected-device)
+* [`dataSync`](https://developer.android.com/about/versions/14/changes/fgs-types-required#data-sync)
+* [`health`](https://developer.android.com/about/versions/14/changes/fgs-types-required#health)
+* [`location`](https://developer.android.com/about/versions/14/changes/fgs-types-required#location)
+* [`mediaPlayback`](https://developer.android.com/about/versions/14/changes/fgs-types-required#media)
+* [`mediaProjection`](https://developer.android.com/about/versions/14/changes/fgs-types-required#media-projection)
+* [`microphone`](https://developer.android.com/about/versions/14/changes/fgs-types-required#microphone)
+* [`phoneCall`](https://developer.android.com/about/versions/14/changes/fgs-types-required#phone-call)
+* [`remoteMessaging`](https://developer.android.com/about/versions/14/changes/fgs-types-required#remote-messaging)
+* [`shortService`](https://developer.android.com/about/versions/14/changes/fgs-types-required#short-service)
+* [`specialUse`](https://developer.android.com/about/versions/14/changes/fgs-types-required#special-use)
+* [`systemExempted`](https://developer.android.com/about/versions/14/changes/fgs-types-required#system-exempted)
+
+You can read all the details in the [Android Developer Page](https://developer.android.com/about/versions/14/changes/fgs-types-required)
 
 ```
 <!-- required -->
