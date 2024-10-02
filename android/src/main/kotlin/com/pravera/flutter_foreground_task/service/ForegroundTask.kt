@@ -71,31 +71,35 @@ class ForegroundTask(
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "start" -> callSafely { start() }
+            "start" -> start()
             else -> result.notImplemented()
         }
     }
 
     private fun start() {
-        val serviceAction = serviceStatus.action
-        val starter = if (serviceAction == ForegroundServiceAction.API_START ||
-            serviceAction == ForegroundServiceAction.API_RESTART ||
-            serviceAction == ForegroundServiceAction.API_UPDATE) {
-            FlutterForegroundTaskStarter.DEVELOPER
-        } else {
-            FlutterForegroundTaskStarter.SYSTEM
-        }
+        runIfNotDestroyed {
+            runIfCallbackHandleExists {
+                val serviceAction = serviceStatus.action
+                val starter = if (serviceAction == ForegroundServiceAction.API_START ||
+                    serviceAction == ForegroundServiceAction.API_RESTART ||
+                    serviceAction == ForegroundServiceAction.API_UPDATE) {
+                    FlutterForegroundTaskStarter.DEVELOPER
+                } else {
+                    FlutterForegroundTaskStarter.SYSTEM
+                }
 
-        backgroundChannel.invokeMethod(ACTION_TASK_START, starter.ordinal) {
-            callSafely { startRepeatTask() }
+                backgroundChannel.invokeMethod(ACTION_TASK_START, starter.ordinal) {
+                    runIfNotDestroyed {
+                        startRepeatTask()
+                    }
+                }
+                taskLifecycleListener.onTaskStart(starter)
+            }
         }
-
-        taskLifecycleListener.onTaskStart(starter)
     }
 
     private fun invokeTaskRepeatEvent() {
         backgroundChannel.invokeMethod(ACTION_TASK_REPEAT_EVENT, null)
-
         taskLifecycleListener.onTaskRepeatEvent()
     }
 
@@ -134,35 +138,49 @@ class ForegroundTask(
     }
 
     fun invokeMethod(method: String, data: Any?) {
-        callSafely(onlyCheckDestroyed = true) {
+        runIfNotDestroyed {
             backgroundChannel.invokeMethod(method, data)
         }
     }
 
     fun update(taskEventAction: ForegroundTaskEventAction) {
-        callSafely {
-            this.taskEventAction = taskEventAction
-            startRepeatTask()
+        runIfNotDestroyed {
+            runIfCallbackHandleExists {
+                this.taskEventAction = taskEventAction
+                startRepeatTask()
+            }
         }
     }
 
     fun destroy() {
-        callSafely(onlyCheckDestroyed = true) {
+        runIfNotDestroyed {
             stopRepeatTask()
 
             backgroundChannel.setMethodCallHandler(null)
-            backgroundChannel.invokeMethod(ACTION_TASK_DESTROY, null) {
+            if (taskData.callbackHandle == null) {
+                taskLifecycleListener.onEngineWillDestroy()
                 flutterEngine.destroy()
+            } else {
+                backgroundChannel.invokeMethod(ACTION_TASK_DESTROY, null) {
+                    flutterEngine.destroy()
+                }
+                taskLifecycleListener.onTaskDestroy()
+                taskLifecycleListener.onEngineWillDestroy()
             }
 
-            taskLifecycleListener.onTaskDestroy()
-            taskLifecycleListener.onEngineWillDestroy()
             isDestroyed = true
         }
     }
 
-    private fun callSafely(onlyCheckDestroyed: Boolean = false, call: () -> Unit = {}) {
-        if (isDestroyed || (!onlyCheckDestroyed && taskData.callbackHandle == null)) {
+    private fun runIfCallbackHandleExists(call: () -> Unit) {
+        if (taskData.callbackHandle == null) {
+            return
+        }
+        call()
+    }
+
+    private fun runIfNotDestroyed(call: () -> Unit) {
+        if (isDestroyed) {
             return
         }
         call()
