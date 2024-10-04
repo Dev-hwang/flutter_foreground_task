@@ -35,37 +35,47 @@ class ForegroundTask {
     self.taskData = taskData
     self.taskEventAction = taskEventAction
     self.taskLifecycleListener = taskLifecycleListener
-    
-    if let registerPlugins = SwiftFlutterForegroundTaskPlugin.registerPlugins {
-      // create flutter engine
-      let flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
-      
-      // lookup callback
-      var entrypoint: String? = nil
-      var libraryURI: String? = nil
-      if let callbackHandle = taskData.callbackHandle {
-        let callbackInfo = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-        entrypoint = callbackInfo?.callbackName
-        libraryURI = callbackInfo?.callbackLibraryPath
-      }
-      
-      // run flutter engine & execute callback
-      let isRunningEngine = flutterEngine.run(withEntrypoint: entrypoint, libraryURI: libraryURI)
-      if isRunningEngine {
-        // register plugins
-        registerPlugins(flutterEngine)
-        taskLifecycleListener.onEngineCreate(flutterEngine: flutterEngine)
-        
-        // create background channel
-        let messenger = flutterEngine.binaryMessenger
-        let backgroundChannel = FlutterMethodChannel(name: BG_CHANNEL_NAME, binaryMessenger: messenger)
-        backgroundChannel.setMethodCallHandler(onMethodCall)
-        
-        self.flutterEngine = flutterEngine
-        self.backgroundChannel = backgroundChannel
-      }
-    } else {
+    initialize()
+  }
+  
+  private func initialize() {
+    guard let registerPlugins = SwiftFlutterForegroundTaskPlugin.registerPlugins else {
       print("Please register the registerPlugins function using the SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback.")
+      return
+    }
+    
+    guard let callbackHandle = taskData.callbackHandle else {
+      // no callback -> Unlike Android, the flutter engine does not start.
+      return
+    }
+    
+    // lookup callback
+    let callbackInfo = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+    guard let entrypoint = callbackInfo?.callbackName else {
+      print("Entrypoint not found in callback information.")
+      return
+    }
+    guard let libraryURI = callbackInfo?.callbackLibraryPath else {
+      print("LibraryURI not found in callback information.")
+      return
+    }
+    
+    // create flutter engine & execute callback
+    let flutterEngine = FlutterEngine(name: BG_ISOLATE_NAME, project: nil, allowHeadlessExecution: true)
+    let isRunningEngine = flutterEngine.run(withEntrypoint: entrypoint, libraryURI: libraryURI)
+    
+    if isRunningEngine {
+      // register plugins
+      registerPlugins(flutterEngine)
+      taskLifecycleListener.onEngineCreate(flutterEngine: flutterEngine)
+      
+      // create background channel
+      let messenger = flutterEngine.binaryMessenger
+      let backgroundChannel = FlutterMethodChannel(name: BG_CHANNEL_NAME, binaryMessenger: messenger)
+      backgroundChannel.setMethodCallHandler(onMethodCall)
+      
+      self.flutterEngine = flutterEngine
+      self.backgroundChannel = backgroundChannel
     }
   }
   
