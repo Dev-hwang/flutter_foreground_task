@@ -1,3 +1,8 @@
+## 8.10.4
+
+* [**FIX**] Fixed an issue where main function was called repeatedly when there was no callback to start
+* [**FIX**] Handle exceptions that occur when service component cannot be found
+
 ## 8.10.2
 
 * [**FIX**] Fixed an issue where exception was thrown when flutterEngine failed to start [#282](https://github.com/Dev-hwang/flutter_foreground_task/issues/282)

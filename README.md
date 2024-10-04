@@ -27,7 +27,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.10.2
+  flutter_foreground_task: ^8.10.4
 ```
 
 After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
@@ -36,7 +36,7 @@ After adding the `flutter_foreground_task` plugin to the flutter project, we nee
 
 Open the `AndroidManifest.xml` file and specify the service tag inside the `<application>` tag as follows.
 
-If you want the foreground service to run only when the app is running, add `android:stopWithTask="true"` option.
+If you want the foreground service to run only when the app is running, add `android:stopWithTask="true"`.
 
 As mentioned in the Android guidelines, to start a FG service on Android 14+, you must specify `android:foregroundServiceType`.
 
