@@ -70,7 +70,7 @@ void main() {
         methodCallHandler.log.last,
         isMethodCall(
           UtilityMethod.setOnLockScreenVisibility,
-          arguments: {'isVisible': true},
+          arguments: true,
         ),
       );
 
@@ -79,7 +79,7 @@ void main() {
         methodCallHandler.log.last,
         isMethodCall(
           UtilityMethod.setOnLockScreenVisibility,
-          arguments: {'isVisible': false},
+          arguments: false,
         ),
       );
     });
@@ -459,12 +459,11 @@ class UtilityMethodCallHandler {
     } else if (method == UtilityMethod.launchApp) {
       return Future.value();
     } else if (method == UtilityMethod.setOnLockScreenVisibility) {
-      bool? isVisible;
-      if (arguments is Map) {
-        isVisible = arguments['isVisible'];
+      if (arguments == null) {
+        throw ArgumentError('The isVisible argument cannot be found.');
       }
-      if (isVisible == null) {
-        throw ArgumentError('Invalid argument: $arguments');
+      if (arguments is! bool) {
+        throw ArgumentError('The isVisible argument is not of type boolean.');
       }
       return Future.value();
     } else if (method == UtilityMethod.isAppOnForeground) {
