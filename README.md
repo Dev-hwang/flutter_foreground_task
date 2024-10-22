@@ -9,10 +9,10 @@ This plugin is used to implement a foreground service on the Android platform.
 ## Features
 
 * Can perform repetitive tasks with the foreground service.
-* Supports two-way communication between the foreground service and UI.
-* Provides widget that minimize the app without closing it when the user presses the soft back button.
+* Supports two-way communication between the foreground service and UI(main isolate).
+* Provides a widget that minimize the app without closing it when the user presses the soft back button.
 * Provides useful utilities that can use while performing tasks.
-* Provides option to automatically resume the foreground service on boot.
+* Provides an option to automatically resume the foreground service on boot.
 
 ## Support version
 
@@ -20,6 +20,10 @@ This plugin is used to implement a foreground service on the Android platform.
 - Dart: `3.0.0+`
 - Android: `5.0+ (minSdkVersion: 21)`
 - iOS: `13.0+`
+
+## Structure
+
+<img src="https://github.com/user-attachments/assets/6fc91bd9-62b2-43b8-9109-26d2e8d809c1" width="800">
 
 ## Getting started
 
@@ -30,15 +34,15 @@ dependencies:
   flutter_foreground_task: ^8.10.4
 ```
 
-After adding the `flutter_foreground_task` plugin to the flutter project, we need to specify the permissions and service to use for this plugin to work properly.
+After adding the plugin to your flutter project, we need to declare the platform-specific permissions ans service to use for this plugin to work properly.
 
 ### :baby_chick: Android
 
-Open the `AndroidManifest.xml` file and specify the service tag inside the `<application>` tag as follows.
+Open the `AndroidManifest.xml` file and declare the service tag inside the `<application>` tag as follows.
 
 If you want the foreground service to run only when the app is running, add `android:stopWithTask="true"`.
 
-As mentioned in the Android guidelines, to start a FG service on Android 14+, you must specify `android:foregroundServiceType`.
+As mentioned in the Android guidelines, to start a FG service on Android 14+, you must declare `android:foregroundServiceType`.
 
 * [`camera`](https://developer.android.com/about/versions/14/changes/fgs-types-required#camera)
 * [`connectedDevice`](https://developer.android.com/about/versions/14/changes/fgs-types-required#connected-device)
@@ -53,8 +57,6 @@ As mentioned in the Android guidelines, to start a FG service on Android 14+, yo
 * [`shortService`](https://developer.android.com/about/versions/14/changes/fgs-types-required#short-service)
 * [`specialUse`](https://developer.android.com/about/versions/14/changes/fgs-types-required#special-use)
 * [`systemExempted`](https://developer.android.com/about/versions/14/changes/fgs-types-required#system-exempted)
-
-You can read all the details in the [Android Developer Page](https://developer.android.com/about/versions/14/changes/fgs-types-required)
 
 ```
 <!-- required -->
@@ -79,7 +81,7 @@ Check runtime requirements before starting the service. If this requirement is n
 
 ### :baby_chick: iOS
 
-We can also launch `flutter_foreground_task` on the iOS platform. However, it has the following limitations.
+You can also run `flutter_foreground_task` on the iOS platform. However, it has the following limitations.
 
 * If you force close an app in recent apps, the task will be destroyed immediately.
 * The task cannot be started automatically on boot like Android OS.
@@ -160,18 +162,15 @@ import Flutter
     GeneratedPluginRegistrant.register(with: self)
 
     // here
-    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)
+    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-}
-
-// here
-func registerPlugins(registry: FlutterPluginRegistry) {
-  GeneratedPluginRegistrant.register(with: registry)
 }
 ```
 
@@ -192,10 +191,9 @@ void main() {
 2. Write a `TaskHandler` and a `callback` to request starting a TaskHandler.
 
 ```dart
-// The callback function should always be a top-level function.
+// The callback function should always be a top-level or static function.
 @pragma('vm:entry-point')
 void startCallback() {
-  // The setTaskHandler function must be called to handle the task in the background.
   FlutterForegroundTask.setTaskHandler(MyTaskHandler());
 }
 
@@ -496,7 +494,7 @@ Future<ServiceRequestResult> _stopService() async {
 
 ### :hatched_chick: deepening
 
-This plugin supports two-way communication between TaskHandler and UI.
+This plugin supports two-way communication between TaskHandler and UI(main isolate).
 
 The send function can only send primitive type(int, double, bool), String, Collection(Map, List) provided by Flutter.
 
