@@ -10,10 +10,9 @@ void main() {
   runApp(const ExampleApp());
 }
 
-// The callback function should always be a top-level function.
+// The callback function should always be a top-level or static function.
 @pragma('vm:entry-point')
 void startCallback() {
-  // The setTaskHandler function must be called to handle the task in the background.
   FlutterForegroundTask.setTaskHandler(MyTaskHandler());
 }
 
