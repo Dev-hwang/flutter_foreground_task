@@ -96,9 +96,9 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 
                 "setOnLockScreenVisibility" -> {
                     checkActivityNull().let {
-                        val arguments = args as? Map<*, *>
-                        val isVisible = arguments?.get("isVisible") as? Boolean ?: false
-                        PluginUtils.setOnLockScreenVisibility(it, isVisible)
+                        if (args is Boolean) {
+                            PluginUtils.setOnLockScreenVisibility(it, args)
+                        }
                     }
                 }
 

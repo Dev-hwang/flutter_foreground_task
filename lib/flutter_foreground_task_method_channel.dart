@@ -189,9 +189,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   void setOnLockScreenVisibility(bool isVisible) {
     if (platform.isAndroid) {
-      mMDChannel.invokeMethod('setOnLockScreenVisibility', {
-        'isVisible': isVisible,
-      });
+      mMDChannel.invokeMethod('setOnLockScreenVisibility', isVisible);
     }
   }
 
