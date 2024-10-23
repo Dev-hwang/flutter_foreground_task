@@ -1,0 +1,94 @@
+import 'dart:ui';
+
+import 'package:platform/platform.dart';
+
+import 'foreground_task_options.dart';
+import 'notification_button.dart';
+import 'notification_icon_data.dart';
+import 'notification_options.dart';
+
+class ServiceStartOptions {
+  const ServiceStartOptions({
+    this.serviceId,
+    required this.androidNotificationOptions,
+    required this.iosNotificationOptions,
+    required this.foregroundTaskOptions,
+    required this.notificationContentTitle,
+    required this.notificationContentText,
+    this.notificationIcon,
+    this.notificationButtons,
+    this.callback,
+  });
+
+  final int? serviceId;
+  final AndroidNotificationOptions androidNotificationOptions;
+  final IOSNotificationOptions iosNotificationOptions;
+  final ForegroundTaskOptions foregroundTaskOptions;
+  final String notificationContentTitle;
+  final String notificationContentText;
+  final NotificationIconData? notificationIcon;
+  final List<NotificationButton>? notificationButtons;
+  final Function? callback;
+
+  Map<String, dynamic> toJson(Platform platform) {
+    final Map<String, dynamic> json = {
+      'serviceId': serviceId,
+      ...foregroundTaskOptions.toJson(),
+      'notificationContentTitle': notificationContentTitle,
+      'notificationContentText': notificationContentText,
+      'iconData': notificationIcon?.toJson(),
+      'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
+    };
+
+    if (platform.isAndroid) {
+      json.addAll(androidNotificationOptions.toJson());
+    } else if (platform.isIOS) {
+      json.addAll(iosNotificationOptions.toJson());
+    }
+
+    if (callback != null) {
+      json['callbackHandle'] =
+          PluginUtilities.getCallbackHandle(callback!)?.toRawHandle();
+    }
+
+    return json;
+  }
+}
+
+class ServiceUpdateOptions {
+  const ServiceUpdateOptions({
+    required this.foregroundTaskOptions,
+    required this.notificationContentTitle,
+    required this.notificationContentText,
+    this.notificationIcon,
+    this.notificationButtons,
+    this.callback,
+  });
+
+  final ForegroundTaskOptions? foregroundTaskOptions;
+  final String? notificationContentTitle;
+  final String? notificationContentText;
+  final NotificationIconData? notificationIcon;
+  final List<NotificationButton>? notificationButtons;
+  final Function? callback;
+
+  Map<String, dynamic> toJson(Platform platform) {
+    final Map<String, dynamic> json = {
+      'notificationContentTitle': notificationContentTitle,
+      'notificationContentText': notificationContentText,
+      'iconData': notificationIcon?.toJson(),
+      'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
+    };
+
+    if (foregroundTaskOptions != null) {
+      json.addAll(foregroundTaskOptions!.toJson());
+    }
+
+    if (callback != null) {
+      json['callbackHandle'] =
+          PluginUtilities.getCallbackHandle(callback!)?.toRawHandle();
+    }
+
+    return json;
+  }
+}

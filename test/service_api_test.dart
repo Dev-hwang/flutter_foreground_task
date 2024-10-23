@@ -38,10 +38,10 @@ void main() {
   });
 
   group('Android', () {
-    const String platform = Platform.android;
+    final Platform platform = FakePlatform(operatingSystem: Platform.android);
 
     test('init', () {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       expect(FlutterForegroundTask.isInitialized, false);
       expect(FlutterForegroundTask.androidNotificationOptions, isNull);
@@ -66,7 +66,7 @@ void main() {
     });
 
     test('startService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
       FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
@@ -84,7 +84,7 @@ void main() {
     });
 
     test('startService (error: ServiceNotInitializedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _startService(dummyData);
       expect(result.success, false);
@@ -92,7 +92,7 @@ void main() {
     });
 
     test('startService (error: ServiceAlreadyStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -106,7 +106,7 @@ void main() {
     });
 
     test('startService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -119,7 +119,7 @@ void main() {
     });
 
     test('restartService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -137,7 +137,7 @@ void main() {
     });
 
     test('restartService (error: ServiceNotStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _restartService();
       expect(result.success, false);
@@ -145,7 +145,7 @@ void main() {
     });
 
     test('updateService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -160,13 +160,13 @@ void main() {
         methodCallHandler.log.last,
         isMethodCall(
           ServiceApiMethod.updateService,
-          arguments: dummyData.getUpdateServiceArgs(),
+          arguments: dummyData.getUpdateServiceArgs(platform),
         ),
       );
     });
 
     test('updateService (error: ServiceNotStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _updateService(dummyData);
       expect(result.success, false);
@@ -174,7 +174,7 @@ void main() {
     });
 
     test('stopService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
       FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
@@ -193,7 +193,7 @@ void main() {
     });
 
     test('stopService (error: ServiceNotStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _stopService();
       expect(result.success, false);
@@ -201,7 +201,7 @@ void main() {
     });
 
     test('stopService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -218,7 +218,7 @@ void main() {
     });
 
     test('isRunningService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
       expect(await _isRunningService, false);
@@ -258,10 +258,10 @@ void main() {
   });
 
   group('iOS', () {
-    const String platform = Platform.iOS;
+    final Platform platform = FakePlatform(operatingSystem: Platform.iOS);
 
     test('init', () {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       expect(FlutterForegroundTask.isInitialized, false);
       expect(FlutterForegroundTask.androidNotificationOptions, isNull);
@@ -286,7 +286,7 @@ void main() {
     });
 
     test('startService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
       FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
@@ -304,7 +304,7 @@ void main() {
     });
 
     test('startService (error: ServiceNotInitializedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _startService(dummyData);
       expect(result.success, false);
@@ -312,7 +312,7 @@ void main() {
     });
 
     test('startService (error: ServiceAlreadyStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -326,7 +326,7 @@ void main() {
     });
 
     test('startService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -339,7 +339,7 @@ void main() {
     });
 
     test('restartService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -357,7 +357,7 @@ void main() {
     });
 
     test('restartService (error: ServiceNotStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _restartService();
       expect(result.success, false);
@@ -365,7 +365,7 @@ void main() {
     });
 
     test('updateService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -380,13 +380,13 @@ void main() {
         methodCallHandler.log.last,
         isMethodCall(
           ServiceApiMethod.updateService,
-          arguments: dummyData.getUpdateServiceArgs(),
+          arguments: dummyData.getUpdateServiceArgs(platform),
         ),
       );
     });
 
     test('updateService (error: ServiceNotStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _updateService(dummyData);
       expect(result.success, false);
@@ -394,7 +394,7 @@ void main() {
     });
 
     test('stopService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
       FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
@@ -413,7 +413,7 @@ void main() {
     });
 
     test('stopService (error: ServiceNotStartedException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _stopService();
       expect(result.success, false);
@@ -421,7 +421,7 @@ void main() {
     });
 
     test('stopService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
 
@@ -438,7 +438,7 @@ void main() {
     });
 
     test('isRunningService', () async {
-      platformChannel.platform = FakePlatform(operatingSystem: platform);
+      platformChannel.platform = platform;
 
       _init(dummyData);
       expect(await _isRunningService, false);
