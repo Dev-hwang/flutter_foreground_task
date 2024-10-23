@@ -133,7 +133,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
         break;
       case 'onReceiveData':
         dynamic data = call.arguments;
-        if (data is List || data is Map) {
+        if (data is List || data is Map || data is Set) {
           try {
             data = jsonDecode(jsonEncode(data));
           } catch (e, s) {
