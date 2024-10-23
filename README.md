@@ -31,7 +31,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.10.4
+  flutter_foreground_task: ^8.11.0
 ```
 
 After adding the plugin to your flutter project, we need to declare the platform-specific permissions ans service to use for this plugin to work properly.

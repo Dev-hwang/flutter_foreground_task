@@ -1,3 +1,7 @@
+## 8.11.0
+
+* [**FEAT**] Allow sending Set collection using `FlutterForegroundTask.sendDataToMain`
+
 ## 8.10.4
 
 * [**FIX**] Fixed an issue where main function was called repeatedly when there was no callback to start
