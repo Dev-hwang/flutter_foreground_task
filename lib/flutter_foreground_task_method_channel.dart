@@ -8,12 +8,12 @@ import 'package:flutter/widgets.dart';
 import 'package:platform/platform.dart';
 
 import 'flutter_foreground_task_platform_interface.dart';
-import 'models/android_notification_options.dart';
 import 'models/foreground_task_options.dart';
-import 'models/ios_notification_options.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon_data.dart';
+import 'models/notification_options.dart';
 import 'models/notification_permission.dart';
+import 'models/service_options.dart';
 import 'task_handler.dart';
 
 /// An implementation of [FlutterForegroundTaskPlatform] that uses method channels.
@@ -43,25 +43,19 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
-    final Map<String, dynamic> options = {
-      'serviceId': serviceId,
-      if (platform.isAndroid)
-        ...androidNotificationOptions.toJson()
-      else if (platform.isIOS)
-        ...iosNotificationOptions.toJson(),
-      ...foregroundTaskOptions.toJson(),
-      'notificationContentTitle': notificationTitle,
-      'notificationContentText': notificationText,
-      'iconData': notificationIcon?.toJson(),
-      'buttons': notificationButtons?.map((e) => e.toJson()).toList()
-    };
+    final Map<String, dynamic> optionsJson = ServiceStartOptions(
+      serviceId: serviceId,
+      androidNotificationOptions: androidNotificationOptions,
+      iosNotificationOptions: iosNotificationOptions,
+      foregroundTaskOptions: foregroundTaskOptions,
+      notificationContentTitle: notificationTitle,
+      notificationContentText: notificationText,
+      notificationIcon: notificationIcon,
+      notificationButtons: notificationButtons,
+      callback: callback,
+    ).toJson(platform);
 
-    if (callback != null) {
-      options['callbackHandle'] =
-          PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
-    }
-
-    await mMDChannel.invokeMethod('startService', options);
+    await mMDChannel.invokeMethod('startService', optionsJson);
   }
 
   @override
@@ -78,20 +72,16 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
-    final Map<String, dynamic> options = {
-      if (foregroundTaskOptions != null) ...foregroundTaskOptions.toJson(),
-      'notificationContentTitle': notificationTitle,
-      'notificationContentText': notificationText,
-      'iconData': notificationIcon?.toJson(),
-      'buttons': notificationButtons?.map((e) => e.toJson()).toList()
-    };
+    final Map<String, dynamic> optionsJson = ServiceUpdateOptions(
+      foregroundTaskOptions: foregroundTaskOptions,
+      notificationContentTitle: notificationTitle,
+      notificationContentText: notificationText,
+      notificationIcon: notificationIcon,
+      notificationButtons: notificationButtons,
+      callback: callback,
+    ).toJson(platform);
 
-    if (callback != null) {
-      options['callbackHandle'] =
-          PluginUtilities.getCallbackHandle(callback)?.toRawHandle();
-    }
-
-    await mMDChannel.invokeMethod('updateService', options);
+    await mMDChannel.invokeMethod('updateService', optionsJson);
   }
 
   @override

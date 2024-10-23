@@ -1,7 +1,6 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_foreground_task/models/service_options.dart';
 import 'package:platform/platform.dart';
 
 @pragma('vm:entry-point')
@@ -58,32 +57,28 @@ class ServiceDummyData {
         id: 'id_test2', text: 'test2', textColor: Colors.green),
   ];
 
-  Map<String, dynamic> getStartServiceArgs(String platform) {
-    return {
-      'serviceId': serviceId,
-      if (platform == Platform.android)
-        ...androidNotificationOptions.toJson()
-      else if (platform == Platform.iOS)
-        ...iosNotificationOptions.toJson(),
-      ...foregroundTaskOptions.toJson(),
-      'notificationContentTitle': notificationTitle,
-      'notificationContentText': notificationText,
-      'iconData': notificationIcon.toJson(),
-      'buttons': notificationButtons.map((e) => e.toJson()).toList(),
-      'callbackHandle':
-          PluginUtilities.getCallbackHandle(testCallback)?.toRawHandle(),
-    };
+  Map<String, dynamic> getStartServiceArgs(Platform platform) {
+    return ServiceStartOptions(
+      serviceId: serviceId,
+      androidNotificationOptions: androidNotificationOptions,
+      iosNotificationOptions: iosNotificationOptions,
+      foregroundTaskOptions: foregroundTaskOptions,
+      notificationContentTitle: notificationTitle,
+      notificationContentText: notificationText,
+      notificationIcon: notificationIcon,
+      notificationButtons: notificationButtons,
+      callback: testCallback,
+    ).toJson(platform);
   }
 
-  Map<String, dynamic> getUpdateServiceArgs() {
-    return {
-      ...foregroundTaskOptions.toJson(),
-      'notificationContentTitle': notificationTitle,
-      'notificationContentText': notificationText,
-      'iconData': notificationIcon.toJson(),
-      'buttons': notificationButtons.map((e) => e.toJson()).toList(),
-      'callbackHandle':
-          PluginUtilities.getCallbackHandle(testCallback)?.toRawHandle(),
-    };
+  Map<String, dynamic> getUpdateServiceArgs(Platform platform) {
+    return ServiceUpdateOptions(
+      foregroundTaskOptions: foregroundTaskOptions,
+      notificationContentTitle: notificationTitle,
+      notificationContentText: notificationText,
+      notificationIcon: notificationIcon,
+      notificationButtons: notificationButtons,
+      callback: testCallback,
+    ).toJson(platform);
   }
 }
