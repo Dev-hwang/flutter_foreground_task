@@ -322,6 +322,7 @@ class ForegroundService : Service() {
             builder.setContentText(notificationContent.text)
             builder.style = Notification.BigTextStyle()
             builder.setVisibility(notificationOptions.visibility)
+            builder.setOnlyAlertOnce(notificationOptions.onlyAlertOnce)
             if (iconBackgroundColor != null) {
                 builder.setColor(iconBackgroundColor)
             }
@@ -348,6 +349,7 @@ class ForegroundService : Service() {
             builder.setContentText(notificationContent.text)
             builder.setStyle(NotificationCompat.BigTextStyle().bigText(notificationContent.text))
             builder.setVisibility(notificationOptions.visibility)
+            builder.setOnlyAlertOnce(notificationOptions.onlyAlertOnce)
             if (iconBackgroundColor != null) {
                 builder.color = iconBackgroundColor
             }

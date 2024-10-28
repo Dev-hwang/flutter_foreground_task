@@ -29,6 +29,7 @@ object PreferencesKey {
     const val PLAY_SOUND = "playSound"
     const val SHOW_WHEN = "showWhen"
     const val SHOW_BADGE = "showBadge"
+    const val ONLY_ALERT_ONCE = "onlyAlertOnce"
     const val VISIBILITY = "visibility"
 
     // notification content
