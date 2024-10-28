@@ -16,6 +16,7 @@ class AndroidNotificationOptions {
     this.playSound = false,
     this.showWhen = false,
     this.showBadge = false,
+    this.onlyAlertOnce = false,
     this.visibility = NotificationVisibility.VISIBILITY_PUBLIC,
   })  : assert(channelId.isNotEmpty),
         assert(channelName.isNotEmpty);
@@ -70,6 +71,10 @@ class AndroidNotificationOptions {
   /// It is set only once for the first time on Android 8.0+.
   final bool showBadge;
 
+  /// Whether to only alert once when the notification is created.
+  /// The default is `false`.
+  final bool onlyAlertOnce;
+
   /// Control the level of detail displayed in notifications on the lock screen.
   /// The default is `NotificationVisibility.VISIBILITY_PUBLIC`.
   final NotificationVisibility visibility;
@@ -87,6 +92,7 @@ class AndroidNotificationOptions {
       'playSound': playSound,
       'showWhen': showWhen,
       'showBadge': showBadge,
+      'onlyAlertOnce': onlyAlertOnce,
       'visibility': visibility.rawValue,
     };
   }
