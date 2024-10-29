@@ -1,7 +1,7 @@
 import UIKit
 import Flutter
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
@@ -9,15 +9,13 @@ import Flutter
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
     
-    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback(registerPlugins)
+    SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self
     }
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-}
-
-func registerPlugins(registry: FlutterPluginRegistry) {
-  GeneratedPluginRegistrant.register(with: registry)
 }
