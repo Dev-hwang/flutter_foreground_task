@@ -14,8 +14,8 @@ class ServiceDummyData {
     channelId: 'test_channel',
     channelName: 'Test Channel',
     channelDescription: 'Test Channel Description',
-    channelImportance: NotificationChannelImportance.DEFAULT,
-    priority: NotificationPriority.DEFAULT,
+    channelImportance: NotificationChannelImportance.LOW,
+    priority: NotificationPriority.LOW,
     enableVibration: false,
     playSound: false,
     showWhen: false,
@@ -25,7 +25,7 @@ class ServiceDummyData {
 
   final IOSNotificationOptions iosNotificationOptions =
       const IOSNotificationOptions(
-    showNotification: true,
+    showNotification: false,
     playSound: false,
   );
 

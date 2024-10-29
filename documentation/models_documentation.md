@@ -4,18 +4,18 @@
 
 Notification options for Android platform.
 
-| Property             | Description                                                                                                                                                 |
-|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `channelId`          | Unique ID of the notification channel. It is set only once for the first time on Android 8.0+.                                                              |
-| `channelName`        | The name of the notification channel. It is set only once for the first time on Android 8.0+.                                                               |
-| `channelDescription` | The description of the notification channel. It is set only once for the first time on Android 8.0+.                                                        |
-| `channelImportance`  | The importance of the notification channel. The default is `NotificationChannelImportance.DEFAULT`. It is set only once for the first time on Android 8.0+. |
-| `priority`           | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.DEFAULT`.                                                         |
-| `enableVibration`    | Whether to enable vibration when creating notifications. The default is `false`. It is set only once for the first time on Android 8.0+.                    |
-| `playSound`          | Whether to play sound when creating notifications. The default is `false`. It is set only once for the first time on Android 8.0+.                          |
-| `showWhen`           | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                                                |
-| `showBadge`          | Whether to show the badge near the app icon when service is started. The default is `false`. It is set only once for the first time on Android 8.0+.        |
-| `visibility`         | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`.                       |
+| Property             | Description                                                                                                                                             |
+|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `channelId`          | Unique ID of the notification channel. It is set only once for the first time on Android 8.0+.                                                          |
+| `channelName`        | The name of the notification channel. It is set only once for the first time on Android 8.0+.                                                           |
+| `channelDescription` | The description of the notification channel. It is set only once for the first time on Android 8.0+.                                                    |
+| `channelImportance`  | The importance of the notification channel. The default is `NotificationChannelImportance.LOW`. It is set only once for the first time on Android 8.0+. |
+| `priority`           | Priority of notifications for Android 7.1 and lower. The default is `NotificationPriority.LOW`.                                                         |
+| `enableVibration`    | Whether to enable vibration when creating notifications. The default is `false`. It is set only once for the first time on Android 8.0+.                |
+| `playSound`          | Whether to play sound when creating notifications. The default is `false`. It is set only once for the first time on Android 8.0+.                      |
+| `showWhen`           | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                                            |
+| `showBadge`          | Whether to show the badge near the app icon when service is started. The default is `false`. It is set only once for the first time on Android 8.0+.    |
+| `visibility`         | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`.                   |
 
 ### :chicken: IOSNotificationOptions
 
