@@ -113,7 +113,7 @@ class ExamplePage extends StatefulWidget {
 }
 
 class _ExamplePageState extends State<ExamplePage> {
-  final ValueNotifier<Object?> _receivedTaskData = ValueNotifier(null);
+  final ValueNotifier<Object?> _taskDataListenable = ValueNotifier(null);
 
   Future<void> _requestPermissions() async {
     // Android 13+, you need to allow notification permission to display foreground service notification.
@@ -167,6 +167,7 @@ class _ExamplePageState extends State<ExamplePage> {
         channelName: 'Foreground Service Notification',
         channelDescription:
             'This notification appears when the foreground service is running.',
+        onlyAlertOnce: true,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: false,
@@ -205,7 +206,7 @@ class _ExamplePageState extends State<ExamplePage> {
 
   void _onReceiveTaskData(Object data) {
     print('onReceiveTaskData: $data');
-    _receivedTaskData.value = data;
+    _taskDataListenable.value = data;
   }
 
   void _incrementCount() {
@@ -218,9 +219,9 @@ class _ExamplePageState extends State<ExamplePage> {
     // Add a callback to receive data sent from the TaskHandler.
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Request permissions and initialize the service.
-      _requestPermissions();
+      await _requestPermissions();
       _initService();
     });
   }
@@ -229,7 +230,7 @@ class _ExamplePageState extends State<ExamplePage> {
   void dispose() {
     // Remove a callback to receive data sent from the TaskHandler.
     FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
-    _receivedTaskData.dispose();
+    _taskDataListenable.dispose();
     super.dispose();
   }
 
@@ -242,27 +243,33 @@ class _ExamplePageState extends State<ExamplePage> {
     // This widget must be declared above the [Scaffold] widget.
     return WithForegroundTask(
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter Foreground Task'),
-          centerTitle: true,
-        ),
-        body: _buildContentView(),
+        appBar: _buildAppBar(),
+        body: _buildContent(),
       ),
     );
   }
 
-  Widget _buildContentView() {
-    return Column(
-      children: [
-        Expanded(child: _buildCommunicationText()),
-        _buildServiceControlButtons(),
-      ],
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: const Text('Flutter Foreground Task'),
+      centerTitle: true,
+    );
+  }
+
+  Widget _buildContent() {
+    return SafeArea(
+      child: Column(
+        children: [
+          Expanded(child: _buildCommunicationText()),
+          _buildServiceControlButtons(),
+        ],
+      ),
     );
   }
 
   Widget _buildCommunicationText() {
     return ValueListenableBuilder(
-      valueListenable: _receivedTaskData,
+      valueListenable: _taskDataListenable,
       builder: (context, data, _) {
         return Center(
           child: Column(

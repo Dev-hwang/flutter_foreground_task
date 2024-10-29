@@ -15,6 +15,7 @@ Notification options for Android platform.
 | `playSound`          | Whether to play sound when creating notifications. The default is `false`. It is set only once for the first time on Android 8.0+.                      |
 | `showWhen`           | Whether to show the timestamp when the notification was created in the content view. The default is `false`.                                            |
 | `showBadge`          | Whether to show the badge near the app icon when service is started. The default is `false`. It is set only once for the first time on Android 8.0+.    |
+| `onlyAlertOnce`      | Whether to only alert once when the notification is created. The default is `false`.                                                                    |
 | `visibility`         | Control the level of detail displayed in notifications on the lock screen. The default is `NotificationVisibility.VISIBILITY_PUBLIC`.                   |
 
 ### :chicken: IOSNotificationOptions

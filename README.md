@@ -113,10 +113,10 @@ Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
 #import "AppDelegate.h"
 #import "GeneratedPluginRegistrant.h"
 
-// here
+// this
 #import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
 
-// here
+// this
 void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
   [GeneratedPluginRegistrant registerWithRegistry:registry];
 }
@@ -127,7 +127,7 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [GeneratedPluginRegistrant registerWithRegistry:self];
 
-  // here
+  // this
   [FlutterForegroundTaskPlugin setPluginRegistrantCallback:registerPlugins];
   if (@available(iOS 10.0, *)) {
     [UNUserNotificationCenter currentNotificationCenter].delegate = (id<UNUserNotificationCenterDelegate>) self;
@@ -153,7 +153,7 @@ Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
 import UIKit
 import Flutter
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
@@ -161,7 +161,7 @@ import Flutter
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
-    // here
+    // this
     SwiftFlutterForegroundTaskPlugin.setPluginRegistrantCallback { registry in
       GeneratedPluginRegistrant.register(with: registry)
     }
@@ -234,25 +234,6 @@ class MyTaskHandler extends TaskHandler {
   void onNotificationButtonPressed(String id) {
     print('onNotificationButtonPressed: $id');
   }
-
-  // Called when the notification itself is pressed.
-  //
-  // AOS: "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
-  // for this function to be called.
-  @override
-  void onNotificationPressed() {
-    FlutterForegroundTask.launchApp('/');
-    print('onNotificationPressed');
-  }
-
-  // Called when the notification itself is dismissed.
-  //
-  // AOS: only work Android 14+
-  // iOS: only work iOS 10+
-  @override
-  void onNotificationDismissed() {
-    print('onNotificationDismissed');
-  }
 }
 ```
 
@@ -299,19 +280,6 @@ Future<void> _requestPermissions() async {
   }
 
   if (Platform.isAndroid) {
-    // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-    // onNotificationPressed function to be called.
-    //
-    // When the notification is pressed while permission is denied,
-    // the onNotificationPressed function is not called and the app opens.
-    //
-    // If you do not use the onNotificationPressed or launchApp function,
-    // you do not need to write this code.
-    if (!await FlutterForegroundTask.canDrawOverlays) {
-      // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
-      await FlutterForegroundTask.openSystemAlertWindowSettings();
-    }
-
     // Android 12+, there are restrictions on starting a foreground service.
     //
     // To restart the service on device reboot or unexpected problem, you need to allow below permission.
@@ -340,6 +308,7 @@ void _initService() {
       channelName: 'Foreground Service Notification',
       channelDescription:
           'This notification appears when the foreground service is running.',
+      onlyAlertOnce: true,
     ),
     iosNotificationOptions: const IOSNotificationOptions(
       showNotification: false,
@@ -361,9 +330,9 @@ void initState() {
   // Add a callback to receive data sent from the TaskHandler.
   FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
     // Request permissions and initialize the service.
-    _requestPermissions();
+    await _requestPermissions();
     _initService();
   });
 }
@@ -432,7 +401,7 @@ class FirstTaskHandler extends TaskHandler {
       );
     } else {
       FlutterForegroundTask.updateService(
-        notificationTitle: 'FirstTask',
+        notificationTitle: 'Hello FirstTaskHandler :)',
         notificationText: timestamp.toString(),
       );
 
@@ -464,7 +433,7 @@ class SecondTaskHandler extends TaskHandler {
   @override
   void onRepeatEvent(DateTime timestamp) {
     FlutterForegroundTask.updateService(
-      notificationTitle: 'SecondTask',
+      notificationTitle: 'Hello SecondTaskHandler :)',
       notificationText: timestamp.toString(),
     );
 
@@ -583,6 +552,7 @@ class MyTaskHandler extends TaskHandler {
 * [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service) (Recommend)
 * [`location_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/location_service)
 * [`record_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/record_service)
+* [`geofencing_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/geofencing_service)
 
 ## More Documentation
 
