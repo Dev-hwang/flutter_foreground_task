@@ -26,8 +26,8 @@ data class NotificationOptions(
             val channelId = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_ID, null) ?: "foreground_service"
             val channelName = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_NAME, null) ?: "Foreground Service"
             val channelDesc = prefs.getString(PrefsKey.NOTIFICATION_CHANNEL_DESC, null)
-            val channelImportance = prefs.getInt(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, 3)
-            val priority = prefs.getInt(PrefsKey.NOTIFICATION_PRIORITY, 0)
+            val channelImportance = prefs.getInt(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE, 2)
+            val priority = prefs.getInt(PrefsKey.NOTIFICATION_PRIORITY, -1)
             val enableVibration = prefs.getBoolean(PrefsKey.ENABLE_VIBRATION, false)
             val playSound = prefs.getBoolean(PrefsKey.PLAY_SOUND, false)
             val showWhen = prefs.getBoolean(PrefsKey.SHOW_WHEN, false)
@@ -61,8 +61,8 @@ data class NotificationOptions(
             val channelId = map?.get(PrefsKey.NOTIFICATION_CHANNEL_ID) as? String
             val channelName = map?.get(PrefsKey.NOTIFICATION_CHANNEL_NAME) as? String
             val channelDesc = map?.get(PrefsKey.NOTIFICATION_CHANNEL_DESC) as? String
-            val channelImportance = map?.get(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE) as? Int ?: 3
-            val priority = map?.get(PrefsKey.NOTIFICATION_PRIORITY) as? Int ?: 0
+            val channelImportance = map?.get(PrefsKey.NOTIFICATION_CHANNEL_IMPORTANCE) as? Int ?: 2
+            val priority = map?.get(PrefsKey.NOTIFICATION_PRIORITY) as? Int ?: -1
             val enableVibration = map?.get(PrefsKey.ENABLE_VIBRATION) as? Boolean ?: false
             val playSound = map?.get(PrefsKey.PLAY_SOUND) as? Boolean ?: false
             val showWhen = map?.get(PrefsKey.SHOW_WHEN) as? Boolean ?: false

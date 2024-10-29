@@ -10,8 +10,8 @@ class AndroidNotificationOptions {
     required this.channelId,
     required this.channelName,
     this.channelDescription,
-    this.channelImportance = NotificationChannelImportance.DEFAULT,
-    this.priority = NotificationPriority.DEFAULT,
+    this.channelImportance = NotificationChannelImportance.LOW,
+    this.priority = NotificationPriority.LOW,
     this.enableVibration = false,
     this.playSound = false,
     this.showWhen = false,
@@ -40,13 +40,13 @@ class AndroidNotificationOptions {
   final String? channelDescription;
 
   /// The importance of the notification channel.
-  /// The default is `NotificationChannelImportance.DEFAULT`.
+  /// The default is `NotificationChannelImportance.LOW`.
   ///
   /// It is set only once for the first time on Android 8.0+.
   final NotificationChannelImportance channelImportance;
 
   /// Priority of notifications for Android 7.1 and lower.
-  /// The default is `NotificationPriority.DEFAULT`.
+  /// The default is `NotificationPriority.LOW`.
   final NotificationPriority priority;
 
   /// Whether to enable vibration when creating notifications.
