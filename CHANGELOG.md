@@ -1,3 +1,8 @@
+## 8.12.0
+
+* [**FEAT**] Add `setOnlyAlertOnce` option to AndroidNotificationOptions [pr-#287](https://github.com/Dev-hwang/flutter_foreground_task/pull/287)
+* [**CHANGE**] Change notification channel importance from `DEFAULT` to `LOW`
+
 ## 8.11.0
 
 * [**FEAT**] Allow sending Set collection using `FlutterForegroundTask.sendDataToMain`
