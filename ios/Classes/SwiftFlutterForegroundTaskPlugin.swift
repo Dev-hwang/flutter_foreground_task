@@ -85,12 +85,22 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   
   // ================== App Lifecycle ===================
   public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
-    SwiftFlutterForegroundTaskPlugin.registerAppRefresh()
+    UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
+    if #available(iOS 13.0, *) {
+      SwiftFlutterForegroundTaskPlugin.registerAppRefresh()
+    }
+    return true
+  }
+  
+  public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
+    completionHandler(.newData)
     return true
   }
   
   public func applicationDidEnterBackground(_ application: UIApplication) {
-    SwiftFlutterForegroundTaskPlugin.scheduleAppRefresh()
+    if #available(iOS 13.0, *) {
+      SwiftFlutterForegroundTaskPlugin.scheduleAppRefresh()
+    }
   }
   
   public func applicationWillTerminate(_ application: UIApplication) {
@@ -123,12 +133,14 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   // ============== Background App Refresh ==============
   public static var refreshIdentifier: String = "com.pravera.flutter_foreground_task.refresh"
 
+  @available(iOS 13.0, *)
   private static func registerAppRefresh() {
     BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshIdentifier, using: nil) { task in
       handleAppRefresh(task: task as! BGAppRefreshTask)
     }
   }
   
+  @available(iOS 13.0, *)
   private static func scheduleAppRefresh() {
     let request = BGAppRefreshTaskRequest(identifier: refreshIdentifier)
     request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
@@ -140,10 +152,12 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     }
   }
   
+  @available(iOS 13.0, *)
   private static func cancelAppRefresh() {
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshIdentifier)
   }
   
+  @available(iOS 13.0, *)
   private static func handleAppRefresh(task: BGAppRefreshTask) {
     let queue = OperationQueue()
     let operation = AppRefreshOperation()
