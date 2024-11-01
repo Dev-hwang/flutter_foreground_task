@@ -19,7 +19,7 @@ This plugin is used to implement a foreground service on the Android platform.
 - Flutter: `3.10.0+`
 - Dart: `3.0.0+`
 - Android: `5.0+ (minSdkVersion: 21)`
-- iOS: `13.0+`
+- iOS: `12.0+`
 
 ## Structure
 
@@ -31,7 +31,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.12.0
+  flutter_foreground_task: ^8.13.0
 ```
 
 After adding the plugin to your flutter project, we need to declare the platform-specific permissions ans service to use for this plugin to work properly.

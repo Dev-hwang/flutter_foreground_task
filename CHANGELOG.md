@@ -1,3 +1,7 @@
+## 8.13.0
+
+* [**CHORE**] Downgrade iOS minimumVersion from 13.0 to 12.0
+
 ## 8.12.0
 
 * [**FEAT**] Add `setOnlyAlertOnce` option to AndroidNotificationOptions [pr-#287](https://github.com/Dev-hwang/flutter_foreground_task/pull/287)
@@ -33,7 +37,7 @@
   - `.developer`: The task has been started by the developer (startService, restartService, updateService)
   - `.system`: The task has been started by the system (reboot, app-updates, AlarmManager-restart)
 * [**FEAT-iOS**] Allow background app refresh
-  - Bump iOS minimumVersion to 13.0
+  - ~~Bump iOS minimumVersion to 13.0~~
   - You need to add `BGTaskSchedulerPermittedIdentifiers` key in `ios/Runner/info.plist` file
   - Check [Getting started-iOS](https://pub.dev/packages/flutter_foreground_task#baby_chick-ios) for more details
 
