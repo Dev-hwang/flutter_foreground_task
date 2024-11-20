@@ -399,18 +399,19 @@ class FirstTaskHandler extends TaskHandler {
         ),
         callback: updateCallback,
       );
-    } else {
-      FlutterForegroundTask.updateService(
-        notificationTitle: 'Hello FirstTaskHandler :)',
-        notificationText: timestamp.toString(),
-      );
-
-      // Send data to main isolate.
-      final Map<String, dynamic> data = {
-        "timestampMillis": timestamp.millisecondsSinceEpoch,
-      };
-      FlutterForegroundTask.sendDataToMain(data);
+      return;
     }
+    
+    FlutterForegroundTask.updateService(
+      notificationTitle: 'Hello FirstTaskHandler :)',
+      notificationText: timestamp.toString(),
+    );
+
+    // Send data to main isolate.
+    final Map<String, dynamic> data = {
+      "timestampMillis": timestamp.millisecondsSinceEpoch,
+    };
+    FlutterForegroundTask.sendDataToMain(data);
   }
 
   @override
@@ -549,10 +550,20 @@ class MyTaskHandler extends TaskHandler {
 
 ### :hatched_chick: other example
 
-* [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service) (Recommend)
-* [`location_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/location_service)
-* [`record_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/record_service)
-* [`geofencing_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/geofencing_service)
+#### [`internal_plugin_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/internal_plugin_service)
+An example of using the platform channel in project with `flutter_foreground_task`.
+
+#### [`location_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/location_service)
+An example of a background location service implementation using `flutter_foreground_task` and `fl_location`.
+
+#### [`record_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/record_service)
+An example of a voice record service implementation using `flutter_foreground_task` and `record`.
+
+#### [`geofencing_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/geofencing_service)
+An example of a background geofencing service implementation using `flutter_foreground_task` and `geofencing_api`.
+
+#### [`pedometer_service`](https://github.com/Dev-hwang/flutter_foreground_task_example/tree/main/pedometer_service)
+An example of a pedometer service implementation using `flutter_foreground_task` and `pedometer`.
 
 ## More Documentation
 
