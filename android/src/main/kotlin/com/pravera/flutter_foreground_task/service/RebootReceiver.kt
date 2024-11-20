@@ -33,7 +33,8 @@ class RebootReceiver : BroadcastReceiver() {
         val options = ForegroundTaskOptions.getData(context)
 
         // Check whether to start the service at boot intent.
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED && options.autoRunOnBoot) {
+        if ((intent.action == Intent.ACTION_BOOT_COMPLETED ||
+                intent.action == "android.intent.action.QUICKBOOT_POWERON") && options.autoRunOnBoot) {
             return startForegroundService(context)
         }
 
