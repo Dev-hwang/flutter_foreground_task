@@ -1,6 +1,10 @@
+## 8.14.0
+
+* [**FEAT**] Support quickboot for HTC devices
+
 ## 8.13.0
 
-* [**CHORE**] Downgrade iOS minimumVersion from 13.0 to 12.0
+* [**CHORE**] Downgrade iOS minimumVersion from `13.0` to `12.0`
 
 ## 8.12.0
 
@@ -9,7 +13,7 @@
 
 ## 8.11.0
 
-* [**FEAT**] Allow sending Set collection using `FlutterForegroundTask.sendDataToMain`
+* [**FEAT**] Allow sending `Set` collection using `FlutterForegroundTask.sendDataToMain`
 
 ## 8.10.4
 
