@@ -67,7 +67,6 @@ void main() {
 
     test('startService', () async {
       platformChannel.platform = platform;
-      FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
 
@@ -103,19 +102,6 @@ void main() {
       final ServiceRequestResult result2 = await _startService(dummyData);
       expect(result2.success, false);
       expect(result2.error, isA<ServiceAlreadyStartedException>());
-    });
-
-    test('startService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = platform;
-
-      _init(dummyData);
-
-      // set test
-      methodCallHandler.timeoutTest = true;
-
-      final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceTimeoutException>());
     });
 
     test('restartService', () async {
@@ -175,7 +161,6 @@ void main() {
 
     test('stopService', () async {
       platformChannel.platform = platform;
-      FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
 
@@ -198,23 +183,6 @@ void main() {
       final ServiceRequestResult result = await _stopService();
       expect(result.success, false);
       expect(result.error, isA<ServiceNotStartedException>());
-    });
-
-    test('stopService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = platform;
-
-      _init(dummyData);
-
-      final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
-
-      // set test
-      methodCallHandler.timeoutTest = true;
-
-      final ServiceRequestResult result2 = await _stopService();
-      expect(result2.success, false);
-      expect(result2.error, isA<ServiceTimeoutException>());
     });
 
     test('isRunningService', () async {
@@ -287,7 +255,6 @@ void main() {
 
     test('startService', () async {
       platformChannel.platform = platform;
-      FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
 
@@ -323,19 +290,6 @@ void main() {
       final ServiceRequestResult result2 = await _startService(dummyData);
       expect(result2.success, false);
       expect(result2.error, isA<ServiceAlreadyStartedException>());
-    });
-
-    test('startService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = platform;
-
-      _init(dummyData);
-
-      // set test
-      methodCallHandler.timeoutTest = true;
-
-      final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceTimeoutException>());
     });
 
     test('restartService', () async {
@@ -395,7 +349,6 @@ void main() {
 
     test('stopService', () async {
       platformChannel.platform = platform;
-      FlutterForegroundTask.skipServiceResponseCheck = true;
 
       _init(dummyData);
 
@@ -418,23 +371,6 @@ void main() {
       final ServiceRequestResult result = await _stopService();
       expect(result.success, false);
       expect(result.error, isA<ServiceNotStartedException>());
-    });
-
-    test('stopService (error: ServiceTimeoutException)', () async {
-      platformChannel.platform = platform;
-
-      _init(dummyData);
-
-      final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
-
-      // set test
-      methodCallHandler.timeoutTest = true;
-
-      final ServiceRequestResult result2 = await _stopService();
-      expect(result2.success, false);
-      expect(result2.error, isA<ServiceTimeoutException>());
     });
 
     test('isRunningService', () async {
@@ -559,8 +495,6 @@ class ServiceApiMethodCallHandler {
 
   final List<MethodCall> log = [];
 
-  bool timeoutTest = false;
-
   bool _isRunningService = false;
 
   // unimplemented: throw UnimplementedError
@@ -579,24 +513,16 @@ class ServiceApiMethodCallHandler {
     log.add(methodCall);
 
     if (method == ServiceApiMethod.startService) {
-      if (!timeoutTest) {
-        _isRunningService = true;
-      }
+      _isRunningService = true;
       return Future.value();
     } else if (method == ServiceApiMethod.restartService) {
-      if (!timeoutTest) {
-        _isRunningService = true;
-      }
+      _isRunningService = true;
       return Future.value();
     } else if (method == ServiceApiMethod.updateService) {
-      if (!timeoutTest) {
-        _isRunningService = true;
-      }
+      _isRunningService = true;
       return Future.value();
     } else if (method == ServiceApiMethod.stopService) {
-      if (!timeoutTest) {
-        _isRunningService = false;
-      }
+      _isRunningService = false;
       return Future.value();
     } else if (method == ServiceApiMethod.isRunningService) {
       return _isRunningService;

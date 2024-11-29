@@ -22,6 +22,9 @@ import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import com.pravera.flutter_foreground_task.utils.PluginUtils
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.util.*
 
 /**
@@ -40,15 +43,17 @@ class ForegroundService : Service() {
         private const val ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
         private const val INTENT_DATA_FIELD_NAME = "data"
 
-        /** Returns whether the foreground service is running. */
-        var isRunningService = false
-            private set
+        private val _isRunningServiceState = MutableStateFlow(false)
+        val isRunningServiceState = _isRunningServiceState.asStateFlow()
+
+        private val _lastCommandId = MutableStateFlow("")
+        val lastCommandId = _lastCommandId.asStateFlow()
 
         private var foregroundTask: ForegroundTask? = null
         private var taskLifecycleListeners = ForegroundTaskLifecycleListeners()
 
         fun sendData(data: Any?) {
-            if (isRunningService) {
+            if (isRunningServiceState.value) {
                 foregroundTask?.invokeMethod(ACTION_RECEIVE_DATA, data)
             }
         }
@@ -151,6 +156,11 @@ class ForegroundService : Service() {
             }
         }
 
+        val commandId = intent?.getStringExtra("commandId")
+        if (commandId != null) {
+            _lastCommandId.update { it }
+        }
+
         return if (isSetStopWithTaskFlag) {
             START_NOT_STICKY
         } else {
@@ -247,14 +257,15 @@ class ForegroundService : Service() {
         releaseLockMode()
         acquireLockMode()
 
-        isRunningService = true
+        _isRunningServiceState.update { true }
     }
 
     private fun stopForegroundService() {
         releaseLockMode()
         stopForeground(true)
         stopSelf()
-        isRunningService = false
+
+        _isRunningServiceState.update { false }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -477,25 +488,25 @@ class ForegroundService : Service() {
 
     private fun getPendingIntent(): PendingIntent {
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || PluginUtils.canDrawOverlays(applicationContext)) {
-            val pIntent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
+            val intent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
                 setPackage(packageName)
             }
             PendingIntent.getBroadcast(
-                this, RequestCode.NOTIFICATION_PRESSED_BROADCAST, pIntent, PendingIntent.FLAG_IMMUTABLE)
+                this, RequestCode.NOTIFICATION_PRESSED_BROADCAST, intent, PendingIntent.FLAG_IMMUTABLE)
         } else {
             val pm = applicationContext.packageManager
-            val lIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
+            val intent = pm.getLaunchIntentForPackage(applicationContext.packageName)
             PendingIntent.getActivity(
-                this, RequestCode.NOTIFICATION_PRESSED, lIntent, PendingIntent.FLAG_IMMUTABLE)
+                this, RequestCode.NOTIFICATION_PRESSED, intent, PendingIntent.FLAG_IMMUTABLE)
         }
     }
 
     private fun getDeletePendingIntent(): PendingIntent {
-        val dIntent = Intent(ACTION_NOTIFICATION_DISMISSED).apply {
+        val intent = Intent(ACTION_NOTIFICATION_DISMISSED).apply {
             setPackage(packageName)
         }
         return PendingIntent.getBroadcast(
-            this, RequestCode.NOTIFICATION_DISMISSED_BROADCAST, dIntent, PendingIntent.FLAG_IMMUTABLE)
+            this, RequestCode.NOTIFICATION_DISMISSED_BROADCAST, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     private fun getRgbColor(rgb: String): Int? {

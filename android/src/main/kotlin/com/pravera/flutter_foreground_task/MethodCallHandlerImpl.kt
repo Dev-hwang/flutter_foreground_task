@@ -6,6 +6,7 @@ import android.content.Intent
 
 import com.pravera.flutter_foreground_task.errors.ActivityNotAttachedException
 import com.pravera.flutter_foreground_task.models.NotificationPermission
+import com.pravera.flutter_foreground_task.service.ForegroundServiceRequestResultCallback
 import com.pravera.flutter_foreground_task.service.NotificationPermissionCallback
 import com.pravera.flutter_foreground_task.service.ServiceProvider
 import com.pravera.flutter_foreground_task.utils.ErrorHandleUtils
@@ -54,23 +55,29 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
                 }
 
                 "startService" -> {
-                    provider.getForegroundServiceManager().start(context, args)
-                    result.success(true)
+                    provider.getForegroundServiceManager().start(
+                            context,
+                            options = args as? Map<*, *>,
+                            callback = buildServiceRequestResultCallback(result))
                 }
 
                 "restartService" -> {
-                    provider.getForegroundServiceManager().restart(context)
-                    result.success(true)
+                    provider.getForegroundServiceManager().restart(
+                            context,
+                            callback = buildServiceRequestResultCallback(result))
                 }
 
                 "updateService" -> {
-                    provider.getForegroundServiceManager().update(context, args)
-                    result.success(true)
+                    provider.getForegroundServiceManager().update(
+                            context,
+                            options = args as? Map<*, *>,
+                            callback = buildServiceRequestResultCallback(result))
                 }
 
                 "stopService" -> {
-                    provider.getForegroundServiceManager().stop(context)
-                    result.success(true)
+                    provider.getForegroundServiceManager().stop(
+                            context,
+                            callback = buildServiceRequestResultCallback(result))
                 }
 
                 "sendData" -> provider.getForegroundServiceManager().sendData(args)
@@ -188,5 +195,17 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
             throw ActivityNotAttachedException()
         }
         return activity!!
+    }
+
+    private fun buildServiceRequestResultCallback(result: MethodChannel.Result): ForegroundServiceRequestResultCallback {
+        return object : ForegroundServiceRequestResultCallback {
+            override fun onSuccess() {
+                result.success(true)
+            }
+
+            override fun onError(exception: Exception) {
+                ErrorHandleUtils.handleMethodCallError(result, exception)
+            }
+        }
     }
 }
