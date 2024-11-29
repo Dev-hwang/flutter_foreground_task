@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:flutter_foreground_task/utils/color_extension.dart';
+
 /// The button to display in the notification.
 class NotificationButton {
   /// Constructs an instance of [NotificationButton].
@@ -21,10 +23,7 @@ class NotificationButton {
 
   /// Returns the data fields of [NotificationButton] in JSON format.
   Map<String, dynamic> toJson() {
-    String? textColorRgb;
-    if (textColor != null) {
-      textColorRgb = '${textColor!.red},${textColor!.green},${textColor!.blue}';
-    }
+    final String? textColorRgb = textColor?.toRgbString;
 
     return {
       'id': id,

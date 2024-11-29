@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:flutter_foreground_task/utils/color_extension.dart';
+
 /// The resource type of the notification icon.
 enum ResourceType {
   /// A resources in the drawable folder.
@@ -48,11 +50,7 @@ class NotificationIconData {
 
   /// Returns the data fields of [NotificationIconData] in JSON format.
   Map<String, dynamic> toJson() {
-    String? backgroundColorRgb;
-    if (backgroundColor != null) {
-      backgroundColorRgb =
-          '${backgroundColor!.red},${backgroundColor!.green},${backgroundColor!.blue}';
-    }
+    final String? backgroundColorRgb = backgroundColor?.toRgbString;
 
     return {
       'resType': resType.toString().split('.').last,

@@ -9,10 +9,7 @@ class WithForegroundTask extends StatefulWidget {
   /// A child widget that contains the [Scaffold] widget.
   final Widget child;
 
-  const WithForegroundTask({
-    Key? key,
-    required this.child,
-  }) : super(key: key);
+  const WithForegroundTask({super.key, required this.child});
 
   @override
   State<StatefulWidget> createState() => _WithForegroundTaskState();

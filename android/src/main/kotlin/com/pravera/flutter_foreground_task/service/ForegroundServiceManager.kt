@@ -21,7 +21,7 @@ import com.pravera.flutter_foreground_task.models.NotificationOptions
 class ForegroundServiceManager {
 	/** Start the foreground service. */
 	fun start(context: Context, arguments: Any?) {
-		if (ForegroundService.isRunningService) {
+		if (isRunningService()) {
 			throw ServiceAlreadyStartedException()
 		}
 
@@ -37,7 +37,7 @@ class ForegroundServiceManager {
 
 	/** Restart the foreground service. */
 	fun restart(context: Context) {
-		if (!ForegroundService.isRunningService) {
+		if (!isRunningService()) {
 			throw ServiceNotStartedException()
 		}
 
@@ -48,7 +48,7 @@ class ForegroundServiceManager {
 
 	/** Update the foreground service. */
 	fun update(context: Context, arguments: Any?) {
-		if (!ForegroundService.isRunningService) {
+		if (!isRunningService()) {
 			throw ServiceNotStartedException()
 		}
 
@@ -63,7 +63,7 @@ class ForegroundServiceManager {
 
 	/** Stop the foreground service. */
 	fun stop(context: Context) {
-		if (!ForegroundService.isRunningService) {
+		if (!isRunningService()) {
 			throw ServiceNotStartedException()
 		}
 
@@ -84,5 +84,5 @@ class ForegroundServiceManager {
 	}
 
 	/** Returns whether the foreground service is running. */
-	fun isRunningService(): Boolean = ForegroundService.isRunningService
+	fun isRunningService(): Boolean = ForegroundService.isRunningServiceState.value
 }

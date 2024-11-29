@@ -22,6 +22,9 @@ import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
 import com.pravera.flutter_foreground_task.utils.PluginUtils
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.util.*
 
 /**
@@ -40,15 +43,14 @@ class ForegroundService : Service() {
         private const val ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
         private const val INTENT_DATA_FIELD_NAME = "data"
 
-        /** Returns whether the foreground service is running. */
-        var isRunningService = false
-            private set
+        private val _isRunningServiceState = MutableStateFlow(false)
+        val isRunningServiceState = _isRunningServiceState.asStateFlow()
 
         private var foregroundTask: ForegroundTask? = null
         private var taskLifecycleListeners = ForegroundTaskLifecycleListeners()
 
         fun sendData(data: Any?) {
-            if (isRunningService) {
+            if (isRunningServiceState.value) {
                 foregroundTask?.invokeMethod(ACTION_RECEIVE_DATA, data)
             }
         }
@@ -247,14 +249,15 @@ class ForegroundService : Service() {
         releaseLockMode()
         acquireLockMode()
 
-        isRunningService = true
+        _isRunningServiceState.update { true }
     }
 
     private fun stopForegroundService() {
         releaseLockMode()
         stopForeground(true)
         stopSelf()
-        isRunningService = false
+
+        _isRunningServiceState.update { false }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -17,6 +17,7 @@ import 'models/notification_options.dart';
 import 'models/notification_permission.dart';
 import 'models/service_request_result.dart';
 import 'task_handler.dart';
+import 'utils/utility.dart';
 
 export 'errors/service_already_started_exception.dart';
 export 'errors/service_not_initialized_exception.dart';
@@ -101,11 +102,11 @@ class FlutterForegroundTask {
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
-    if (!isInitialized) {
-      return ServiceRequestResult.error(ServiceNotInitializedException());
-    }
-
     try {
+      if (!isInitialized) {
+        throw ServiceNotInitializedException();
+      }
+
       if (await isRunningService) {
         throw ServiceAlreadyStartedException();
       }
@@ -123,25 +124,7 @@ class FlutterForegroundTask {
       );
 
       if (!skipServiceResponseCheck) {
-        final Stopwatch stopwatch = Stopwatch()..start();
-        bool isStarted = false;
-        await Future.doWhile(() async {
-          isStarted = await isRunningService;
-
-          // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
-          // ref: https://developer.android.com/guide/components/services#StartingAService
-          if (isStarted || stopwatch.elapsedMilliseconds > 5 * 1000) {
-            return false;
-          } else {
-            await Future.delayed(const Duration(milliseconds: 100));
-            return true;
-          }
-        });
-
-        // no response :(
-        if (!isStarted) {
-          throw ServiceTimeoutException();
-        }
+        await checkServiceStateChange(target: true);
       }
 
       return ServiceRequestResult.success();
@@ -204,30 +187,28 @@ class FlutterForegroundTask {
       await _platform.stopService();
 
       if (!skipServiceResponseCheck) {
-        final Stopwatch stopwatch = Stopwatch()..start();
-        bool isStopped = false;
-        await Future.doWhile(() async {
-          isStopped = !(await isRunningService);
-
-          // official doc: Once the service has been created, the service must call its startForeground() method within five seconds.
-          // ref: https://developer.android.com/guide/components/services#StartingAService
-          if (isStopped || stopwatch.elapsedMilliseconds > 5 * 1000) {
-            return false;
-          } else {
-            await Future.delayed(const Duration(milliseconds: 100));
-            return true;
-          }
-        });
-
-        // no response :(
-        if (!isStopped) {
-          throw ServiceTimeoutException();
-        }
+        await checkServiceStateChange(target: false);
       }
 
       return ServiceRequestResult.success();
     } catch (error) {
       return ServiceRequestResult.error(error);
+    }
+  }
+
+  @visibleForTesting
+  static Future<void> checkServiceStateChange({required bool target}) async {
+    // official doc: Once the service has been created, the service must call its startForeground() method within 5 seconds.
+    // ref: https://developer.android.com/guide/components/services#StartingAService
+    final bool isCompleted = await Utility.instance.completedWithinDeadline(
+      deadline: const Duration(seconds: 5),
+      future: () async {
+        return target == await isRunningService;
+      },
+    );
+
+    if (!isCompleted) {
+      throw ServiceTimeoutException();
     }
   }
 
