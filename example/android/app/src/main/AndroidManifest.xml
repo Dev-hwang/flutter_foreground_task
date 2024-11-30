@@ -46,6 +46,14 @@
             android:foregroundServiceType="dataSync|remoteMessaging"
             android:exported="false" />
 
+        <!-- Custom notification icon. -->
+        <meta-data
+            android:name="com.your_package.service.HOME_ICON"
+            android:resource="@drawable/ic_home" />
+        <meta-data
+            android:name="com.your_package.service.HEART_ICON"
+            android:resource="@drawable/ic_heart" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

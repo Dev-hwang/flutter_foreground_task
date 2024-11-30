@@ -4,7 +4,7 @@ import 'package:platform/platform.dart';
 
 import 'foreground_task_options.dart';
 import 'notification_button.dart';
-import 'notification_icon_data.dart';
+import 'notification_icon.dart';
 import 'notification_options.dart';
 
 class ServiceStartOptions {
@@ -26,7 +26,7 @@ class ServiceStartOptions {
   final ForegroundTaskOptions foregroundTaskOptions;
   final String notificationContentTitle;
   final String notificationContentText;
-  final NotificationIconData? notificationIcon;
+  final NotificationIcon? notificationIcon;
   final List<NotificationButton>? notificationButtons;
   final Function? callback;
 
@@ -36,7 +36,7 @@ class ServiceStartOptions {
       ...foregroundTaskOptions.toJson(),
       'notificationContentTitle': notificationContentTitle,
       'notificationContentText': notificationContentText,
-      'iconData': notificationIcon?.toJson(),
+      'icon': notificationIcon?.toJson(),
       'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
     };
 
@@ -68,7 +68,7 @@ class ServiceUpdateOptions {
   final ForegroundTaskOptions? foregroundTaskOptions;
   final String? notificationContentTitle;
   final String? notificationContentText;
-  final NotificationIconData? notificationIcon;
+  final NotificationIcon? notificationIcon;
   final List<NotificationButton>? notificationButtons;
   final Function? callback;
 
@@ -76,7 +76,7 @@ class ServiceUpdateOptions {
     final Map<String, dynamic> json = {
       'notificationContentTitle': notificationContentTitle,
       'notificationContentText': notificationContentText,
-      'iconData': notificationIcon?.toJson(),
+      'icon': notificationIcon?.toJson(),
       'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
     };
 

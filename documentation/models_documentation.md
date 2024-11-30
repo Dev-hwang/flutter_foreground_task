@@ -49,33 +49,14 @@ A class that defines the action of onRepeatEvent in `TaskHandler`.
 | `once()`           | Call onRepeatEvent only once.                  |
 | `repeat(interval)` | Call onRepeatEvent at milliseconds `interval`. |
 
-### :chicken: NotificationIconData
+### :chicken: NotificationIcon
 
-Data for setting the notification icon.
+A data class for dynamically changing the notification icon.
 
-| Property    | Description                                                                                                                                                                                         |
-|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `resType`   | The resource type of the notification icon. If the resource is in the drawable folder, set it to `ResourceType.drawable`, if the resource is in the mipmap folder, set it to `ResourceType.mipmap`. |
-| `resPrefix` | The resource prefix of the notification icon. If the notification icon name is `ic_simple_notification`, set it to `ResourcePrefix.ic` and set `name` to `simple_notification`.                     |
-| `name`      | Notification icon name without prefix.                                                                                                                                                              |
-
-### :chicken: ResourceType
-
-The resource type of the notification icon.
-
-| Value      | Description                                                                                             |
-|------------|---------------------------------------------------------------------------------------------------------|
-| `drawable` | A resources in the drawable folder. The drawable folder is where all kinds of images are stored.        |
-| `mipmap`   | A resources in the mipmap folder. The mipmap folder is usually where the launcher icon image is stored. |
-
-### :chicken: ResourcePrefix
-
-The resource prefix of the notification icon.
-
-| Value | Description                         |
-|-------|-------------------------------------|
-| `ic`  | A resources with the `ic_` prefix.  |
-| `img` | A resources with the `img_` prefix. |
+| Property          | Description                                                                                    |
+|-------------------|------------------------------------------------------------------------------------------------|
+| `metaDataName`    | The name of the meta-data in the manifest that contains the drawable icon resource identifier. |
+| `backgroundColor` | The background color for the notification icon.                                                |
 
 ### :chicken: NotificationButton
 

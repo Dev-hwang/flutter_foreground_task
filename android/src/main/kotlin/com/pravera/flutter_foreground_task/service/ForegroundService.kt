@@ -8,7 +8,6 @@ import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.net.wifi.WifiManager
 import android.os.*
-import android.os.Build
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -26,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.*
+
 
 /**
  * A service class for implementing foreground service.
@@ -288,9 +288,9 @@ class ForegroundService : Service() {
         val channelId = notificationOptions.channelId
 
         // notification icon
-        val iconData = notificationContent.icon
-        val iconBackgroundColor = iconData?.backgroundColorRgb?.let(::getRgbColor)
-        val iconResId = if (iconData != null) getIconResId(iconData) else getIconResId()
+        val icon = notificationContent.icon
+        val iconResId = getIconResId(icon)
+        val iconBackgroundColor = icon?.backgroundColorRgb?.let(::getRgbColor)
 
         // notification intent
         val pendingIntent = getPendingIntent()
@@ -445,37 +445,28 @@ class ForegroundService : Service() {
         foregroundTask = null
     }
 
-    private fun getIconResId(): Int {
-        return try {
-            val pm = applicationContext.packageManager
-            val appInfo =
-                pm.getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA)
-            appInfo.icon
-        } catch (e: Exception) {
-            Log.e(TAG, "getIconResId", e)
-            0
-        }
-    }
+    private fun getIconResId(icon: NotificationIcon?): Int {
+        try {
+            val packageManager = applicationContext.packageManager
+            val packageName = applicationContext.packageName
+            val appInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
 
-    private fun getIconResId(iconData: NotificationIconData): Int {
-        val resType = iconData.resType
-        val resPrefix = iconData.resPrefix
-        val name = iconData.name
-        if (resType.isEmpty() || resPrefix.isEmpty() || name.isEmpty()) {
+            // application icon
+            if (icon == null) {
+                return appInfo.icon
+            }
+
+            // custom icon
+            val metaData = appInfo.metaData
+            if (metaData != null) {
+                return metaData.getInt(icon.metaDataName)
+            }
+
+            return 0
+        } catch (e: Exception) {
+            Log.e(TAG, "getIconResId($icon)", e)
             return 0
         }
-
-        val resName = if (resPrefix.contains("ic")) {
-            String.format("ic_%s", name)
-        } else {
-            String.format("img_%s", name)
-        }
-
-        return applicationContext.resources.getIdentifier(
-            resName,
-            resType,
-            applicationContext.packageName
-        )
     }
 
     private fun getPendingIntent(): PendingIntent {

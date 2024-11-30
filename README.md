@@ -342,7 +342,7 @@ void initState() {
 * `serviceId`: The unique ID that identifies the service.
 * `notificationTitle`: The title to display in the notification.
 * `notificationText`: The text to display in the notification.
-* `notificationIcon`: The icon to display in the notification. (only work Android)
+* `notificationIcon`: The icon to display in the notification. Go to [this page](./documentation/customize_notification_icon.md) to customize.
 * `notificationButtons`: The buttons to display in the notification. (can add 0~3 buttons)
 * `callback`: A top-level function that calls the setTaskHandler function.
 

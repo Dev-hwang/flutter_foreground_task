@@ -191,6 +191,8 @@ class _ExamplePageState extends State<ExamplePage> {
         serviceId: 256,
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
+        // Please refer to the following document to use a custom notification icon.
+        // https://github.com/Dev-hwang/flutter_foreground_task/blob/master/documentation/customize_notification_icon.md
         notificationIcon: null,
         notificationButtons: [
           const NotificationButton(id: 'btn_hello', text: 'hello'),

@@ -6,10 +6,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 data class NotificationContent(
-    val title: String,
-    val text: String,
-    val icon: NotificationIconData?,
-    val buttons: List<NotificationButton>
+        val title: String,
+        val text: String,
+        val icon: NotificationIcon?,
+        val buttons: List<NotificationButton>
 ) {
     companion object {
         fun getData(context: Context): NotificationContent {
@@ -20,9 +20,9 @@ data class NotificationContent(
             val text = prefs.getString(PrefsKey.NOTIFICATION_CONTENT_TEXT, null) ?: ""
 
             val iconJsonString = prefs.getString(PrefsKey.NOTIFICATION_CONTENT_ICON, null)
-            var icon: NotificationIconData? = null
+            var icon: NotificationIcon? = null
             if (iconJsonString != null) {
-                icon = NotificationIconData.fromJsonString(iconJsonString)
+                icon = NotificationIcon.fromJsonString(iconJsonString)
             }
 
             val buttonsJsonString = prefs.getString(PrefsKey.NOTIFICATION_CONTENT_BUTTONS, null)

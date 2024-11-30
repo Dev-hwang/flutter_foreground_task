@@ -43,10 +43,8 @@ class ServiceDummyData {
 
   final String notificationText = 'test';
 
-  final NotificationIconData notificationIcon = const NotificationIconData(
-    resType: ResourceType.drawable,
-    resPrefix: ResourcePrefix.ic,
-    name: 'test.png',
+  final NotificationIcon notificationIcon = const NotificationIcon(
+    metaDataName: 'test',
     backgroundColor: Colors.orange,
   );
 
