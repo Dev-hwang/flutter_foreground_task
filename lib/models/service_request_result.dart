@@ -1,19 +1,17 @@
-/// Result of service request.
-class ServiceRequestResult {
-  const ServiceRequestResult({
-    required this.success,
-    this.error,
-  });
+/// Represents the result of a service request.
+sealed class ServiceRequestResult {
+  const ServiceRequestResult();
+}
 
-  /// Whether the request was successful.
-  final bool success;
+/// The service request was successful.
+final class ServiceRequestSuccess extends ServiceRequestResult {
+  const ServiceRequestSuccess();
+}
 
-  /// Error when the request failed.
-  final Object? error;
+/// The service request failed.
+final class ServiceRequestFailure extends ServiceRequestResult {
+  const ServiceRequestFailure({required this.error});
 
-  factory ServiceRequestResult.success() =>
-      const ServiceRequestResult(success: true);
-
-  factory ServiceRequestResult.error(Object error) =>
-      ServiceRequestResult(success: false, error: error);
+  /// The error that occurred when the service request failed.
+  final Object error;
 }

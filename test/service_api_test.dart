@@ -72,8 +72,7 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, true);
-      expect(result.error, isNull);
+      expect(result, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(
@@ -87,8 +86,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotInitializedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotInitializedException>(),
+      );
     });
 
     test('startService (error: ServiceAlreadyStartedException)', () async {
@@ -97,12 +99,14 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _startService(dummyData);
-      expect(result2.success, false);
-      expect(result2.error, isA<ServiceAlreadyStartedException>());
+      expect(result2, isA<ServiceRequestFailure>());
+      expect(
+        (result2 as ServiceRequestFailure).error,
+        isA<ServiceAlreadyStartedException>(),
+      );
     });
 
     test('startService (error: ServiceTimeoutException)', () async {
@@ -114,8 +118,11 @@ void main() {
       methodCallHandler.timeoutTest = true;
 
       final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceTimeoutException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceTimeoutException>(),
+      );
     });
 
     test('restartService', () async {
@@ -124,12 +131,10 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _restartService();
-      expect(result2.success, true);
-      expect(result2.error, isNull);
+      expect(result2, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(ServiceApiMethod.restartService, arguments: null),
@@ -140,8 +145,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _restartService();
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotStartedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotStartedException>(),
+      );
     });
 
     test('updateService', () async {
@@ -150,12 +158,10 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _updateService(dummyData);
-      expect(result2.success, true);
-      expect(result2.error, isNull);
+      expect(result2, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(
@@ -169,8 +175,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _updateService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotStartedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotStartedException>(),
+      );
     });
 
     test('stopService', () async {
@@ -180,12 +189,10 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _stopService();
-      expect(result2.success, true);
-      expect(result2.error, isNull);
+      expect(result2, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(ServiceApiMethod.stopService, arguments: null),
@@ -196,8 +203,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _stopService();
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotStartedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotStartedException>(),
+      );
     });
 
     test('stopService (error: ServiceTimeoutException)', () async {
@@ -206,15 +216,17 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       // set test
       methodCallHandler.timeoutTest = true;
 
       final ServiceRequestResult result2 = await _stopService();
-      expect(result2.success, false);
-      expect(result2.error, isA<ServiceTimeoutException>());
+      expect(result2, isA<ServiceRequestFailure>());
+      expect(
+        (result2 as ServiceRequestFailure).error,
+        isA<ServiceTimeoutException>(),
+      );
     });
 
     test('isRunningService', () async {
@@ -292,8 +304,7 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, true);
-      expect(result.error, isNull);
+      expect(result, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(
@@ -307,8 +318,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotInitializedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotInitializedException>(),
+      );
     });
 
     test('startService (error: ServiceAlreadyStartedException)', () async {
@@ -317,12 +331,14 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _startService(dummyData);
-      expect(result2.success, false);
-      expect(result2.error, isA<ServiceAlreadyStartedException>());
+      expect(result2, isA<ServiceRequestFailure>());
+      expect(
+        (result2 as ServiceRequestFailure).error,
+        isA<ServiceAlreadyStartedException>(),
+      );
     });
 
     test('startService (error: ServiceTimeoutException)', () async {
@@ -334,8 +350,11 @@ void main() {
       methodCallHandler.timeoutTest = true;
 
       final ServiceRequestResult result = await _startService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceTimeoutException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceTimeoutException>(),
+      );
     });
 
     test('restartService', () async {
@@ -344,12 +363,10 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _restartService();
-      expect(result2.success, true);
-      expect(result2.error, isNull);
+      expect(result2, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(ServiceApiMethod.restartService, arguments: null),
@@ -360,8 +377,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _restartService();
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotStartedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotStartedException>(),
+      );
     });
 
     test('updateService', () async {
@@ -370,12 +390,10 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _updateService(dummyData);
-      expect(result2.success, true);
-      expect(result2.error, isNull);
+      expect(result2, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(
@@ -389,8 +407,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _updateService(dummyData);
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotStartedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotStartedException>(),
+      );
     });
 
     test('stopService', () async {
@@ -400,12 +421,10 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       final ServiceRequestResult result2 = await _stopService();
-      expect(result2.success, true);
-      expect(result2.error, isNull);
+      expect(result2, isA<ServiceRequestSuccess>());
       expect(
         methodCallHandler.log.last,
         isMethodCall(ServiceApiMethod.stopService, arguments: null),
@@ -416,8 +435,11 @@ void main() {
       platformChannel.platform = platform;
 
       final ServiceRequestResult result = await _stopService();
-      expect(result.success, false);
-      expect(result.error, isA<ServiceNotStartedException>());
+      expect(result, isA<ServiceRequestFailure>());
+      expect(
+        (result as ServiceRequestFailure).error,
+        isA<ServiceNotStartedException>(),
+      );
     });
 
     test('stopService (error: ServiceTimeoutException)', () async {
@@ -426,15 +448,17 @@ void main() {
       _init(dummyData);
 
       final ServiceRequestResult result1 = await _startService(dummyData);
-      expect(result1.success, true);
-      expect(result1.error, isNull);
+      expect(result1, isA<ServiceRequestSuccess>());
 
       // set test
       methodCallHandler.timeoutTest = true;
 
       final ServiceRequestResult result2 = await _stopService();
-      expect(result2.success, false);
-      expect(result2.error, isA<ServiceTimeoutException>());
+      expect(result2, isA<ServiceRequestFailure>());
+      expect(
+        (result2 as ServiceRequestFailure).error,
+        isA<ServiceTimeoutException>(),
+      );
     });
 
     test('isRunningService', () async {

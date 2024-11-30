@@ -127,9 +127,9 @@ class FlutterForegroundTask {
         await checkServiceStateChange(target: true);
       }
 
-      return ServiceRequestResult.success();
+      return const ServiceRequestSuccess();
     } catch (error) {
-      return ServiceRequestResult.error(error);
+      return ServiceRequestFailure(error: error);
     }
   }
 
@@ -142,9 +142,9 @@ class FlutterForegroundTask {
 
       await _platform.restartService();
 
-      return ServiceRequestResult.success();
+      return const ServiceRequestSuccess();
     } catch (error) {
-      return ServiceRequestResult.error(error);
+      return ServiceRequestFailure(error: error);
     }
   }
 
@@ -171,9 +171,9 @@ class FlutterForegroundTask {
         callback: callback,
       );
 
-      return ServiceRequestResult.success();
+      return const ServiceRequestSuccess();
     } catch (error) {
-      return ServiceRequestResult.error(error);
+      return ServiceRequestFailure(error: error);
     }
   }
 
@@ -190,9 +190,9 @@ class FlutterForegroundTask {
         await checkServiceStateChange(target: false);
       }
 
-      return ServiceRequestResult.success();
+      return const ServiceRequestSuccess();
     } catch (error) {
-      return ServiceRequestResult.error(error);
+      return ServiceRequestFailure(error: error);
     }
   }
 

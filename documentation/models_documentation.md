@@ -125,12 +125,12 @@ The level of detail displayed in notifications on the lock screen.
 
 ### :chicken: ServiceRequestResult
 
-Result of service request.
+sealed class: Represents the result of a service request.
 
-| Property  | Description                         |
-|-----------|-------------------------------------|
-| `success` | Whether the request was successful. |
-| `error`   | Error when the request failed.      |
+| child                                 | Description                         |
+|---------------------------------------|-------------------------------------|
+| `ServiceRequestSuccess()`             | The service request was successful. |
+| `ServiceRequestFailure(Object error)` | The service request failed.         |
 
 ### :chicken: TaskStarter
 
