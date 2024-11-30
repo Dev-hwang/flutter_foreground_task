@@ -104,6 +104,16 @@ The level of detail displayed in notifications on the lock screen.
 | `VISIBILITY_SECRET`  | Do not reveal any part of this notification on a secure lockscreen.                                            |
 | `VISIBILITY_PRIVATE` | Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens. |
 
+### :chicken: NotificationPermission
+
+enum class: Represents the result of a notification permission request.
+
+| value                | Description                                          |
+|----------------------|------------------------------------------------------|
+| `granted`            | Notification permission has been granted.            |
+| `denied`             | Notification permission has been denied.             |
+| `permanently_denied` | Notification permission has been permanently denied. |
+
 ### :chicken: ServiceRequestResult
 
 sealed class: Represents the result of a service request.
@@ -112,6 +122,13 @@ sealed class: Represents the result of a service request.
 |---------------------------------------|-------------------------------------|
 | `ServiceRequestSuccess()`             | The service request was successful. |
 | `ServiceRequestFailure(Object error)` | The service request failed.         |
+
+| error                            | Description                                                                                                    |
+|----------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `ServiceAlreadyStartedException` | The service has already started.                                                                               |
+| `ServiceNotInitializedException` | Not initialized. Please call this function after calling the init function.                                    |
+| `ServiceNotStartedException`     | The service is not started.                                                                                    |
+| `ServiceTimeoutException`        | The service request timed out. (ref: https://developer.android.com/guide/components/services#StartingAService) |
 
 ### :chicken: TaskStarter
 
