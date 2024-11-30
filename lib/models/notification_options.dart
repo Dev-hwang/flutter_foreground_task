@@ -96,6 +96,34 @@ class AndroidNotificationOptions {
       'visibility': visibility.rawValue,
     };
   }
+
+  /// Creates a copy of the object replaced with new values.
+  AndroidNotificationOptions copyWith({
+    String? channelId,
+    String? channelName,
+    String? channelDescription,
+    NotificationChannelImportance? channelImportance,
+    NotificationPriority? priority,
+    bool? enableVibration,
+    bool? playSound,
+    bool? showWhen,
+    bool? showBadge,
+    bool? onlyAlertOnce,
+    NotificationVisibility? visibility,
+  }) =>
+      AndroidNotificationOptions(
+        channelId: channelId ?? this.channelId,
+        channelName: channelName ?? this.channelName,
+        channelDescription: channelDescription ?? this.channelDescription,
+        channelImportance: channelImportance ?? this.channelImportance,
+        priority: priority ?? this.priority,
+        enableVibration: enableVibration ?? this.enableVibration,
+        playSound: playSound ?? this.playSound,
+        showWhen: showWhen ?? this.showWhen,
+        showBadge: showBadge ?? this.showBadge,
+        onlyAlertOnce: onlyAlertOnce ?? this.onlyAlertOnce,
+        visibility: visibility ?? this.visibility,
+      );
 }
 
 /// Notification options for iOS platform.
@@ -121,4 +149,14 @@ class IOSNotificationOptions {
       'playSound': playSound,
     };
   }
+
+  /// Creates a copy of the object replaced with new values.
+  IOSNotificationOptions copyWith({
+    bool? showNotification,
+    bool? playSound,
+  }) =>
+      IOSNotificationOptions(
+        showNotification: showNotification ?? this.showNotification,
+        playSound: playSound ?? this.playSound,
+      );
 }

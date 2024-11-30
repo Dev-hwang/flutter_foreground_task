@@ -18,11 +18,19 @@ class NotificationIcon {
 
   /// Returns the data fields of [NotificationIcon] in JSON format.
   Map<String, dynamic> toJson() {
-    final String? backgroundColorRgb = backgroundColor?.toRgbString;
-
     return {
       'metaDataName': metaDataName,
-      'backgroundColorRgb': backgroundColorRgb,
+      'backgroundColorRgb': backgroundColor?.toRgbString,
     };
   }
+
+  /// Creates a copy of the object replaced with new values.
+  NotificationIcon copyWith({
+    String? metaDataName,
+    Color? backgroundColor,
+  }) =>
+      NotificationIcon(
+        metaDataName: metaDataName ?? this.metaDataName,
+        backgroundColor: backgroundColor ?? this.backgroundColor,
+      );
 }

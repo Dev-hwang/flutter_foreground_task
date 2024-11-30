@@ -23,12 +23,22 @@ class NotificationButton {
 
   /// Returns the data fields of [NotificationButton] in JSON format.
   Map<String, dynamic> toJson() {
-    final String? textColorRgb = textColor?.toRgbString;
-
     return {
       'id': id,
       'text': text,
-      'textColorRgb': textColorRgb,
+      'textColorRgb': textColor?.toRgbString,
     };
   }
+
+  /// Creates a copy of the object replaced with new values.
+  NotificationButton copyWith({
+    String? id,
+    String? text,
+    Color? textColor,
+  }) =>
+      NotificationButton(
+        id: id ?? this.id,
+        text: text ?? this.text,
+        textColor: textColor ?? this.textColor,
+      );
 }

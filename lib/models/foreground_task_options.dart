@@ -42,4 +42,21 @@ class ForegroundTaskOptions {
       'allowWifiLock': allowWifiLock,
     };
   }
+
+  /// Creates a copy of the object replaced with new values.
+  ForegroundTaskOptions copyWith({
+    ForegroundTaskEventAction? eventAction,
+    bool? autoRunOnBoot,
+    bool? autoRunOnMyPackageReplaced,
+    bool? allowWakeLock,
+    bool? allowWifiLock,
+  }) =>
+      ForegroundTaskOptions(
+        eventAction: eventAction ?? this.eventAction,
+        autoRunOnBoot: autoRunOnBoot ?? this.autoRunOnBoot,
+        autoRunOnMyPackageReplaced:
+            autoRunOnMyPackageReplaced ?? this.autoRunOnMyPackageReplaced,
+        allowWakeLock: allowWakeLock ?? this.allowWakeLock,
+        allowWifiLock: allowWifiLock ?? this.allowWifiLock,
+      );
 }
