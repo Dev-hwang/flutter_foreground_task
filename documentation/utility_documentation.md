@@ -18,7 +18,16 @@ Launch the app at `route` if it is not running otherwise open it.
 It is also possible to pass a route to this function but the route will only
 be loaded if the app is not already running.
 
+This function requires the `android.permission.SYSTEM_ALERT_WINDOW` permission and 
+requires using the `openSystemAlertWindowSettings()` function to grant the permission.
+
 ```dart
+void requestPermission() async {
+  if (!await FlutterForegroundTask.canDrawOverlays) {
+    await FlutterForegroundTask.openSystemAlertWindowSettings();
+  }
+}
+
 void function() => FlutterForegroundTask.launchApp([route]);
 ```
 
@@ -72,7 +81,7 @@ Future<bool> function() => FlutterForegroundTask.openIgnoreBatteryOptimizationSe
 
 Request to ignore battery optimization.
 
-This function requires `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
+This function requires the `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.
 
 > **Warning**
 > It only works when the app is in the foreground.

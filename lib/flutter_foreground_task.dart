@@ -353,6 +353,12 @@ class FlutterForegroundTask {
   static void minimizeApp() => _platform.minimizeApp();
 
   /// Launch the app at [route] if it is not running otherwise open it.
+  ///
+  /// It is also possible to pass a route to this function but the route will only
+  /// be loaded if the app is not already running.
+  ///
+  /// This function requires the "android.permission.SYSTEM\_ALERT\_WINDOW" permission and
+  /// requires using the `openSystemAlertWindowSettings()` function to grant the permission.
   static void launchApp([String? route]) => _platform.launchApp(route);
 
   /// Toggles lockScreen visibility.
@@ -375,7 +381,7 @@ class FlutterForegroundTask {
 
   /// Request to ignore battery optimization.
   ///
-  /// This function requires "android.permission.REQUEST\_IGNORE\_BATTERY\_OPTIMIZATIONS" permission.
+  /// This function requires the "android.permission.REQUEST\_IGNORE\_BATTERY\_OPTIMIZATIONS" permission.
   static Future<bool> requestIgnoreBatteryOptimization() =>
       _platform.requestIgnoreBatteryOptimization();
 
