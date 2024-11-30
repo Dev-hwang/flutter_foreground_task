@@ -10,7 +10,7 @@ import 'package:platform/platform.dart';
 import 'flutter_foreground_task_platform_interface.dart';
 import 'models/foreground_task_options.dart';
 import 'models/notification_button.dart';
-import 'models/notification_icon_data.dart';
+import 'models/notification_icon.dart';
 import 'models/notification_options.dart';
 import 'models/notification_permission.dart';
 import 'models/service_options.dart';
@@ -39,7 +39,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     int? serviceId,
     required String notificationTitle,
     required String notificationText,
-    NotificationIconData? notificationIcon,
+    NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
@@ -68,7 +68,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
-    NotificationIconData? notificationIcon,
+    NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {

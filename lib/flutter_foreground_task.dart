@@ -12,7 +12,7 @@ import 'errors/service_not_started_exception.dart';
 import 'errors/service_timeout_exception.dart';
 import 'models/foreground_task_options.dart';
 import 'models/notification_button.dart';
-import 'models/notification_icon_data.dart';
+import 'models/notification_icon.dart';
 import 'models/notification_options.dart';
 import 'models/notification_permission.dart';
 import 'models/service_request_result.dart';
@@ -27,7 +27,7 @@ export 'models/foreground_task_event_action.dart';
 export 'models/foreground_task_options.dart';
 export 'models/notification_button.dart';
 export 'models/notification_channel_importance.dart';
-export 'models/notification_icon_data.dart';
+export 'models/notification_icon.dart';
 export 'models/notification_options.dart';
 export 'models/notification_permission.dart';
 export 'models/notification_priority.dart';
@@ -98,7 +98,7 @@ class FlutterForegroundTask {
     int? serviceId,
     required String notificationTitle,
     required String notificationText,
-    NotificationIconData? notificationIcon,
+    NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {
@@ -153,7 +153,7 @@ class FlutterForegroundTask {
     ForegroundTaskOptions? foregroundTaskOptions,
     String? notificationTitle,
     String? notificationText,
-    NotificationIconData? notificationIcon,
+    NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
     Function? callback,
   }) async {

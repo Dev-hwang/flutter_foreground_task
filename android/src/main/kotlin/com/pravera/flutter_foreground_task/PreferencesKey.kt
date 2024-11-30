@@ -35,7 +35,7 @@ object PreferencesKey {
     // notification content
     const val NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"
     const val NOTIFICATION_CONTENT_TEXT = "notificationContentText"
-    const val NOTIFICATION_CONTENT_ICON = "iconData"
+    const val NOTIFICATION_CONTENT_ICON = "icon"
     const val NOTIFICATION_CONTENT_BUTTONS = "buttons"
 
     // task options
