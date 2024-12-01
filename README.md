@@ -21,17 +21,13 @@ This plugin is used to implement a foreground service on the Android platform.
 - Android: `5.0+ (minSdkVersion: 21)`
 - iOS: `12.0+`
 
-## Structure
-
-<img src="https://github.com/user-attachments/assets/6fc91bd9-62b2-43b8-9109-26d2e8d809c1" width="800">
-
 ## Getting started
 
 To use this plugin, add `flutter_foreground_task` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/). For example:
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.14.0
+  flutter_foreground_task: ^8.16.0
 ```
 
 After adding the plugin to your flutter project, we need to declare the platform-specific permissions ans service to use for this plugin to work properly.
@@ -204,10 +200,7 @@ class MyTaskHandler extends TaskHandler {
     print('onStart(starter: ${starter.name})');
   }
 
-  // Called by eventAction in [ForegroundTaskOptions].
-  // - nothing() : Not use onRepeatEvent callback.
-  // - once() : Call onRepeatEvent only once.
-  // - repeat(interval) : Call onRepeatEvent at milliseconds interval.
+  // Called based on the eventAction set in ForegroundTaskOptions.
   @override
   void onRepeatEvent(DateTime timestamp) {
     // Send data to main isolate.
@@ -223,7 +216,7 @@ class MyTaskHandler extends TaskHandler {
     print('onDestroy');
   }
 
-  // Called when data is sent using [FlutterForegroundTask.sendDataToTask].
+  // Called when data is sent using `FlutterForegroundTask.sendDataToTask`.
   @override
   void onReceiveData(Object data) {
     print('onReceiveData: $data');
@@ -330,9 +323,9 @@ void initState() {
   // Add a callback to receive data sent from the TaskHandler.
   FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
 
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     // Request permissions and initialize the service.
-    await _requestPermissions();
+    _requestPermissions();
     _initService();
   });
 }
@@ -369,12 +362,18 @@ Future<ServiceRequestResult> _startService() async {
 > iOS Platform, `notificationButtons` is not displayed directly in notification.
 > When the user slides down the notification, the button is displayed, so you need to guide the user on how to use it.
 > https://developer.apple.com/documentation/usernotifications/declaring-your-actionable-notification-types
->
-> If you know a better implementation, please let me know on [GitHub](https://github.com/Dev-hwang/flutter_foreground_task/issues) :)
 
 6. Use `FlutterForegroundTask.updateService` to update the service. The options are the same as the start function.
 
 ```dart
+final ForegroundTaskOptions defaultTaskOptions = ForegroundTaskOptions(
+  eventAction: ForegroundTaskEventAction.repeat(5000),
+  autoRunOnBoot: true,
+  autoRunOnMyPackageReplaced: true,
+  allowWakeLock: true,
+  allowWifiLock: true,
+);
+
 @pragma('vm:entry-point')
 void startCallback() {
   FlutterForegroundTask.setTaskHandler(FirstTaskHandler());
@@ -394,7 +393,7 @@ class FirstTaskHandler extends TaskHandler {
     
     if (_count == 10) {
       FlutterForegroundTask.updateService(
-        foregroundTaskOptions: ForegroundTaskOptions(
+        foregroundTaskOptions: defaultTaskOptions.copyWith(
           eventAction: ForegroundTaskEventAction.repeat(1000),
         ),
         callback: updateCallback,
@@ -455,7 +454,7 @@ class SecondTaskHandler extends TaskHandler {
 7. If you no longer use the service, call `FlutterForegroundTask.stopService`.
 
 ```dart
-Future<ServiceRequestResult> _stopService() async {
+Future<ServiceRequestResult> _stopService() {
   return FlutterForegroundTask.stopService();
 }
 ```

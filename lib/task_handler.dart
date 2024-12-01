@@ -5,11 +5,11 @@ abstract class TaskHandler {
   /// Called when the task is started.
   Future<void> onStart(DateTime timestamp, TaskStarter starter);
 
-  /// Called by eventAction in [ForegroundTaskOptions].
+  /// Called based on the eventAction set in [ForegroundTaskOptions].
   ///
-  /// - nothing() : Not use onRepeatEvent callback.
-  /// - once() : Call onRepeatEvent only once.
-  /// - repeat(interval) : Call onRepeatEvent at milliseconds interval.
+  /// - .nothing() : Not use onRepeatEvent callback.
+  /// - .once() : Call onRepeatEvent only once.
+  /// - .repeat(interval) : Call onRepeatEvent at milliseconds interval.
   void onRepeatEvent(DateTime timestamp);
 
   /// Called when the task is destroyed.
@@ -23,14 +23,25 @@ abstract class TaskHandler {
 
   /// Called when the notification itself is pressed.
   ///
-  /// AOS: "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
-  /// for this function to be called.
+  /// - AOS: This callback is triggered only if the
+  /// "android.permission.SYSTEM_ALERT_WINDOW" permission is declared and granted.
+  ///
+  /// ```dart
+  /// void requestPermission() async {
+  ///   if (!await FlutterForegroundTask.canDrawOverlays) {
+  ///     await FlutterForegroundTask.openSystemAlertWindowSettings();
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// - iOS: only work iOS 12+
   void onNotificationPressed() => FlutterForegroundTask.launchApp();
 
   /// Called when the notification itself is dismissed.
   ///
-  /// AOS: only work Android 14+
-  /// iOS: only work iOS 10+
+  /// - AOS: only work Android 14+
+  ///
+  /// - iOS: only work iOS 12+
   void onNotificationDismissed() {}
 }
 

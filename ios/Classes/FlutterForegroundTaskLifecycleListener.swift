@@ -20,7 +20,7 @@ public protocol FlutterForegroundTaskLifecycleListener : AnyObject {
   /** Called when the task is started. */
   func onTaskStart(starter: FlutterForegroundTaskStarter)
 
-  /** Called by eventAction in ForegroundTaskOptions. */
+  /** Called based on the eventAction set in ForegroundTaskOptions. */
   func onTaskRepeatEvent()
   
   /** Called when the task is destroyed. */
