@@ -1,3 +1,10 @@
+## 8.16.0
+
+* [**BREAKING**] Change `ServiceRequestResult` class to `sealed class` for improved code readability
+* [**BREAKING**] Change method for customizing notification icon
+* [**FEAT**] Add `copyWith` function for models reuse
+* Check [migration_documentation](./documentation/migration_documentation.md) for changes
+
 ## 8.14.0
 
 * [**FEAT**] Support quickboot for HTC devices

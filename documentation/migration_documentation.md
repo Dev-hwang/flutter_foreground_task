@@ -1,5 +1,72 @@
 ## Migration
 
+### ver 8.16.0
+
+- Change `ServiceRequestResult` class to `sealed class` for improved code readability.
+
+```dart
+void startService() {
+  final ServiceRequestResult result =
+      await FlutterForegroundTask.startService(
+    serviceId: 100,
+    notificationTitle: 'notificationTitle',
+    notificationText: 'notificationText',
+    callback: startLocationService,
+  );
+
+  // before: The distinction between success and failure of the request is unclear.
+  if (result.success) {
+    // The error should not be accessible when the request is successful.
+    final Object? error = result.error;
+  } else {
+    // Handle error
+    final Object? error = result.error;
+  }
+
+  // after: The distinction between success and failure of the request is clear. 
+  switch (result) {
+    case ServiceRequestSuccess():
+      // The error cannot be accessed.
+      // final Object error = result.error;
+      print('success');
+    case ServiceRequestFailure():
+      // The error can only be accessed when the request fails, 
+      // and no null check is required.
+      final Object error = result.error;
+      print('failure($error)');
+  }
+}
+```
+
+- Change method for customizing notification icon. [guide page](./customize_notification_icon.md)
+
+```dart
+void startService() {
+  // before: There was an issue in the foreground service where only the white icon was displayed 
+  // because the icon resource could not be referenced.
+  await FlutterForegroundTask.startService(
+    notificationTitle: 'notificationTitle',
+    notificationText: 'notificationText',
+    notificationIcon: const NotificationIconData(
+      resType: ResourceType.drawable,
+      resPrefix: ResourcePrefix.ic,
+      name: 'snow',
+      backgroundColor: Colors.orange,
+    ),
+  );
+  
+  // after: Enabled static reference to the icon resource through meta-data.
+  await FlutterForegroundTask.startService(
+    notificationTitle: 'notificationTitle',
+    notificationText: 'notificationText',
+    notificationIcon: const NotificationIcon(
+      metaDataName: 'com.your_package.service.SNOW_ICON',
+      backgroundColor: Colors.orange,
+    ),
+  );
+}
+```
+
 ### ver 8.10.0
 
 - Change onStart, onDestroy callback return type from `void` to `Future<void>`.

@@ -41,10 +41,7 @@ class MyTaskHandler extends TaskHandler {
     _incrementCount();
   }
 
-  // Called by eventAction in [ForegroundTaskOptions].
-  // - nothing() : Not use onRepeatEvent callback.
-  // - once() : Call onRepeatEvent only once.
-  // - repeat(interval) : Call onRepeatEvent at milliseconds interval.
+  // Called based on the eventAction set in ForegroundTaskOptions.
   @override
   void onRepeatEvent(DateTime timestamp) {
     _incrementCount();
@@ -56,7 +53,7 @@ class MyTaskHandler extends TaskHandler {
     print('onDestroy');
   }
 
-  // Called when data is sent using [FlutterForegroundTask.sendDataToTask].
+  // Called when data is sent using `FlutterForegroundTask.sendDataToTask`.
   @override
   void onReceiveData(Object data) {
     print('onReceiveData: $data');
@@ -69,25 +66,6 @@ class MyTaskHandler extends TaskHandler {
   @override
   void onNotificationButtonPressed(String id) {
     print('onNotificationButtonPressed: $id');
-  }
-
-  // Called when the notification itself is pressed.
-  //
-  // AOS: "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted
-  // for this function to be called.
-  @override
-  void onNotificationPressed() {
-    FlutterForegroundTask.launchApp('/');
-    print('onNotificationPressed');
-  }
-
-  // Called when the notification itself is dismissed.
-  //
-  // AOS: only work Android 14+
-  // iOS: only work iOS 10+
-  @override
-  void onNotificationDismissed() {
-    print('onNotificationDismissed');
   }
 }
 
@@ -126,19 +104,6 @@ class _ExamplePageState extends State<ExamplePage> {
     }
 
     if (Platform.isAndroid) {
-      // "android.permission.SYSTEM_ALERT_WINDOW" permission must be granted for
-      // onNotificationPressed function to be called.
-      //
-      // When the notification is pressed while permission is denied,
-      // the onNotificationPressed function is not called and the app opens.
-      //
-      // If you do not use the onNotificationPressed or launchApp function,
-      // you do not need to write this code.
-      if (!await FlutterForegroundTask.canDrawOverlays) {
-        // This function requires `android.permission.SYSTEM_ALERT_WINDOW` permission.
-        await FlutterForegroundTask.openSystemAlertWindowSettings();
-      }
-
       // Android 12+, there are restrictions on starting a foreground service.
       //
       // To restart the service on device reboot or unexpected problem, you need to allow below permission.
@@ -202,7 +167,7 @@ class _ExamplePageState extends State<ExamplePage> {
     }
   }
 
-  Future<ServiceRequestResult> _stopService() async {
+  Future<ServiceRequestResult> _stopService() {
     return FlutterForegroundTask.stopService();
   }
 
@@ -221,9 +186,9 @@ class _ExamplePageState extends State<ExamplePage> {
     // Add a callback to receive data sent from the TaskHandler.
     FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       // Request permissions and initialize the service.
-      await _requestPermissions();
+      _requestPermissions();
       _initService();
     });
   }
