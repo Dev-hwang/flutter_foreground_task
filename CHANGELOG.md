@@ -1,3 +1,9 @@
+## 8.17.0
+
+* [**FEAT**] Allow `onNotificationPressed` to trigger without `SYSTEM_ALERT_WINDOW` permission
+  - Do not use the `launchApp` function inside the `onNotificationPressed` callback
+  - Instead, use the `notificationInitialRoute` option of the `startService` or `updateService` functions
+
 ## 8.16.0
 
 * [**BREAKING**] Change `ServiceRequestResult` class to `sealed class` for improved code readability
