@@ -67,6 +67,18 @@ class MyTaskHandler extends TaskHandler {
   void onNotificationButtonPressed(String id) {
     print('onNotificationButtonPressed: $id');
   }
+
+  // Called when the notification itself is pressed.
+  @override
+  void onNotificationPressed() {
+    print('onNotificationPressed');
+  }
+
+  // Called when the notification itself is dismissed.
+  @override
+  void onNotificationDismissed() {
+    print('onNotificationDismissed');
+  }
 }
 
 class ExampleApp extends StatelessWidget {
@@ -77,6 +89,7 @@ class ExampleApp extends StatelessWidget {
     return MaterialApp(
       routes: {
         '/': (context) => const ExamplePage(),
+        '/second': (context) => const SecondPage(),
       },
       initialRoute: '/',
     );
@@ -162,6 +175,7 @@ class _ExamplePageState extends State<ExamplePage> {
         notificationButtons: [
           const NotificationButton(id: 'btn_hello', text: 'hello'),
         ],
+        notificationInitialRoute: '/second',
         callback: startCallback,
       );
     }
@@ -210,31 +224,23 @@ class _ExamplePageState extends State<ExamplePage> {
     // This widget must be declared above the [Scaffold] widget.
     return WithForegroundTask(
       child: Scaffold(
-        appBar: _buildAppBar(),
-        body: _buildContent(),
+        appBar: AppBar(
+          title: const Text('Flutter Foreground Task'),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(child: _buildCommunicationDataText()),
+              _buildServiceControlButtons(),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      title: const Text('Flutter Foreground Task'),
-      centerTitle: true,
-    );
-  }
-
-  Widget _buildContent() {
-    return SafeArea(
-      child: Column(
-        children: [
-          Expanded(child: _buildCommunicationText()),
-          _buildServiceControlButtons(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommunicationText() {
+  Widget _buildCommunicationDataText() {
     return ValueListenableBuilder(
       valueListenable: _taskDataListenable,
       builder: (context, data, _) {
@@ -268,6 +274,26 @@ class _ExamplePageState extends State<ExamplePage> {
           buttonBuilder('stop service', onPressed: _stopService),
           buttonBuilder('increment count', onPressed: _incrementCount),
         ],
+      ),
+    );
+  }
+}
+
+class SecondPage extends StatelessWidget {
+  const SecondPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Second Page'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: Navigator.of(context).pop,
+          child: const Text('pop this page'),
+        ),
       ),
     );
   }

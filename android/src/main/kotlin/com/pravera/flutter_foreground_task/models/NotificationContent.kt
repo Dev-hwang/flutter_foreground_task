@@ -9,7 +9,8 @@ data class NotificationContent(
         val title: String,
         val text: String,
         val icon: NotificationIcon?,
-        val buttons: List<NotificationButton>
+        val buttons: List<NotificationButton>,
+        val initialRoute: String?
 ) {
     companion object {
         fun getData(context: Context): NotificationContent {
@@ -35,11 +36,14 @@ data class NotificationContent(
                 }
             }
 
+            val initialRoute = prefs.getString(PrefsKey.NOTIFICATION_INITIAL_ROUTE, null)
+
             return NotificationContent(
                 title = title,
                 text = text,
                 icon = icon,
-                buttons = buttons
+                buttons = buttons,
+                initialRoute = initialRoute
             )
         }
 
@@ -62,11 +66,14 @@ data class NotificationContent(
                 buttonsJsonString = JSONArray(buttonsJson).toString()
             }
 
+            val initialRoute = map?.get(PrefsKey.NOTIFICATION_INITIAL_ROUTE) as? String
+
             with(prefs.edit()) {
                 putString(PrefsKey.NOTIFICATION_CONTENT_TITLE, title)
                 putString(PrefsKey.NOTIFICATION_CONTENT_TEXT, text)
                 putString(PrefsKey.NOTIFICATION_CONTENT_ICON, iconJsonString)
                 putString(PrefsKey.NOTIFICATION_CONTENT_BUTTONS, buttonsJsonString)
+                putString(PrefsKey.NOTIFICATION_INITIAL_ROUTE, initialRoute)
                 commit()
             }
         }
@@ -90,11 +97,14 @@ data class NotificationContent(
                 buttonsJsonString = JSONArray(buttonsJson).toString()
             }
 
+            val initialRoute = map?.get(PrefsKey.NOTIFICATION_INITIAL_ROUTE) as? String
+
             with(prefs.edit()) {
                 title?.let { putString(PrefsKey.NOTIFICATION_CONTENT_TITLE, it) }
                 text?.let { putString(PrefsKey.NOTIFICATION_CONTENT_TEXT, it) }
                 iconJsonString?.let { putString(PrefsKey.NOTIFICATION_CONTENT_ICON, it) }
                 buttonsJsonString?.let { putString(PrefsKey.NOTIFICATION_CONTENT_BUTTONS, it) }
+                initialRoute?.let { putString(PrefsKey.NOTIFICATION_INITIAL_ROUTE, it) }
                 commit()
             }
         }

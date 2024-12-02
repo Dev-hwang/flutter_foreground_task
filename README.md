@@ -227,6 +227,18 @@ class MyTaskHandler extends TaskHandler {
   void onNotificationButtonPressed(String id) {
     print('onNotificationButtonPressed: $id');
   }
+
+  // Called when the notification itself is pressed.
+  @override
+  void onNotificationPressed() {
+    print('onNotificationPressed');
+  }
+
+  // Called when the notification itself is dismissed.
+  @override
+  void onNotificationDismissed() {
+    print('onNotificationDismissed');
+  }
 }
 ```
 
@@ -337,6 +349,7 @@ void initState() {
 * `notificationText`: The text to display in the notification.
 * `notificationIcon`: The icon to display in the notification. Go to [this page](./documentation/customize_notification_icon.md) to customize.
 * `notificationButtons`: The buttons to display in the notification. (can add 0~3 buttons)
+* `notificationInitialRoute`: Initial route to be used when the app is launched via a notification. Works the same as the `launchApp` utility.
 * `callback`: A top-level function that calls the setTaskHandler function.
 
 ```dart
@@ -352,6 +365,7 @@ Future<ServiceRequestResult> _startService() async {
       notificationButtons: [
         const NotificationButton(id: 'btn_hello', text: 'hello'),
       ],
+      notificationInitialRoute: '/',
       callback: startCallback,
     );
   }

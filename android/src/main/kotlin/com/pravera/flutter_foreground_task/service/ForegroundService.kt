@@ -488,6 +488,12 @@ class ForegroundService : Service() {
         val packageName = applicationContext.packageName
         val intent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
             putExtra(INTENT_DATA_NAME, ACTION_NOTIFICATION_PRESSED)
+
+            // set initialRoute
+            val initialRoute = notificationContent.initialRoute
+            if (initialRoute != null) {
+                putExtra("route", initialRoute)
+            }
         }
 
         var flags = PendingIntent.FLAG_UPDATE_CURRENT

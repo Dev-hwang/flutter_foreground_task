@@ -17,6 +17,7 @@ class ServiceStartOptions {
     required this.notificationContentText,
     this.notificationIcon,
     this.notificationButtons,
+    this.notificationInitialRoute,
     this.callback,
   });
 
@@ -28,6 +29,7 @@ class ServiceStartOptions {
   final String notificationContentText;
   final NotificationIcon? notificationIcon;
   final List<NotificationButton>? notificationButtons;
+  final String? notificationInitialRoute;
   final Function? callback;
 
   Map<String, dynamic> toJson(Platform platform) {
@@ -38,6 +40,7 @@ class ServiceStartOptions {
       'notificationContentText': notificationContentText,
       'icon': notificationIcon?.toJson(),
       'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
+      'initialRoute': notificationInitialRoute,
     };
 
     if (platform.isAndroid) {
@@ -62,6 +65,7 @@ class ServiceUpdateOptions {
     required this.notificationContentText,
     this.notificationIcon,
     this.notificationButtons,
+    this.notificationInitialRoute,
     this.callback,
   });
 
@@ -70,6 +74,7 @@ class ServiceUpdateOptions {
   final String? notificationContentText;
   final NotificationIcon? notificationIcon;
   final List<NotificationButton>? notificationButtons;
+  final String? notificationInitialRoute;
   final Function? callback;
 
   Map<String, dynamic> toJson(Platform platform) {
@@ -78,6 +83,7 @@ class ServiceUpdateOptions {
       'notificationContentText': notificationContentText,
       'icon': notificationIcon?.toJson(),
       'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
+      'initialRoute': notificationInitialRoute,
     };
 
     if (foregroundTaskOptions != null) {
