@@ -22,20 +22,7 @@ abstract class TaskHandler {
   void onNotificationButtonPressed(String id) {}
 
   /// Called when the notification itself is pressed.
-  ///
-  /// - AOS: This callback is triggered only if the
-  /// "android.permission.SYSTEM_ALERT_WINDOW" permission is declared and granted.
-  ///
-  /// ```dart
-  /// void requestPermission() async {
-  ///   if (!await FlutterForegroundTask.canDrawOverlays) {
-  ///     await FlutterForegroundTask.openSystemAlertWindowSettings();
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// - iOS: only work iOS 12+
-  void onNotificationPressed() => FlutterForegroundTask.launchApp();
+  void onNotificationPressed() {}
 
   /// Called when the notification itself is dismissed.
   ///

@@ -19,13 +19,11 @@ import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListene
 import com.pravera.flutter_foreground_task.RequestCode
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
-import com.pravera.flutter_foreground_task.utils.PluginUtils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.*
-
 
 /**
  * A service class for implementing foreground service.
@@ -37,23 +35,17 @@ class ForegroundService : Service() {
     companion object {
         private val TAG = ForegroundService::class.java.simpleName
 
-        private const val ACTION_RECEIVE_DATA = "onReceiveData"
-        private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
         private const val ACTION_NOTIFICATION_PRESSED = "onNotificationPressed"
         private const val ACTION_NOTIFICATION_DISMISSED = "onNotificationDismissed"
-        private const val INTENT_DATA_FIELD_NAME = "data"
+        private const val ACTION_NOTIFICATION_BUTTON_PRESSED = "onNotificationButtonPressed"
+        private const val ACTION_RECEIVE_DATA = "onReceiveData"
+        private const val INTENT_DATA_NAME = "intentData"
 
         private val _isRunningServiceState = MutableStateFlow(false)
         val isRunningServiceState = _isRunningServiceState.asStateFlow()
 
-        private var foregroundTask: ForegroundTask? = null
+        private var task: ForegroundTask? = null
         private var taskLifecycleListeners = ForegroundTaskLifecycleListeners()
-
-        fun sendData(data: Any?) {
-            if (isRunningServiceState.value) {
-                foregroundTask?.invokeMethod(ACTION_RECEIVE_DATA, data)
-            }
-        }
 
         fun addTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
             taskLifecycleListeners.addListener(listener)
@@ -61,6 +53,33 @@ class ForegroundService : Service() {
 
         fun removeTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
             taskLifecycleListeners.removeListener(listener)
+        }
+
+        fun handleNotificationContentIntent(intent: Intent?) {
+            if (intent == null) return
+
+            try {
+                // Check if the given intent is a LaunchIntent.
+                val isLaunchIntent = (intent.action == Intent.ACTION_MAIN) &&
+                        intent.categories.contains(Intent.CATEGORY_LAUNCHER)
+                if (!isLaunchIntent) {
+                    // Log.d(TAG, "not LaunchIntent")
+                    return
+                }
+
+                val data = intent.getStringExtra(INTENT_DATA_NAME)
+                if (data == ACTION_NOTIFICATION_PRESSED) {
+                    task?.invokeMethod(data, null)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, e.message, e)
+            }
+        }
+
+        fun sendData(data: Any?) {
+            if (isRunningServiceState.value) {
+                task?.invokeMethod(ACTION_RECEIVE_DATA, data)
+            }
         }
     }
 
@@ -80,22 +99,20 @@ class ForegroundService : Service() {
     // A broadcast receiver that handles intents that occur in the foreground service.
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            try {
-                // No intent ??
-                if (intent == null) {
-                    throw Exception("Intent is null.")
-                }
+            if (intent == null) return
 
+            try {
                 // This intent has not sent from the current package.
                 val iPackageName = intent.`package`
                 val cPackageName = packageName
                 if (iPackageName != cPackageName) {
-                    throw Exception("This intent has not sent from the current package. ($iPackageName != $cPackageName)")
+                    Log.d(TAG, "This intent has not sent from the current package. ($iPackageName != $cPackageName)")
+                    return
                 }
 
                 val action = intent.action ?: return
-                val data = intent.getStringExtra(INTENT_DATA_FIELD_NAME)
-                foregroundTask?.invokeMethod(action, data)
+                val data = intent.getStringExtra(INTENT_DATA_NAME)
+                task?.invokeMethod(action, data)
             } catch (e: Exception) {
                 Log.e(TAG, e.message, e)
             }
@@ -284,43 +301,40 @@ class ForegroundService : Service() {
     }
 
     private fun createNotification(): Notification {
-        // notification
-        val channelId = notificationOptions.channelId
-
         // notification icon
         val icon = notificationContent.icon
         val iconResId = getIconResId(icon)
         val iconBackgroundColor = icon?.backgroundColorRgb?.let(::getRgbColor)
 
         // notification intent
-        val pendingIntent = getPendingIntent()
-        val deletePendingIntent = getDeletePendingIntent()
+        val contentIntent = getContentIntent()
+        val deleteIntent = getDeleteIntent()
 
-        // notification action
-        var needsUpdateButtons = false
+        // notification actions
+        var needsRebuildButtons = false
         val prevButtons = prevNotificationContent?.buttons
         val currButtons = notificationContent.buttons
         if (prevButtons != null) {
             if (prevButtons.size != currButtons.size) {
-                needsUpdateButtons = true
+                needsRebuildButtons = true
             } else {
                 for (i in currButtons.indices) {
                     if (prevButtons[i] != currButtons[i]) {
-                        needsUpdateButtons = true
+                        needsRebuildButtons = true
                         break
                     }
                 }
             }
         } else {
-            needsUpdateButtons = true
+            needsRebuildButtons = true
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val builder = Notification.Builder(this, channelId)
+            val builder = Notification.Builder(this, notificationOptions.channelId)
             builder.setOngoing(true)
             builder.setShowWhen(notificationOptions.showWhen)
             builder.setSmallIcon(iconResId)
-            builder.setContentIntent(pendingIntent)
+            builder.setContentIntent(contentIntent)
             builder.setContentTitle(notificationContent.title)
             builder.setContentText(notificationContent.text)
             builder.style = Notification.BigTextStyle()
@@ -333,21 +347,21 @@ class ForegroundService : Service() {
                 builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                builder.setDeleteIntent(deletePendingIntent)
+                builder.setDeleteIntent(deleteIntent)
             }
 
-            val actions = buildNotificationActions(notificationContent.buttons, needsUpdateButtons)
+            val actions = buildNotificationActions(currButtons, needsRebuildButtons)
             for (action in actions) {
                 builder.addAction(action)
             }
 
             return builder.build()
         } else {
-            val builder = NotificationCompat.Builder(this, channelId)
+            val builder = NotificationCompat.Builder(this, notificationOptions.channelId)
             builder.setOngoing(true)
             builder.setShowWhen(notificationOptions.showWhen)
             builder.setSmallIcon(iconResId)
-            builder.setContentIntent(pendingIntent)
+            builder.setContentIntent(contentIntent)
             builder.setContentTitle(notificationContent.title)
             builder.setContentText(notificationContent.text)
             builder.setStyle(NotificationCompat.BigTextStyle().bigText(notificationContent.text))
@@ -364,7 +378,7 @@ class ForegroundService : Service() {
             }
             builder.priority = notificationOptions.priority
 
-            val actions = buildNotificationCompatActions(notificationContent.buttons, needsUpdateButtons)
+            val actions = buildNotificationCompatActions(currButtons, needsRebuildButtons)
             for (action in actions) {
                 builder.addAction(action)
             }
@@ -427,7 +441,7 @@ class ForegroundService : Service() {
     private fun createForegroundTask() {
         destroyForegroundTask()
 
-        foregroundTask = ForegroundTask(
+        task = ForegroundTask(
             context = this,
             serviceStatus = foregroundServiceStatus,
             taskData = foregroundTaskData,
@@ -437,12 +451,12 @@ class ForegroundService : Service() {
     }
 
     private fun updateForegroundTask() {
-        foregroundTask?.update(taskEventAction = foregroundTaskOptions.eventAction)
+        task?.update(taskEventAction = foregroundTaskOptions.eventAction)
     }
 
     private fun destroyForegroundTask() {
-        foregroundTask?.destroy()
-        foregroundTask = null
+        task?.destroy()
+        task = null
     }
 
     private fun getIconResId(icon: NotificationIcon?): Int {
@@ -469,27 +483,32 @@ class ForegroundService : Service() {
         }
     }
 
-    private fun getPendingIntent(): PendingIntent {
-        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || PluginUtils.canDrawOverlays(applicationContext)) {
-            val pIntent = Intent(ACTION_NOTIFICATION_PRESSED).apply {
-                setPackage(packageName)
-            }
-            PendingIntent.getBroadcast(
-                this, RequestCode.NOTIFICATION_PRESSED_BROADCAST, pIntent, PendingIntent.FLAG_IMMUTABLE)
-        } else {
-            val pm = applicationContext.packageManager
-            val lIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
-            PendingIntent.getActivity(
-                this, RequestCode.NOTIFICATION_PRESSED, lIntent, PendingIntent.FLAG_IMMUTABLE)
+    private fun getContentIntent(): PendingIntent {
+        val packageManager = applicationContext.packageManager
+        val packageName = applicationContext.packageName
+        val intent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+            putExtra(INTENT_DATA_NAME, ACTION_NOTIFICATION_PRESSED)
         }
+
+        var flags = PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            flags = flags or PendingIntent.FLAG_IMMUTABLE
+        }
+
+        return PendingIntent.getActivity(this, RequestCode.NOTIFICATION_PRESSED, intent, flags)
     }
 
-    private fun getDeletePendingIntent(): PendingIntent {
-        val dIntent = Intent(ACTION_NOTIFICATION_DISMISSED).apply {
+    private fun getDeleteIntent(): PendingIntent {
+        val intent = Intent(ACTION_NOTIFICATION_DISMISSED).apply {
             setPackage(packageName)
         }
-        return PendingIntent.getBroadcast(
-            this, RequestCode.NOTIFICATION_DISMISSED_BROADCAST, dIntent, PendingIntent.FLAG_IMMUTABLE)
+
+        var flags = PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            flags = flags or PendingIntent.FLAG_IMMUTABLE
+        }
+
+        return PendingIntent.getBroadcast(this, RequestCode.NOTIFICATION_DISMISSED, intent, flags)
     }
 
     private fun getRgbColor(rgb: String): Int? {
@@ -513,16 +532,16 @@ class ForegroundService : Service() {
 
     private fun buildNotificationActions(
         buttons: List<NotificationButton>,
-        needsUpdate: Boolean = false
+        needsRebuild: Boolean = false
     ): List<Notification.Action> {
         val actions = mutableListOf<Notification.Action>()
         for (i in buttons.indices) {
             val intent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
                 setPackage(packageName)
-                putExtra(INTENT_DATA_FIELD_NAME, buttons[i].id)
+                putExtra(INTENT_DATA_NAME, buttons[i].id)
             }
             var flags = PendingIntent.FLAG_IMMUTABLE
-            if (needsUpdate) {
+            if (needsRebuild) {
                 flags = flags or PendingIntent.FLAG_CANCEL_CURRENT
             }
             val textColor = buttons[i].textColorRgb?.let(::getRgbColor)
@@ -542,16 +561,16 @@ class ForegroundService : Service() {
 
     private fun buildNotificationCompatActions(
         buttons: List<NotificationButton>,
-        needsUpdate: Boolean = false
+        needsRebuild: Boolean = false
     ): List<NotificationCompat.Action> {
         val actions = mutableListOf<NotificationCompat.Action>()
         for (i in buttons.indices) {
             val intent = Intent(ACTION_NOTIFICATION_BUTTON_PRESSED).apply {
                 setPackage(packageName)
-                putExtra(INTENT_DATA_FIELD_NAME, buttons[i].id)
+                putExtra(INTENT_DATA_NAME, buttons[i].id)
             }
             var flags = PendingIntent.FLAG_IMMUTABLE
-            if (needsUpdate) {
+            if (needsRebuild) {
                 flags = flags or PendingIntent.FLAG_CANCEL_CURRENT
             }
             val textColor = buttons[i].textColorRgb?.let(::getRgbColor)

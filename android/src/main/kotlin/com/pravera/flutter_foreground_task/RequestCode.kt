@@ -13,6 +13,5 @@ object RequestCode {
     // service
     const val SET_RESTART_SERVICE_ALARM = 300
     const val NOTIFICATION_PRESSED = 301
-    const val NOTIFICATION_PRESSED_BROADCAST = 302
-    const val NOTIFICATION_DISMISSED_BROADCAST = 203
+    const val NOTIFICATION_DISMISSED = 302
 }
