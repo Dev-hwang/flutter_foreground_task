@@ -1,5 +1,6 @@
 package com.pravera.flutter_foreground_task
 
+import android.content.Intent
 import com.pravera.flutter_foreground_task.service.ForegroundService
 import com.pravera.flutter_foreground_task.service.ForegroundServiceManager
 import com.pravera.flutter_foreground_task.service.NotificationPermissionManager
@@ -7,9 +8,10 @@ import com.pravera.flutter_foreground_task.service.ServiceProvider
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.PluginRegistry.NewIntentListener
 
 /** FlutterForegroundTaskPlugin */
-class FlutterForegroundTaskPlugin : FlutterPlugin, ActivityAware, ServiceProvider {
+class FlutterForegroundTaskPlugin : FlutterPlugin, ActivityAware, ServiceProvider, NewIntentListener {
     companion object {
         fun addTaskLifecycleListener(listener: FlutterForegroundTaskLifecycleListener) {
             ForegroundService.addTaskLifecycleListener(listener)
@@ -44,7 +46,11 @@ class FlutterForegroundTaskPlugin : FlutterPlugin, ActivityAware, ServiceProvide
         methodCallHandler.setActivity(binding.activity)
         binding.addRequestPermissionsResultListener(notificationPermissionManager)
         binding.addActivityResultListener(methodCallHandler)
+        binding.addOnNewIntentListener(this)
         activityBinding = binding
+
+        val intent = binding.activity.intent
+        ForegroundService.handleNotificationContentIntent(intent)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -58,8 +64,14 @@ class FlutterForegroundTaskPlugin : FlutterPlugin, ActivityAware, ServiceProvide
     override fun onDetachedFromActivity() {
         activityBinding?.removeRequestPermissionsResultListener(notificationPermissionManager)
         activityBinding?.removeActivityResultListener(methodCallHandler)
+        activityBinding?.removeOnNewIntentListener(this)
         activityBinding = null
         methodCallHandler.setActivity(null)
+    }
+
+    override fun onNewIntent(intent: Intent): Boolean {
+        ForegroundService.handleNotificationContentIntent(intent)
+        return true
     }
 
     override fun getNotificationPermissionManager() = notificationPermissionManager
