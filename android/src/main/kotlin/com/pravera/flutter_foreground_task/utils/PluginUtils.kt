@@ -3,6 +3,7 @@ package com.pravera.flutter_foreground_task.utils
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo
+import android.app.ActivityOptions
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
@@ -52,7 +53,16 @@ class PluginUtils {
                 if (route != null) {
                     launchIntent.putExtra("route", route)
                 }
-                context.startActivity(launchIntent)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    val options = ActivityOptions.makeBasic().apply {
+                        pendingIntentBackgroundActivityStartMode =
+                                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                    }
+                    context.startActivity(launchIntent, options.toBundle())
+                } else {
+                    context.startActivity(launchIntent)
+                }
             }
         }
 
