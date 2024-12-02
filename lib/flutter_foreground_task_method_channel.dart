@@ -41,6 +41,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     required String notificationText,
     NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
+    String? notificationInitialRoute,
     Function? callback,
   }) async {
     final Map<String, dynamic> optionsJson = ServiceStartOptions(
@@ -52,6 +53,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       notificationContentText: notificationText,
       notificationIcon: notificationIcon,
       notificationButtons: notificationButtons,
+      notificationInitialRoute: notificationInitialRoute,
       callback: callback,
     ).toJson(platform);
 
@@ -70,6 +72,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     String? notificationText,
     NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
+    String? notificationInitialRoute,
     Function? callback,
   }) async {
     final Map<String, dynamic> optionsJson = ServiceUpdateOptions(
@@ -78,6 +81,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
       notificationContentText: notificationText,
       notificationIcon: notificationIcon,
       notificationButtons: notificationButtons,
+      notificationInitialRoute: notificationInitialRoute,
       callback: callback,
     ).toJson(platform);
 

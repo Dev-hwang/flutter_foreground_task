@@ -100,6 +100,7 @@ class FlutterForegroundTask {
     required String notificationText,
     NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
+    String? notificationInitialRoute,
     Function? callback,
   }) async {
     try {
@@ -120,6 +121,7 @@ class FlutterForegroundTask {
         notificationText: notificationText,
         notificationIcon: notificationIcon,
         notificationButtons: notificationButtons,
+        notificationInitialRoute: notificationInitialRoute,
         callback: callback,
       );
 
@@ -155,6 +157,7 @@ class FlutterForegroundTask {
     String? notificationText,
     NotificationIcon? notificationIcon,
     List<NotificationButton>? notificationButtons,
+    String? notificationInitialRoute,
     Function? callback,
   }) async {
     try {
@@ -168,6 +171,7 @@ class FlutterForegroundTask {
         notificationTitle: notificationTitle,
         notificationIcon: notificationIcon,
         notificationButtons: notificationButtons,
+        notificationInitialRoute: notificationInitialRoute,
         callback: callback,
       );
 
