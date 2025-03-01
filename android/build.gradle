@@ -30,7 +30,7 @@ android {
         namespace 'com.pravera.flutter_foreground_task'
     }
 
-    compileSdk 34
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
