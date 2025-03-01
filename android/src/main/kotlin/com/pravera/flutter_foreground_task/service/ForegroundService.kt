@@ -219,6 +219,11 @@ class ForegroundService : Service() {
         }
     }
 
+    override fun onTimeout(startId: Int) {
+        super.onTimeout(startId)
+        stopForegroundService()
+    }
+
     private fun loadDataFromPreferences() {
         foregroundServiceStatus = ForegroundServiceStatus.getData(applicationContext)
 
