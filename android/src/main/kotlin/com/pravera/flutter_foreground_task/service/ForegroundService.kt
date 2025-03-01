@@ -209,6 +209,12 @@ class ForegroundService : Service() {
         stopForegroundService()
     }
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        super.onTimeout(startId, fgsType)
+        stopForegroundService()
+    }
+
     private fun loadDataFromPreferences() {
         foregroundServiceStatus = ForegroundServiceStatus.getData(applicationContext)
 
