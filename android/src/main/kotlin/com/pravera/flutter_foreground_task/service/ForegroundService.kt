@@ -171,6 +171,7 @@ class ForegroundService : Service() {
                     } catch (e: ForegroundServiceStartNotAllowedException) {
                         Log.e(TAG,
                             "Cannot run service as foreground: $e for notification channel ")
+                        RestartReceiver.cancelRestartAlarm(this)
                         stopForegroundService()
                     }
                 } else {
