@@ -164,8 +164,19 @@ class ForegroundService : Service() {
             }
             ForegroundServiceAction.REBOOT,
             ForegroundServiceAction.RESTART -> {
-                startForegroundService()
-                createForegroundTask()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    try {
+                        startForegroundService()
+                        createForegroundTask()
+                    } catch (e: ForegroundServiceStartNotAllowedException) {
+                        Log.e(TAG,
+                            "Cannot run service as foreground: $e for notification channel ")
+                        stopForegroundService()
+                    }
+                } else {
+                    startForegroundService()
+                    createForegroundTask()
+                }
                 Log.d(TAG, "The service has been restarted by Android OS.")
             }
         }
