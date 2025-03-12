@@ -2,6 +2,7 @@ package com.pravera.flutter_foreground_task.service
 
 import android.app.ActivityManager
 import android.app.AlarmManager
+import android.app.ForegroundServiceStartNotAllowedException
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -79,8 +80,18 @@ class RestartReceiver : BroadcastReceiver() {
 			Log.w(TAG, "Turn off battery optimization to restart service in the background.")
 		}
 
-		val nIntent = Intent(context, ForegroundService::class.java)
-		ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
-		ContextCompat.startForegroundService(context, nIntent)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			try {
+				val nIntent = Intent(context, ForegroundService::class.java)
+				ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
+				ContextCompat.startForegroundService(context, nIntent)
+			} catch (e: ForegroundServiceStartNotAllowedException){
+				Log.e(TAG, "Foreground service start not allowed exception: ${e.message}")
+			}
+		} else {
+			val nIntent = Intent(context, ForegroundService::class.java)
+			ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
+			ContextCompat.startForegroundService(context, nIntent)
+		}
 	}
 }
