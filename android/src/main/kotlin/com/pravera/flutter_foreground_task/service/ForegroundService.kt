@@ -199,7 +199,10 @@ class ForegroundService : Service() {
         stopForegroundService()
         unregisterBroadcastReceiver()
 
-        val isCorrectlyStopped = foregroundServiceStatus.isCorrectlyStopped()
+        var isCorrectlyStopped = false
+        if (::foregroundServiceStatus.isInitialized) {
+            isCorrectlyStopped = foregroundServiceStatus.isCorrectlyStopped()
+        }
         val isSetStopWithTaskFlag = ForegroundServiceUtils.isSetStopWithTaskFlag(this)
         if (!isCorrectlyStopped && !isSetStopWithTaskFlag) {
             Log.e(TAG, "The service was terminated due to an unexpected problem. The service will restart after 5 seconds.")
