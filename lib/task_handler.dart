@@ -13,7 +13,7 @@ abstract class TaskHandler {
   void onRepeatEvent(DateTime timestamp);
 
   /// Called when the task is destroyed.
-  Future<void> onDestroy(DateTime timestamp);
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout);
 
   /// Called when data is sent using [FlutterForegroundTask.sendDataToTask].
   void onReceiveData(Object data) {}

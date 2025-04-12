@@ -49,8 +49,8 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when the task is destroyed.
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
-    print('onDestroy');
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
+    print('onDestroy(isTimeout: $isTimeout)');
   }
 
   // Called when data is sent using `FlutterForegroundTask.sendDataToTask`.

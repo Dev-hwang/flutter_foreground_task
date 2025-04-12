@@ -152,7 +152,7 @@ class ForegroundTask(
         }
     }
 
-    fun destroy() {
+    fun destroy(isTimeout: Boolean) {
         runIfNotDestroyed {
             stopRepeatTask()
 
@@ -161,7 +161,7 @@ class ForegroundTask(
                 taskLifecycleListener.onEngineWillDestroy()
                 flutterEngine.destroy()
             } else {
-                backgroundChannel.invokeMethod(ACTION_TASK_DESTROY, null) {
+                backgroundChannel.invokeMethod(ACTION_TASK_DESTROY, isTimeout) {
                     flutterEngine.destroy()
                 }
                 taskLifecycleListener.onTaskDestroy()

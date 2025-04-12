@@ -96,6 +96,8 @@ class ForegroundService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
 
+    private var isTimeout: Boolean = false
+
     // A broadcast receiver that handles intents that occur in the foreground service.
     private var broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -125,6 +127,7 @@ class ForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        isTimeout = false
         loadDataFromPreferences()
 
         var action = foregroundServiceStatus.action
@@ -195,7 +198,8 @@ class ForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        destroyForegroundTask()
+        val isTimeout = this.isTimeout
+        destroyForegroundTask(isTimeout)
         stopForegroundService()
         unregisterBroadcastReceiver()
 
@@ -221,13 +225,17 @@ class ForegroundService : Service() {
 
     override fun onTimeout(startId: Int) {
         super.onTimeout(startId)
+        isTimeout = true
         stopForegroundService()
+        Log.e(TAG, "The service(id: $startId) timed out and was terminated by the system.")
     }
 
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onTimeout(startId: Int, fgsType: Int) {
         super.onTimeout(startId, fgsType)
+        isTimeout = true
         stopForegroundService()
+        Log.e(TAG, "The service(id: $startId) timed out and was terminated by the system.")
     }
 
     private fun loadDataFromPreferences() {
@@ -480,8 +488,8 @@ class ForegroundService : Service() {
         task?.update(taskEventAction = foregroundTaskOptions.eventAction)
     }
 
-    private fun destroyForegroundTask() {
-        task?.destroy()
+    private fun destroyForegroundTask(isTimeout: Boolean = false) {
+        task?.destroy(isTimeout)
         task = null
     }
 

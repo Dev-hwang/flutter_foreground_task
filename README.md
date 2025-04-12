@@ -71,9 +71,23 @@ As mentioned in the Android guidelines, to start a FG service on Android 14+, yo
     android:exported="false" />
 ```
 
-Check runtime requirements before starting the service. If this requirement is not met, the foreground service cannot be started.
+> [!CAUTION]
+> Check [runtime requirements](https://developer.android.com/about/versions/14/changes/fgs-types-required#system-runtime-checks) before starting the service. If this requirement is not met, the foreground service cannot be started.
 
-<img src="https://github.com/Dev-hwang/flutter_foreground_task/assets/47127353/2a35dada-2c82-41f4-8a45-56776c88e9d3" width="700">
+> [!CAUTION]
+> Android 15 introduces a new timeout behavior to `dataSync` for apps targeting Android 15 (API level 35) or higher.
+> The system permits an app's `dataSync` services to run for a total of 6 hours in a 24-hour period.
+> However, if the user brings the app to the foreground, the timer resets and the app has 6 hours available.
+>
+> There are new restrictions on `BOOT_COMPLETED(autoRunOnBoot)` broadcast receivers launching foreground services.
+> `BOOT_COMPLETED` receivers are not allowed to launch the following types of foreground services:
+> - [dataSync](https://developer.android.com/develop/background-work/services/fg-service-types#data-sync)
+> - [camera](https://developer.android.com/develop/background-work/services/fg-service-types#camera)
+> - [mediaPlayback](https://developer.android.com/develop/background-work/services/fg-service-types#media)
+> - [phoneCall](https://developer.android.com/develop/background-work/services/fg-service-types#phone-call)
+> - [microphone](https://developer.android.com/about/versions/14/changes/fgs-types-required#microphone)
+> 
+> You can find how to test this behavior and more details at this [link](https://developer.android.com/about/versions/15/behavior-changes-15#fgs-hardening).
 
 ### :baby_chick: iOS
 
@@ -212,8 +226,8 @@ class MyTaskHandler extends TaskHandler {
 
   // Called when the task is destroyed.
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
-    print('onDestroy');
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
+    print('onDestroy(isTimeout: $isTimeout)');
   }
 
   // Called when data is sent using `FlutterForegroundTask.sendDataToTask`.
@@ -428,7 +442,7 @@ class FirstTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
     // some code
   }
 }
@@ -459,7 +473,7 @@ class SecondTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
     // some code
   }
 }
@@ -554,7 +568,7 @@ class MyTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
     _streamSubscription?.cancel();
     _streamSubscription = null;
   }

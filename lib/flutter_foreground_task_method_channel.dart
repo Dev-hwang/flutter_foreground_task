@@ -133,7 +133,8 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
         handler.onRepeatEvent(timestamp);
         break;
       case 'onDestroy':
-        await handler.onDestroy(timestamp);
+        final bool isTimeout = call.arguments ?? false;
+        await handler.onDestroy(timestamp, isTimeout);
         break;
       case 'onReceiveData':
         dynamic data = call.arguments;
