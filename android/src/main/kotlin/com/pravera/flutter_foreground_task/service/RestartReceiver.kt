@@ -85,13 +85,19 @@ class RestartReceiver : BroadcastReceiver() {
 				val nIntent = Intent(context, ForegroundService::class.java)
 				ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
 				ContextCompat.startForegroundService(context, nIntent)
-			} catch (e: ForegroundServiceStartNotAllowedException){
+			} catch (e: ForegroundServiceStartNotAllowedException) {
 				Log.e(TAG, "Foreground service start not allowed exception: ${e.message}")
+			} catch (e: Exception) {
+				Log.e(TAG, e.toString())
 			}
 		} else {
-			val nIntent = Intent(context, ForegroundService::class.java)
-			ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
-			ContextCompat.startForegroundService(context, nIntent)
+			try {
+				val nIntent = Intent(context, ForegroundService::class.java)
+				ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
+				ContextCompat.startForegroundService(context, nIntent)
+			} catch (e: Exception) {
+				Log.e(TAG, e.toString())
+			}
 		}
 	}
 }

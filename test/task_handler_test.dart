@@ -69,7 +69,7 @@ void main() {
       const String method = TaskEventMethod.onDestroy;
 
       await platformChannel.mBGChannel.invokeMethod(method);
-      expect(taskHandler.log.last, isTaskEvent(method));
+      expect(taskHandler.log.last, isTaskEvent(method, false));
     });
 
     test('onReceiveData', () async {
@@ -294,8 +294,8 @@ class TestTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
-    log.add(const TaskEvent(method: TaskEventMethod.onDestroy));
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
+    log.add(TaskEvent(method: TaskEventMethod.onDestroy, data: isTimeout));
   }
 
   @override
