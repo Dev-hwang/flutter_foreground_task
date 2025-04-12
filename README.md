@@ -16,8 +16,8 @@ This plugin is used to implement a foreground service on the Android platform.
 
 ## Support version
 
-- Flutter: `3.10.0+`
-- Dart: `3.0.0+`
+- Flutter: `3.22.0+`
+- Dart: `3.4.0+`
 - Android: `5.0+ (minSdkVersion: 21)`
 - iOS: `12.0+`
 
