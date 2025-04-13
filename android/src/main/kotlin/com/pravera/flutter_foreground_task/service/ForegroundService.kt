@@ -62,10 +62,7 @@ class ForegroundService : Service() {
                 // Check if the given intent is a LaunchIntent.
                 val isLaunchIntent = (intent.action == Intent.ACTION_MAIN) &&
                         (intent.categories?.contains(Intent.CATEGORY_LAUNCHER) == true)
-                if (!isLaunchIntent) {
-                    // Log.d(TAG, "not LaunchIntent")
-                    return
-                }
+                if (!isLaunchIntent) return
 
                 val data = intent.getStringExtra(INTENT_DATA_NAME)
                 if (data == ACTION_NOTIFICATION_PRESSED) {
@@ -134,55 +131,47 @@ class ForegroundService : Service() {
         val isSetStopWithTaskFlag = ForegroundServiceUtils.isSetStopWithTaskFlag(this)
 
         if (action == ForegroundServiceAction.API_STOP) {
-            RestartReceiver.cancelRestartAlarm(this)
             stopForegroundService()
             return START_NOT_STICKY
         }
 
-        if (intent == null) {
-            ForegroundServiceStatus.setData(this, ForegroundServiceAction.RESTART)
-            foregroundServiceStatus = ForegroundServiceStatus.getData(this)
-            action = foregroundServiceStatus.action
-        }
+        try {
+            if (intent == null) {
+                ForegroundServiceStatus.setData(this, ForegroundServiceAction.RESTART)
+                foregroundServiceStatus = ForegroundServiceStatus.getData(this)
+                action = foregroundServiceStatus.action
+            }
 
-        when (action) {
-            ForegroundServiceAction.API_START,
-            ForegroundServiceAction.API_RESTART -> {
-                startForegroundService()
-                createForegroundTask()
-            }
-            ForegroundServiceAction.API_UPDATE -> {
-                updateNotification()
-                val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
-                val currCallbackHandle = foregroundTaskData.callbackHandle
-                if (prevCallbackHandle != currCallbackHandle) {
-                    createForegroundTask()
-                } else {
-                    val prevEventAction = prevForegroundTaskOptions?.eventAction
-                    val currEventAction = foregroundTaskOptions.eventAction
-                    if (prevEventAction != currEventAction) {
-                        updateForegroundTask()
-                    }
-                }
-            }
-            ForegroundServiceAction.REBOOT,
-            ForegroundServiceAction.RESTART -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    try {
-                        startForegroundService()
-                        createForegroundTask()
-                    } catch (e: ForegroundServiceStartNotAllowedException) {
-                        Log.e(TAG,
-                            "Cannot run service as foreground: $e for notification channel ")
-                        RestartReceiver.cancelRestartAlarm(this)
-                        stopForegroundService()
-                    }
-                } else {
+            when (action) {
+                ForegroundServiceAction.API_START,
+                ForegroundServiceAction.API_RESTART -> {
                     startForegroundService()
                     createForegroundTask()
                 }
-                Log.d(TAG, "The service has been restarted by Android OS.")
+                ForegroundServiceAction.API_UPDATE -> {
+                    updateNotification()
+                    val prevCallbackHandle = prevForegroundTaskData?.callbackHandle
+                    val currCallbackHandle = foregroundTaskData.callbackHandle
+                    if (prevCallbackHandle != currCallbackHandle) {
+                        createForegroundTask()
+                    } else {
+                        val prevEventAction = prevForegroundTaskOptions?.eventAction
+                        val currEventAction = foregroundTaskOptions.eventAction
+                        if (prevEventAction != currEventAction) {
+                            updateForegroundTask()
+                        }
+                    }
+                }
+                ForegroundServiceAction.REBOOT,
+                ForegroundServiceAction.RESTART -> {
+                    startForegroundService()
+                    createForegroundTask()
+                    Log.d(TAG, "The service has been restarted by Android OS.")
+                }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, e.message, e)
+            stopForegroundService()
         }
 
         return if (isSetStopWithTaskFlag) {
@@ -207,9 +196,8 @@ class ForegroundService : Service() {
         if (::foregroundServiceStatus.isInitialized) {
             isCorrectlyStopped = foregroundServiceStatus.isCorrectlyStopped()
         }
-        val isSetStopWithTaskFlag = ForegroundServiceUtils.isSetStopWithTaskFlag(this)
-        if (!isCorrectlyStopped && !isSetStopWithTaskFlag) {
-            Log.e(TAG, "The service was terminated due to an unexpected problem. The service will restart after 5 seconds.")
+        if (!isCorrectlyStopped && !ForegroundServiceUtils.isSetStopWithTaskFlag(this)) {
+            Log.e(TAG, "The service will be restarted after 5 seconds because it wasn't properly stopped.")
             RestartReceiver.setRestartAlarm(this, 5000)
         }
     }
@@ -281,6 +269,8 @@ class ForegroundService : Service() {
 
     @SuppressLint("WrongConstant", "SuspiciousIndentation")
     private fun startForegroundService() {
+        RestartReceiver.cancelRestartAlarm(this)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()
         }
@@ -304,6 +294,8 @@ class ForegroundService : Service() {
     }
 
     private fun stopForegroundService() {
+        RestartReceiver.cancelRestartAlarm(this)
+
         releaseLockMode()
         stopForeground(true)
         stopSelf()
