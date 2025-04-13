@@ -61,7 +61,7 @@ class ForegroundService : Service() {
             try {
                 // Check if the given intent is a LaunchIntent.
                 val isLaunchIntent = (intent.action == Intent.ACTION_MAIN) &&
-                        intent.categories.contains(Intent.CATEGORY_LAUNCHER)
+                        (intent.categories?.contains(Intent.CATEGORY_LAUNCHER) == true)
                 if (!isLaunchIntent) {
                     // Log.d(TAG, "not LaunchIntent")
                     return
