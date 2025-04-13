@@ -15,6 +15,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
+import java.util.UUID
 import kotlin.Exception
 
 /** MethodCallHandlerImpl */
@@ -25,7 +26,8 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
     private lateinit var channel: MethodChannel
 
     private var activity: Activity? = null
-    private var resultCallbacks: MutableMap<Int, MethodChannel.Result?> = mutableMapOf()
+    private var methodCodes: MutableMap<Int, Int> = mutableMapOf()
+    private var methodResults: MutableMap<Int, MethodChannel.Result> = mutableMapOf()
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         val args = call.arguments
@@ -109,17 +111,19 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 
                 "openIgnoreBatteryOptimizationSettings" -> {
                     checkActivityNull().let {
-                        val reqCode = RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-                        resultCallbacks[reqCode] = result
-                        PluginUtils.openIgnoreBatteryOptimizationSettings(it, reqCode)
+                        val requestCode = UUID.randomUUID().hashCode() and 0xFFFF
+                        methodCodes[requestCode] = RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                        methodResults[requestCode] = result
+                        PluginUtils.openIgnoreBatteryOptimizationSettings(it, requestCode)
                     }
                 }
 
                 "requestIgnoreBatteryOptimization" -> {
                     checkActivityNull().let {
-                        val reqCode = RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION
-                        resultCallbacks[reqCode] = result
-                        PluginUtils.requestIgnoreBatteryOptimization(it, reqCode)
+                        val requestCode = UUID.randomUUID().hashCode() and 0xFFFF
+                        methodCodes[requestCode] = RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION
+                        methodResults[requestCode] = result
+                        PluginUtils.requestIgnoreBatteryOptimization(it, requestCode)
                     }
                 }
 
@@ -127,9 +131,10 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 
                 "openSystemAlertWindowSettings" -> {
                     checkActivityNull().let {
-                        val reqCode = RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS
-                        resultCallbacks[reqCode] = result
-                        PluginUtils.openSystemAlertWindowSettings(it, reqCode)
+                        val requestCode = UUID.randomUUID().hashCode() and 0xFFFF
+                        methodCodes[requestCode] = RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS
+                        methodResults[requestCode] = result
+                        PluginUtils.openSystemAlertWindowSettings(it, requestCode)
                     }
                 }
 
@@ -138,9 +143,10 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
 
                 "openAlarmsAndRemindersSettings" -> {
                     checkActivityNull().let {
-                        val reqCode = RequestCode.OPEN_ALARMS_AND_REMINDER_SETTINGS
-                        resultCallbacks[reqCode] = result
-                        PluginUtils.openAlarmsAndRemindersSettings(it, reqCode)
+                        val requestCode = UUID.randomUUID().hashCode() and 0xFFFF
+                        methodCodes[requestCode] = RequestCode.OPEN_ALARMS_AND_REMINDER_SETTINGS
+                        methodResults[requestCode] = result
+                        PluginUtils.openAlarmsAndRemindersSettings(it, requestCode)
                     }
                 }
 
@@ -152,19 +158,25 @@ class MethodCallHandlerImpl(private val context: Context, private val provider: 
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        val resultCallback = resultCallbacks[requestCode] ?: return true
+        val methodCode = methodCodes[requestCode]
+        val methodResult = methodResults[requestCode]
+        methodCodes.remove(requestCode)
+        methodResults.remove(requestCode)
 
-        when (requestCode) {
-            RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS ->
-                resultCallback.success(PluginUtils.isIgnoringBatteryOptimizations(context))
-            RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION ->
-                resultCallback.success(PluginUtils.isIgnoringBatteryOptimizations(context))
-            RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS ->
-                resultCallback.success(PluginUtils.canDrawOverlays(context))
-            RequestCode.OPEN_ALARMS_AND_REMINDER_SETTINGS ->
-                resultCallback.success(PluginUtils.canScheduleExactAlarms(context))
+        if (methodCode == null || methodResult == null) {
+            return true
         }
 
+        when (methodCode) {
+            RequestCode.OPEN_IGNORE_BATTERY_OPTIMIZATION_SETTINGS ->
+                methodResult.success(PluginUtils.isIgnoringBatteryOptimizations(context))
+            RequestCode.REQUEST_IGNORE_BATTERY_OPTIMIZATION ->
+                methodResult.success(PluginUtils.isIgnoringBatteryOptimizations(context))
+            RequestCode.OPEN_SYSTEM_ALERT_WINDOW_SETTINGS ->
+                methodResult.success(PluginUtils.canDrawOverlays(context))
+            RequestCode.OPEN_ALARMS_AND_REMINDER_SETTINGS ->
+                methodResult.success(PluginUtils.canScheduleExactAlarms(context))
+        }
         return true
     }
 
