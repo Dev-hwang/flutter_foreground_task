@@ -27,12 +27,19 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^8.17.0
+  flutter_foreground_task: ^9.0.0
 ```
 
 After adding the plugin to your flutter project, we need to declare the platform-specific permissions ans service to use for this plugin to work properly.
 
 ### :baby_chick: Android
+
+This plugin requires `Kotlin version 1.9.10+` and `Gradle version 8.6.0+`. Please refer to the migration documentation for more details.
+
+- [project/settings.gradle](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/example/android/settings.gradle)
+- [project/gradle-wrapper.properties](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/example/android/gradle/wrapper/gradle-wrapper.properties)
+- [app/build.gradle](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/example/android/app/build.gradle)
+- [migration_documentation](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/documentation/migration_documentation.md)
 
 Open the `AndroidManifest.xml` file and declare the service tag inside the `<application>` tag as follows.
 
