@@ -1,5 +1,68 @@
 ## Migration
 
+### ver 9.0.0
+
+- chore: Bump minimum supported SDK version to `Flutter 3.22/Dart 3.4`.
+
+```
+environment:
+   // sdk: ">=3.0.0 <4.0.0"
+   // flutter: ">=3.10.0"
+   sdk: ^3.4.0
+   flutter: ">=3.22.0"
+```
+
+- chore: Bump `kotlin_version(1.7.10 -> 1.9.10)`, `gradle(7.3.0 -> 8.6.0)` for Android 15.
+
+```
+[android/settings.gradle]
+plugins {
+    // id "com.android.application" version "7.3.0" apply false
+    // id "org.jetbrains.kotlin.android" version "1.7.10" apply false
+    id "com.android.application" version "8.6.0" apply false
+    id "org.jetbrains.kotlin.android" version "1.9.10" apply false
+}
+
+[android/gradle/wrapper/gradle-wrapper.properties]
+// distributionUrl=https\://services.gradle.org/distributions/gradle-7.6.3-all.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-all.zip
+
+[android/app/build.gradle]
+android {
+    // compileSdk 34
+    compileSdk 35
+    
+    compileOptions {
+        // sourceCompatibility JavaVersion.VERSION_1_8
+        // targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        // jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_11
+    }
+    
+    defaultConfig {
+        // targetSdkVersion 34
+        targetSdkVersion 35
+    }
+}
+```
+
+- feat: Add `isTimeout` param to the onDestroy callback.
+
+```dart
+// from
+@override
+Future<void> onDestroy(DateTime timestamp) async {}
+
+// to
+@override
+Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {}
+```
+
 ### ver 8.16.0
 
 - Change `ServiceRequestResult` class to `sealed class` for improved code readability.

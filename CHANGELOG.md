@@ -1,3 +1,13 @@
+## 9.0.0
+
+* [**CHORE**] Bump minimum supported SDK version to `Flutter 3.22/Dart 3.4`
+* [**CHORE**] Bump `kotlin_version(1.7.10 -> 1.9.10)`, `gradle(7.3.0 -> 8.6.0)` for Android 15
+* [**FEAT**] Add `isTimeout` param to the onDestroy callback
+* [**FIX**] Fix "null object" error [#332](https://github.com/Dev-hwang/flutter_foreground_task/issues/332)
+* [**FIX**] Fix "Reply already submitted" error [#330](https://github.com/Dev-hwang/flutter_foreground_task/issues/330)
+* [**FIX**] Prevent crash by catching exceptions during foreground service start
+* Check [migration_documentation](./documentation/migration_documentation.md) for changes
+
 ## 8.17.0
 
 * [**FEAT**] Allow `onNotificationPressed` to trigger without `SYSTEM_ALERT_WINDOW` permission
