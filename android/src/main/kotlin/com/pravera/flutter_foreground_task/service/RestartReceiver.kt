@@ -88,7 +88,7 @@ class RestartReceiver : BroadcastReceiver() {
 			} catch (e: ForegroundServiceStartNotAllowedException) {
 				Log.e(TAG, "Foreground service start not allowed exception: ${e.message}")
 			} catch (e: Exception) {
-				Log.e(TAG, e.toString())
+				Log.e(TAG, e.message, e)
 			}
 		} else {
 			try {
@@ -96,7 +96,7 @@ class RestartReceiver : BroadcastReceiver() {
 				ForegroundServiceStatus.setData(context, ForegroundServiceAction.RESTART)
 				ContextCompat.startForegroundService(context, nIntent)
 			} catch (e: Exception) {
-				Log.e(TAG, e.toString())
+				Log.e(TAG, e.message, e)
 			}
 		}
 	}

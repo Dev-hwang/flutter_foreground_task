@@ -1,8 +1,11 @@
 package com.pravera.flutter_foreground_task.service
 
+import android.app.ForegroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
@@ -16,6 +19,10 @@ import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
  * @version 1.0
  */
 class RebootReceiver : BroadcastReceiver() {
+    companion object {
+        private val TAG = RebootReceiver::class.java.simpleName
+    }
+
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
 
@@ -45,9 +52,24 @@ class RebootReceiver : BroadcastReceiver() {
     }
 
     private fun startForegroundService(context: Context) {
-        // Create an intent for calling the service and store the action to be executed
-        val nIntent = Intent(context, ForegroundService::class.java)
-        ForegroundServiceStatus.setData(context, ForegroundServiceAction.REBOOT)
-        ContextCompat.startForegroundService(context, nIntent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                val nIntent = Intent(context, ForegroundService::class.java)
+                ForegroundServiceStatus.setData(context, ForegroundServiceAction.REBOOT)
+                ContextCompat.startForegroundService(context, nIntent)
+            } catch (e: ForegroundServiceStartNotAllowedException) {
+                Log.e(TAG, "Foreground service start not allowed exception: ${e.message}")
+            } catch (e: Exception) {
+                Log.e(TAG, e.message, e)
+            }
+        } else {
+            try {
+                val nIntent = Intent(context, ForegroundService::class.java)
+                ForegroundServiceStatus.setData(context, ForegroundServiceAction.REBOOT)
+                ContextCompat.startForegroundService(context, nIntent)
+            } catch (e: Exception) {
+                Log.e(TAG, e.message, e)
+            }
+        }
     }
 }
