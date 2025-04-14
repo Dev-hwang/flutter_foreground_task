@@ -1,3 +1,7 @@
+## 9.1.0
+
+* [**FEAT**] Support manual foregroundServiceType via serviceTypes in startService
+
 ## 9.0.0
 
 * [**CHORE**] Bump minimum supported SDK version to `Flutter 3.22/Dart 3.4`
