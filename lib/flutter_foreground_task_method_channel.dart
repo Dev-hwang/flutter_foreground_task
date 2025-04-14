@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:platform/platform.dart';
 
 import 'flutter_foreground_task_platform_interface.dart';
+import 'models/foreground_service_types.dart';
 import 'models/foreground_task_options.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon.dart';
@@ -37,6 +38,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     required IOSNotificationOptions iosNotificationOptions,
     required ForegroundTaskOptions foregroundTaskOptions,
     int? serviceId,
+    List<ForegroundServiceTypes>? serviceTypes,
     required String notificationTitle,
     required String notificationText,
     NotificationIcon? notificationIcon,
@@ -46,6 +48,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   }) async {
     final Map<String, dynamic> optionsJson = ServiceStartOptions(
       serviceId: serviceId,
+      serviceTypes: serviceTypes,
       androidNotificationOptions: androidNotificationOptions,
       iosNotificationOptions: iosNotificationOptions,
       foregroundTaskOptions: foregroundTaskOptions,

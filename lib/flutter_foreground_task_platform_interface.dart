@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_foreground_task_method_channel.dart';
+import 'models/foreground_service_types.dart';
 import 'models/foreground_task_options.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon.dart';
@@ -37,6 +38,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     required IOSNotificationOptions iosNotificationOptions,
     required ForegroundTaskOptions foregroundTaskOptions,
     int? serviceId,
+    List<ForegroundServiceTypes>? serviceTypes,
     required String notificationTitle,
     required String notificationText,
     NotificationIcon? notificationIcon,

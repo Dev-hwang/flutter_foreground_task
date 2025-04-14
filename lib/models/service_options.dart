@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:platform/platform.dart';
 
+import 'foreground_service_types.dart';
 import 'foreground_task_options.dart';
 import 'notification_button.dart';
 import 'notification_icon.dart';
@@ -10,6 +11,7 @@ import 'notification_options.dart';
 class ServiceStartOptions {
   const ServiceStartOptions({
     this.serviceId,
+    this.serviceTypes,
     required this.androidNotificationOptions,
     required this.iosNotificationOptions,
     required this.foregroundTaskOptions,
@@ -22,6 +24,7 @@ class ServiceStartOptions {
   });
 
   final int? serviceId;
+  final List<ForegroundServiceTypes>? serviceTypes;
   final AndroidNotificationOptions androidNotificationOptions;
   final IOSNotificationOptions iosNotificationOptions;
   final ForegroundTaskOptions foregroundTaskOptions;
@@ -35,6 +38,7 @@ class ServiceStartOptions {
   Map<String, dynamic> toJson(Platform platform) {
     final Map<String, dynamic> json = {
       'serviceId': serviceId,
+      'serviceTypes': serviceTypes?.map((e) => e.rawValue).toList(),
       ...foregroundTaskOptions.toJson(),
       'notificationContentTitle': notificationContentTitle,
       'notificationContentText': notificationContentText,

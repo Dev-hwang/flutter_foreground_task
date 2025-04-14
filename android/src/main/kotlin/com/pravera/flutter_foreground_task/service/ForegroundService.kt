@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.*
 import android.content.pm.PackageManager
-import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.net.wifi.WifiManager
 import android.os.*
@@ -19,11 +18,9 @@ import com.pravera.flutter_foreground_task.FlutterForegroundTaskLifecycleListene
 import com.pravera.flutter_foreground_task.RequestCode
 import com.pravera.flutter_foreground_task.models.*
 import com.pravera.flutter_foreground_task.utils.ForegroundServiceUtils
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.util.*
 
 /**
  * A service class for implementing foreground service.
@@ -81,6 +78,7 @@ class ForegroundService : Service() {
     }
 
     private lateinit var foregroundServiceStatus: ForegroundServiceStatus
+    private lateinit var foregroundServiceTypes: ForegroundServiceTypes
     private lateinit var foregroundTaskOptions: ForegroundTaskOptions
     private lateinit var foregroundTaskData: ForegroundTaskData
     private lateinit var notificationOptions: NotificationOptions
@@ -228,25 +226,14 @@ class ForegroundService : Service() {
 
     private fun loadDataFromPreferences() {
         foregroundServiceStatus = ForegroundServiceStatus.getData(applicationContext)
-
-        if (::foregroundTaskOptions.isInitialized) {
-            prevForegroundTaskOptions = foregroundTaskOptions
-        }
+        foregroundServiceTypes = ForegroundServiceTypes.getData(applicationContext)
+        if (::foregroundTaskOptions.isInitialized) { prevForegroundTaskOptions = foregroundTaskOptions }
         foregroundTaskOptions = ForegroundTaskOptions.getData(applicationContext)
-
-        if (::foregroundTaskData.isInitialized) {
-            prevForegroundTaskData = foregroundTaskData
-        }
+        if (::foregroundTaskData.isInitialized) { prevForegroundTaskData = foregroundTaskData }
         foregroundTaskData = ForegroundTaskData.getData(applicationContext)
-
-        if (::notificationOptions.isInitialized) {
-            prevNotificationOptions = notificationOptions
-        }
+        if (::notificationOptions.isInitialized) { prevNotificationOptions = notificationOptions }
         notificationOptions = NotificationOptions.getData(applicationContext)
-
-        if (::notificationContent.isInitialized) {
-            prevNotificationContent = notificationContent
-        }
+        if (::notificationContent.isInitialized) { prevNotificationContent = notificationContent }
         notificationContent = NotificationContent.getData(applicationContext)
     }
 
@@ -278,11 +265,7 @@ class ForegroundService : Service() {
         val serviceId = notificationOptions.serviceId
         val notification = createNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                serviceId,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
-            )
+            startForeground(serviceId, notification, foregroundServiceTypes.value)
         } else {
             startForeground(serviceId, notification)
         }

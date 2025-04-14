@@ -7,6 +7,7 @@ import com.pravera.flutter_foreground_task.errors.ServiceAlreadyStartedException
 import com.pravera.flutter_foreground_task.errors.ServiceNotStartedException
 import com.pravera.flutter_foreground_task.models.ForegroundServiceAction
 import com.pravera.flutter_foreground_task.models.ForegroundServiceStatus
+import com.pravera.flutter_foreground_task.models.ForegroundServiceTypes
 import com.pravera.flutter_foreground_task.models.ForegroundTaskData
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
 import com.pravera.flutter_foreground_task.models.NotificationContent
@@ -28,6 +29,7 @@ class ForegroundServiceManager {
 		val nIntent = Intent(context, ForegroundService::class.java)
 		val argsMap = arguments as? Map<*, *>
 		ForegroundServiceStatus.setData(context, ForegroundServiceAction.API_START)
+		ForegroundServiceTypes.setData(context, argsMap)
 		NotificationOptions.setData(context, argsMap)
 		ForegroundTaskOptions.setData(context, argsMap)
 		ForegroundTaskData.setData(context, argsMap)
@@ -69,6 +71,7 @@ class ForegroundServiceManager {
 
 		val nIntent = Intent(context, ForegroundService::class.java)
 		ForegroundServiceStatus.setData(context, ForegroundServiceAction.API_STOP)
+		ForegroundServiceTypes.clearData(context)
 		NotificationOptions.clearData(context)
 		ForegroundTaskOptions.clearData(context)
 		ForegroundTaskData.clearData(context)
