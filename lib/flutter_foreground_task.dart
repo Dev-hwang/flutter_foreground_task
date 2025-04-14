@@ -10,6 +10,7 @@ import 'errors/service_already_started_exception.dart';
 import 'errors/service_not_initialized_exception.dart';
 import 'errors/service_not_started_exception.dart';
 import 'errors/service_timeout_exception.dart';
+import 'models/foreground_service_types.dart';
 import 'models/foreground_task_options.dart';
 import 'models/notification_button.dart';
 import 'models/notification_icon.dart';
@@ -23,6 +24,7 @@ export 'errors/service_already_started_exception.dart';
 export 'errors/service_not_initialized_exception.dart';
 export 'errors/service_not_started_exception.dart';
 export 'errors/service_timeout_exception.dart';
+export 'models/foreground_service_types.dart';
 export 'models/foreground_task_event_action.dart';
 export 'models/foreground_task_options.dart';
 export 'models/notification_button.dart';
@@ -96,6 +98,7 @@ class FlutterForegroundTask {
   /// Start the foreground service.
   static Future<ServiceRequestResult> startService({
     int? serviceId,
+    List<ForegroundServiceTypes>? serviceTypes,
     required String notificationTitle,
     required String notificationText,
     NotificationIcon? notificationIcon,
@@ -117,6 +120,7 @@ class FlutterForegroundTask {
         iosNotificationOptions: iosNotificationOptions!,
         foregroundTaskOptions: foregroundTaskOptions!,
         serviceId: serviceId,
+        serviceTypes: serviceTypes,
         notificationTitle: notificationTitle,
         notificationText: notificationText,
         notificationIcon: notificationIcon,

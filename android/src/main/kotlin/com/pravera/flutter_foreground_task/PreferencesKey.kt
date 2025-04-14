@@ -16,6 +16,10 @@ object PreferencesKey {
     const val FOREGROUND_SERVICE_STATUS_PREFS = prefix + "FOREGROUND_SERVICE_STATUS"
     const val FOREGROUND_SERVICE_ACTION = "foregroundServiceAction"
 
+    // service types
+    const val FOREGROUND_SERVICE_TYPES_PREFS = prefix + "FOREGROUND_SERVICE_TYPES"
+    const val FOREGROUND_SERVICE_TYPES = "serviceTypes"
+
     // notification options
     const val NOTIFICATION_OPTIONS_PREFS = prefix + "NOTIFICATION_OPTIONS"
     const val SERVICE_ID = "serviceId"
