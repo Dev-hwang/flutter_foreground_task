@@ -166,6 +166,12 @@ class _ExamplePageState extends State<ExamplePage> {
       return FlutterForegroundTask.restartService();
     } else {
       return FlutterForegroundTask.startService(
+        // You can manually specify the foregroundServiceType for the service
+        // to be started, as shown in the comment below.
+        // serviceTypes: [
+        //   ForegroundServiceTypes.dataSync,
+        //   ForegroundServiceTypes.remoteMessaging,
+        // ],
         serviceId: 256,
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',

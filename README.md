@@ -27,7 +27,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^9.0.0
+  flutter_foreground_task: ^9.1.0
 ```
 
 After adding the plugin to your flutter project, we need to declare the platform-specific permissions ans service to use for this plugin to work properly.
@@ -41,10 +41,8 @@ This plugin requires `Kotlin version 1.9.10+` and `Gradle version 8.6.0+`. Pleas
 - [app/build.gradle](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/example/android/app/build.gradle)
 - [migration_documentation](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/documentation/migration_documentation.md)
 
-Open the `AndroidManifest.xml` file and declare the service tag inside the `<application>` tag as follows.
-
-If you want the foreground service to run only when the app is running, add `android:stopWithTask="true"`.
-
+Open the `AndroidManifest.xml` file and declare the service tag inside the `<application>` tag as follows. 
+If you want the foreground service to run only when the app is running, add `android:stopWithTask="true"`. 
 As mentioned in the Android guidelines, to start a FG service on Android 14+, you must declare `android:foregroundServiceType`.
 
 * [`camera`](https://developer.android.com/about/versions/14/changes/fgs-types-required#camera)
@@ -379,6 +377,12 @@ Future<ServiceRequestResult> _startService() async {
     return FlutterForegroundTask.restartService();
   } else {
     return FlutterForegroundTask.startService(
+      // You can manually specify the foregroundServiceType for the service
+      // to be started, as shown in the comment below.
+      // serviceTypes: [
+      //   ForegroundServiceTypes.dataSync,
+      //   ForegroundServiceTypes.remoteMessaging,
+      // ],
       serviceId: 256,
       notificationTitle: 'Foreground Service is running',
       notificationText: 'Tap to return to the app',
