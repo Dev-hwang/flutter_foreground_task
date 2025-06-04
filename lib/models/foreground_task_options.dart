@@ -9,6 +9,7 @@ class ForegroundTaskOptions {
     this.autoRunOnMyPackageReplaced = false,
     this.allowWakeLock = true,
     this.allowWifiLock = false,
+    this.allowAutoRestart = true,
   });
 
   /// The action of onRepeatEvent in [TaskHandler].
@@ -32,6 +33,11 @@ class ForegroundTaskOptions {
   /// https://developer.android.com/reference/android/net/wifi/WifiManager.WifiLock.html
   final bool allowWifiLock;
 
+  /// Allows an application to automatically restart when the app is killed by the system.
+  ///
+  /// https://developer.android.com/about/versions/15/behavior-changes-15?hl=pt-br#datasync-timeout
+  final bool allowAutoRestart;
+
   /// Returns the data fields of [ForegroundTaskOptions] in JSON format.
   Map<String, dynamic> toJson() {
     return {
@@ -40,6 +46,7 @@ class ForegroundTaskOptions {
       'autoRunOnMyPackageReplaced': autoRunOnMyPackageReplaced,
       'allowWakeLock': allowWakeLock,
       'allowWifiLock': allowWifiLock,
+      'allowAutoRestart': allowAutoRestart,
     };
   }
 
@@ -50,13 +57,14 @@ class ForegroundTaskOptions {
     bool? autoRunOnMyPackageReplaced,
     bool? allowWakeLock,
     bool? allowWifiLock,
+    bool? allowAutoRestart,
   }) =>
       ForegroundTaskOptions(
         eventAction: eventAction ?? this.eventAction,
         autoRunOnBoot: autoRunOnBoot ?? this.autoRunOnBoot,
-        autoRunOnMyPackageReplaced:
-            autoRunOnMyPackageReplaced ?? this.autoRunOnMyPackageReplaced,
+        autoRunOnMyPackageReplaced: autoRunOnMyPackageReplaced ?? this.autoRunOnMyPackageReplaced,
         allowWakeLock: allowWakeLock ?? this.allowWakeLock,
         allowWifiLock: allowWifiLock ?? this.allowWifiLock,
+        allowAutoRestart: allowAutoRestart ?? this.allowAutoRestart,
       );
 }

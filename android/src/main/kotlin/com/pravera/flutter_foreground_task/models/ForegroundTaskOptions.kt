@@ -9,7 +9,8 @@ data class ForegroundTaskOptions(
     val autoRunOnBoot: Boolean,
     val autoRunOnMyPackageReplaced: Boolean,
     val allowWakeLock: Boolean,
-    val allowWifiLock: Boolean
+    val allowWifiLock: Boolean,
+    val allowAutoRestart: Boolean
 ) {
     companion object {
         fun getData(context: Context): ForegroundTaskOptions {
@@ -34,13 +35,15 @@ data class ForegroundTaskOptions(
             val autoRunOnMyPackageReplaced = prefs.getBoolean(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED, false)
             val allowWakeLock = prefs.getBoolean(PrefsKey.ALLOW_WAKE_LOCK, true)
             val allowWifiLock = prefs.getBoolean(PrefsKey.ALLOW_WIFI_LOCK, false)
+            val allowAutoRestart = prefs.getBoolean(PrefsKey.ALLOW_AUTO_RESTART, false)
 
             return ForegroundTaskOptions(
                 eventAction = eventAction,
                 autoRunOnBoot = autoRunOnBoot,
                 autoRunOnMyPackageReplaced = autoRunOnMyPackageReplaced,
                 allowWakeLock = allowWakeLock,
-                allowWifiLock = allowWifiLock
+                allowWifiLock = allowWifiLock,
+                allowAutoRestart = allowAutoRestart,
             )
         }
 
@@ -58,6 +61,7 @@ data class ForegroundTaskOptions(
             val autoRunOnMyPackageReplaced = map?.get(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED) as? Boolean ?: false
             val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean ?: true
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean ?: false
+            val allowAutoRestart = map?.get(PrefsKey.ALLOW_AUTO_RESTART) as? Boolean ?: false
 
             with(prefs.edit()) {
                 putString(PrefsKey.TASK_EVENT_ACTION, eventActionJsonString)
@@ -65,6 +69,7 @@ data class ForegroundTaskOptions(
                 putBoolean(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED, autoRunOnMyPackageReplaced)
                 putBoolean(PrefsKey.ALLOW_WAKE_LOCK, allowWakeLock)
                 putBoolean(PrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
+                putBoolean(PrefsKey.ALLOW_AUTO_RESTART, allowAutoRestart)
                 commit()
             }
         }
@@ -83,6 +88,7 @@ data class ForegroundTaskOptions(
             val autoRunOnMyPackageReplaced = map?.get(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED) as? Boolean
             val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean
+            val allowAutoRestart = map?.get(PrefsKey.ALLOW_AUTO_RESTART) as? Boolean
 
             with(prefs.edit()) {
                 eventActionJsonString?.let { putString(PrefsKey.TASK_EVENT_ACTION, it) }
@@ -90,6 +96,7 @@ data class ForegroundTaskOptions(
                 autoRunOnMyPackageReplaced?.let { putBoolean(PrefsKey.AUTO_RUN_ON_MY_PACKAGE_REPLACED, it) }
                 allowWakeLock?.let { putBoolean(PrefsKey.ALLOW_WAKE_LOCK, it) }
                 allowWifiLock?.let { putBoolean(PrefsKey.ALLOW_WIFI_LOCK, it) }
+                allowAutoRestart?.let { putBoolean(PrefsKey.ALLOW_AUTO_RESTART, it) }
                 commit()
             }
         }

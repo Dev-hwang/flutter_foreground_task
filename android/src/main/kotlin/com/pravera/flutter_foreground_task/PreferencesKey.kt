@@ -52,6 +52,7 @@ object PreferencesKey {
     const val AUTO_RUN_ON_MY_PACKAGE_REPLACED = "autoRunOnMyPackageReplaced"
     const val ALLOW_WAKE_LOCK = "allowWakeLock"
     const val ALLOW_WIFI_LOCK = "allowWifiLock"
+    const val ALLOW_AUTO_RESTART = "allowAutoRestart"
 
     // task data
     const val CALLBACK_HANDLE = "callbackHandle"
