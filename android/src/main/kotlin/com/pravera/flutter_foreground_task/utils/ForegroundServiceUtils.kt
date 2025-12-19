@@ -17,7 +17,7 @@ class ForegroundServiceUtils {
                 val pm = context.packageManager
                 val cName = ComponentName(context, ForegroundService::class.java)
                 val flags = pm.getServiceInfo(cName, PackageManager.GET_META_DATA).flags
-                (flags and ServiceInfo.FLAG_STOP_WITH_TASK) == 1
+                (flags and ServiceInfo.FLAG_STOP_WITH_TASK) != 0
             } catch (e: NameNotFoundException) {
                 Log.e(TAG, "isSetStopWithTaskFlag >> The service component cannot be found on the system.")
                 true
