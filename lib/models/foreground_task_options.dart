@@ -10,6 +10,7 @@ class ForegroundTaskOptions {
     this.allowWakeLock = true,
     this.allowWifiLock = false,
     this.allowAutoRestart = true,
+    this.stopWithTask,
   });
 
   /// The action of onRepeatEvent in [TaskHandler].
@@ -38,6 +39,10 @@ class ForegroundTaskOptions {
   /// https://developer.android.com/about/versions/15/behavior-changes-15?hl=pt-br#datasync-timeout
   final bool allowAutoRestart;
 
+  /// Allows an application to automatically stop when the app task is removed by the system.
+  /// If set, overrides the service android:stopWithTask behavior.
+  final bool? stopWithTask;
+
   /// Returns the data fields of [ForegroundTaskOptions] in JSON format.
   Map<String, dynamic> toJson() {
     return {
@@ -47,8 +52,11 @@ class ForegroundTaskOptions {
       'allowWakeLock': allowWakeLock,
       'allowWifiLock': allowWifiLock,
       'allowAutoRestart': allowAutoRestart,
+      if (stopWithTask != null) 'stopWithTask': stopWithTask,
     };
   }
+
+  static const _unset = Object();
 
   /// Creates a copy of the object replaced with new values.
   ForegroundTaskOptions copyWith({
@@ -58,6 +66,7 @@ class ForegroundTaskOptions {
     bool? allowWakeLock,
     bool? allowWifiLock,
     bool? allowAutoRestart,
+    Object? stopWithTask = _unset,
   }) =>
       ForegroundTaskOptions(
         eventAction: eventAction ?? this.eventAction,
@@ -66,5 +75,6 @@ class ForegroundTaskOptions {
         allowWakeLock: allowWakeLock ?? this.allowWakeLock,
         allowWifiLock: allowWifiLock ?? this.allowWifiLock,
         allowAutoRestart: allowAutoRestart ?? this.allowAutoRestart,
+        stopWithTask: identical(stopWithTask, _unset) ? this.stopWithTask : stopWithTask as bool?,
       );
 }
