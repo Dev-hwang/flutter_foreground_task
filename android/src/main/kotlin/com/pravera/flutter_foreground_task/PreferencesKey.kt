@@ -53,7 +53,8 @@ object PreferencesKey {
     const val ALLOW_WAKE_LOCK = "allowWakeLock"
     const val ALLOW_WIFI_LOCK = "allowWifiLock"
     const val ALLOW_AUTO_RESTART = "allowAutoRestart"
+    const val STOP_WITH_TASK = "stopWithTask"
 
-    // task data
+  // task data
     const val CALLBACK_HANDLE = "callbackHandle"
 }

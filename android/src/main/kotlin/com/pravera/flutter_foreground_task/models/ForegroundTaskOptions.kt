@@ -10,7 +10,8 @@ data class ForegroundTaskOptions(
     val autoRunOnMyPackageReplaced: Boolean,
     val allowWakeLock: Boolean,
     val allowWifiLock: Boolean,
-    val allowAutoRestart: Boolean
+    val allowAutoRestart: Boolean,
+    val stopWithTask: Boolean?
 ) {
     companion object {
         fun getData(context: Context): ForegroundTaskOptions {
@@ -36,6 +37,11 @@ data class ForegroundTaskOptions(
             val allowWakeLock = prefs.getBoolean(PrefsKey.ALLOW_WAKE_LOCK, true)
             val allowWifiLock = prefs.getBoolean(PrefsKey.ALLOW_WIFI_LOCK, false)
             val allowAutoRestart = prefs.getBoolean(PrefsKey.ALLOW_AUTO_RESTART, false)
+            val stopWithTask: Boolean? =
+              if (prefs.contains(PrefsKey.STOP_WITH_TASK))
+                prefs.getBoolean(PrefsKey.STOP_WITH_TASK, false)
+              else
+                null
 
             return ForegroundTaskOptions(
                 eventAction = eventAction,
@@ -44,6 +50,7 @@ data class ForegroundTaskOptions(
                 allowWakeLock = allowWakeLock,
                 allowWifiLock = allowWifiLock,
                 allowAutoRestart = allowAutoRestart,
+                stopWithTask = stopWithTask,
             )
         }
 
@@ -62,6 +69,7 @@ data class ForegroundTaskOptions(
             val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean ?: true
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean ?: false
             val allowAutoRestart = map?.get(PrefsKey.ALLOW_AUTO_RESTART) as? Boolean ?: false
+            val stopWithTask = map?.get(PrefsKey.STOP_WITH_TASK) as? Boolean
 
             with(prefs.edit()) {
                 putString(PrefsKey.TASK_EVENT_ACTION, eventActionJsonString)
@@ -70,6 +78,7 @@ data class ForegroundTaskOptions(
                 putBoolean(PrefsKey.ALLOW_WAKE_LOCK, allowWakeLock)
                 putBoolean(PrefsKey.ALLOW_WIFI_LOCK, allowWifiLock)
                 putBoolean(PrefsKey.ALLOW_AUTO_RESTART, allowAutoRestart)
+                stopWithTask?.let { putBoolean(PrefsKey.STOP_WITH_TASK, it) } ?: remove(PrefsKey.STOP_WITH_TASK)
                 commit()
             }
         }
@@ -89,6 +98,7 @@ data class ForegroundTaskOptions(
             val allowWakeLock = map?.get(PrefsKey.ALLOW_WAKE_LOCK) as? Boolean
             val allowWifiLock = map?.get(PrefsKey.ALLOW_WIFI_LOCK) as? Boolean
             val allowAutoRestart = map?.get(PrefsKey.ALLOW_AUTO_RESTART) as? Boolean
+            val stopWithTask = map?.get(PrefsKey.STOP_WITH_TASK) as? Boolean
 
             with(prefs.edit()) {
                 eventActionJsonString?.let { putString(PrefsKey.TASK_EVENT_ACTION, it) }
@@ -97,6 +107,7 @@ data class ForegroundTaskOptions(
                 allowWakeLock?.let { putBoolean(PrefsKey.ALLOW_WAKE_LOCK, it) }
                 allowWifiLock?.let { putBoolean(PrefsKey.ALLOW_WIFI_LOCK, it) }
                 allowAutoRestart?.let { putBoolean(PrefsKey.ALLOW_AUTO_RESTART, it) }
+                stopWithTask?.let { putBoolean(PrefsKey.STOP_WITH_TASK, it) } ?: remove(PrefsKey.STOP_WITH_TASK)
                 commit()
             }
         }
