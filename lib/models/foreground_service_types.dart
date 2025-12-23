@@ -49,6 +49,9 @@ class ForegroundServiceTypes {
   /// Reserved for system applications and specific system integrations, to continue to use foreground services.
   static const systemExempted = ForegroundServiceTypes(12);
 
+  /// Service for performing time-consuming operations on media assets, like converting media to different formats.
+  static const mediaProcessing = ForegroundServiceTypes(13);
+
   /// The raw value of [ForegroundServiceTypes].
   final int rawValue;
 }
