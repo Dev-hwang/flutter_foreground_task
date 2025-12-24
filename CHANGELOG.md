@@ -1,3 +1,10 @@
+## 9.2.0
+
+* [**FEAT**] Add `allowAutoRestart` option, which enables the service to automatically restart if it is terminated by the system.
+* [**FEAT**] Add `stopWithTask` option, to ensure service termination when the app UI is dismissed.
+* [**FEAT**] Add `mediaProcessing` foreground service type.
+* [**FIX**] Fix `FLAG_STOP_WITH_TASK` bitmask check error.
+
 ## 9.1.0
 
 * [**FEAT**] Support manual foregroundServiceType via serviceTypes in startService
