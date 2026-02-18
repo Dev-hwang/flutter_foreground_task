@@ -204,7 +204,13 @@ class ForegroundService : Service() {
         if (::foregroundServiceStatus.isInitialized) {
             isCorrectlyStopped = foregroundServiceStatus.isCorrectlyStopped()
         }
-        val allowAutoRestart = foregroundTaskOptions.allowAutoRestart
+        // Guard against UninitializedPropertyAccessException when Android
+        // destroys the service before onStartCommand() initializes the options
+        // (same pattern as the foregroundServiceStatus check above).
+        var allowAutoRestart = false
+        if (::foregroundTaskOptions.isInitialized) {
+            allowAutoRestart = foregroundTaskOptions.allowAutoRestart
+        }
         if (allowAutoRestart && !isCorrectlyStopped && !ForegroundServiceUtils.isSetStopWithTaskFlag(this)) {
             Log.e(TAG, "The service will be restarted after 5 seconds because it wasn't properly stopped.")
             RestartReceiver.setRestartAlarm(this, 5000)
