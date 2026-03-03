@@ -1,3 +1,7 @@
+## 9.2.1
+
+* [**FIX**] Prevent crash in onDestroy [#372](https://github.com/Dev-hwang/flutter_foreground_task/pull/372)
+
 ## 9.2.0
 
 * [**FEAT**] Add `allowAutoRestart` option, which enables the service to automatically restart if it is terminated by the system.
