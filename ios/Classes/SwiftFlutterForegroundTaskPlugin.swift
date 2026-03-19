@@ -2,7 +2,7 @@ import Flutter
 import UIKit
 import BackgroundTasks
 
-public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
+public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDelegate {
   // ====================== Plugin ======================
   static private(set) var registerPlugins: FlutterPluginRegistrantCallback? = nil
   
@@ -16,10 +16,19 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     instance.initServices()
     instance.initChannels(registrar.messenger())
     registrar.addApplicationDelegate(instance)
+    registrar.addSceneDelegate(instance)
   }
   
   public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
     registerPlugins = callback
+  }
+
+  @objc public static func registerAppRefreshForBackgroundLaunch() {
+    if #available(iOS 13.0, *) {
+      let permitted = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String] ?? []
+      guard permitted.contains(refreshIdentifier) else { return }
+      registerAppRefresh()
+    }
   }
   
   public static func addTaskLifecycleListener(_ listener: FlutterForegroundTaskLifecycleListener) {
@@ -115,6 +124,12 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     sleep(5)
   }
   
+  // ================ Scene Lifecycle ===================
+  @available(iOS 13.0, *)
+  public func sceneDidEnterBackground(_ scene: UIScene) {
+    SwiftFlutterForegroundTaskPlugin.scheduleAppRefresh()
+  }
+
   // ================= Service Delegate =================
   @available(iOS 10.0, *)
   public func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -132,9 +147,12 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   
   // ============== Background App Refresh ==============
   public static var refreshIdentifier: String = "com.pravera.flutter_foreground_task.refresh"
+  private static var isBgTaskRegistered: Bool = false
 
   @available(iOS 13.0, *)
   private static func registerAppRefresh() {
+    guard !isBgTaskRegistered else { return }
+    isBgTaskRegistered = true
     BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshIdentifier, using: nil) { task in
       handleAppRefresh(task: task as! BGAppRefreshTask)
     }
