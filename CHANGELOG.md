@@ -1,3 +1,7 @@
+## 9.2.2
+
+* [**FIX**] Resolved frequent ForegroundServiceDidNotStartInTime and ForegroundServiceDidNotStopInTime exceptions by avoiding redundant foreground service start contracts. [#377](https://github.com/Dev-hwang/flutter_foreground_task/pull/377)
+
 ## 9.2.1
 
 * [**FIX**] Prevent crash in onDestroy [#372](https://github.com/Dev-hwang/flutter_foreground_task/pull/372)
