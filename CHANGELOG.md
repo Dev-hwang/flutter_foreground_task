@@ -1,3 +1,7 @@
+## 9.3.0
+
+* [**CHORE**] Migrate to built-in Kotlin. AGP 9.0 will remove support for plugins that apply the Kotlin Gradle Plugin. Removes `apply plugin: "kotlin-android"` and the KGP classpath from `android/build.gradle`, and the same from `example/android/app/build.gradle`. Bumps minimum Flutter version to 3.44.0 and Dart SDK to 3.12.0 as required by the new `kotlin.compilerOptions` DSL.
+
 ## 9.2.2
 
 * [**FIX**] Resolved frequent ForegroundServiceDidNotStartInTime and ForegroundServiceDidNotStopInTime exceptions by avoiding redundant foreground service start contracts. [#377](https://github.com/Dev-hwang/flutter_foreground_task/pull/377)
