@@ -64,6 +64,7 @@ class ServiceStartOptions {
 
 class ServiceUpdateOptions {
   const ServiceUpdateOptions({
+    this.serviceTypes,
     required this.foregroundTaskOptions,
     required this.notificationContentTitle,
     required this.notificationContentText,
@@ -73,6 +74,7 @@ class ServiceUpdateOptions {
     this.callback,
   });
 
+  final List<ForegroundServiceTypes>? serviceTypes;
   final ForegroundTaskOptions? foregroundTaskOptions;
   final String? notificationContentTitle;
   final String? notificationContentText;
@@ -83,6 +85,7 @@ class ServiceUpdateOptions {
 
   Map<String, dynamic> toJson(Platform platform) {
     final Map<String, dynamic> json = {
+      'serviceTypes': serviceTypes?.map((e) => e.rawValue).toList(),
       'notificationContentTitle': notificationContentTitle,
       'notificationContentText': notificationContentText,
       'icon': notificationIcon?.toJson(),

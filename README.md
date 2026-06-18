@@ -490,6 +490,15 @@ class SecondTaskHandler extends TaskHandler {
 }
 ```
 
+> [!NOTE]
+>You can optionally specify serviceTypes in FlutterForegroundTask.updateService() to update the foreground service types without restarting the service.
+>
+>This is useful for applications that need to run a foreground service continuously on Android 15 or later. Some foreground service types, such as ForegroundServiceTypes.dataSync and ForegroundServiceTypes.mediaProcessing, are subject to Android's foreground service timeout restrictions.
+>
+>By switching to another appropriate foreground service type with updateService(), you can seamlessly transition between service types without stopping and restarting the service, avoiding any gap where no foreground service is running.
+>
+>If serviceTypes is not specified, the current foreground service types will remain unchanged.
+
 7. If you no longer use the service, call `FlutterForegroundTask.stopService`.
 
 ```dart
