@@ -1,3 +1,7 @@
+## 9.2.3
+
+* [**FEAT**] Add Swift Package Manager (SPM) support for iOS.
+
 ## 9.2.2
 
 * [**FIX**] Resolved frequent ForegroundServiceDidNotStartInTime and ForegroundServiceDidNotStopInTime exceptions by avoiding redundant foreground service start contracts. [#377](https://github.com/Dev-hwang/flutter_foreground_task/pull/377)
