@@ -16,6 +16,7 @@ import 'models/notification_button.dart';
 import 'models/notification_icon.dart';
 import 'models/notification_options.dart';
 import 'models/notification_permission.dart';
+import 'models/notification_progress.dart';
 import 'models/service_request_result.dart';
 import 'task_handler.dart';
 import 'utils/utility.dart';
@@ -33,6 +34,7 @@ export 'models/notification_icon.dart';
 export 'models/notification_options.dart';
 export 'models/notification_permission.dart';
 export 'models/notification_priority.dart';
+export 'models/notification_progress.dart';
 export 'models/notification_visibility.dart';
 export 'models/service_request_result.dart';
 export 'ui/with_foreground_task.dart';
@@ -102,6 +104,7 @@ class FlutterForegroundTask {
     required String notificationTitle,
     required String notificationText,
     NotificationIcon? notificationIcon,
+    NotificationProgress? notificationProgress,
     List<NotificationButton>? notificationButtons,
     String? notificationInitialRoute,
     Function? callback,
@@ -124,6 +127,7 @@ class FlutterForegroundTask {
         notificationTitle: notificationTitle,
         notificationText: notificationText,
         notificationIcon: notificationIcon,
+        notificationProgress: notificationProgress,
         notificationButtons: notificationButtons,
         notificationInitialRoute: notificationInitialRoute,
         callback: callback,
@@ -160,6 +164,7 @@ class FlutterForegroundTask {
     String? notificationTitle,
     String? notificationText,
     NotificationIcon? notificationIcon,
+    NotificationProgress? notificationProgress,
     List<NotificationButton>? notificationButtons,
     String? notificationInitialRoute,
     Function? callback,
@@ -174,6 +179,7 @@ class FlutterForegroundTask {
         notificationText: notificationText,
         notificationTitle: notificationTitle,
         notificationIcon: notificationIcon,
+        notificationProgress: notificationProgress,
         notificationButtons: notificationButtons,
         notificationInitialRoute: notificationInitialRoute,
         callback: callback,

@@ -9,6 +9,7 @@ data class NotificationContent(
         val title: String,
         val text: String,
         val icon: NotificationIcon?,
+        val progress: NotificationProgress?,
         val buttons: List<NotificationButton>,
         val initialRoute: String?
 ) {
@@ -24,6 +25,12 @@ data class NotificationContent(
             var icon: NotificationIcon? = null
             if (iconJsonString != null) {
                 icon = NotificationIcon.fromJsonString(iconJsonString)
+            }
+
+            val progressJsonString = prefs.getString(PrefsKey.NOTIFICATION_CONTENT_PROGRESS, null)
+            var progress: NotificationProgress? = null
+            if (progressJsonString != null) {
+                progress = NotificationProgress.fromJsonString(progressJsonString)
             }
 
             val buttonsJsonString = prefs.getString(PrefsKey.NOTIFICATION_CONTENT_BUTTONS, null)
@@ -42,6 +49,7 @@ data class NotificationContent(
                 title = title,
                 text = text,
                 icon = icon,
+                progress = progress,
                 buttons = buttons,
                 initialRoute = initialRoute
             )
@@ -60,6 +68,12 @@ data class NotificationContent(
                 iconJsonString = JSONObject(iconJson).toString()
             }
 
+            val progressJson = map?.get(PrefsKey.NOTIFICATION_CONTENT_PROGRESS) as? Map<*, *>
+            var progressJsonString: String? = null
+            if (progressJson != null) {
+                progressJsonString = JSONObject(progressJson).toString()
+            }
+
             val buttonsJson = map?.get(PrefsKey.NOTIFICATION_CONTENT_BUTTONS) as? List<*>
             var buttonsJsonString: String? = null
             if (buttonsJson != null) {
@@ -72,6 +86,7 @@ data class NotificationContent(
                 putString(PrefsKey.NOTIFICATION_CONTENT_TITLE, title)
                 putString(PrefsKey.NOTIFICATION_CONTENT_TEXT, text)
                 putString(PrefsKey.NOTIFICATION_CONTENT_ICON, iconJsonString)
+                putString(PrefsKey.NOTIFICATION_CONTENT_PROGRESS, progressJsonString)
                 putString(PrefsKey.NOTIFICATION_CONTENT_BUTTONS, buttonsJsonString)
                 putString(PrefsKey.NOTIFICATION_INITIAL_ROUTE, initialRoute)
                 commit()
@@ -91,6 +106,12 @@ data class NotificationContent(
                 iconJsonString = JSONObject(iconJson).toString()
             }
 
+            val progressJson = map?.get(PrefsKey.NOTIFICATION_CONTENT_PROGRESS) as? Map<*, *>
+            var progressJsonString: String? = null
+            if (progressJson != null) {
+                progressJsonString = JSONObject(progressJson).toString()
+            }
+
             val buttonsJson = map?.get(PrefsKey.NOTIFICATION_CONTENT_BUTTONS) as? List<*>
             var buttonsJsonString: String? = null
             if (buttonsJson != null) {
@@ -103,6 +124,7 @@ data class NotificationContent(
                 title?.let { putString(PrefsKey.NOTIFICATION_CONTENT_TITLE, it) }
                 text?.let { putString(PrefsKey.NOTIFICATION_CONTENT_TEXT, it) }
                 iconJsonString?.let { putString(PrefsKey.NOTIFICATION_CONTENT_ICON, it) }
+                progressJsonString?.let { putString(PrefsKey.NOTIFICATION_CONTENT_PROGRESS, it) }
                 buttonsJsonString?.let { putString(PrefsKey.NOTIFICATION_CONTENT_BUTTONS, it) }
                 initialRoute?.let { putString(PrefsKey.NOTIFICATION_INITIAL_ROUTE, it) }
                 commit()

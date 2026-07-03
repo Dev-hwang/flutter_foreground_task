@@ -7,6 +7,7 @@ import 'foreground_task_options.dart';
 import 'notification_button.dart';
 import 'notification_icon.dart';
 import 'notification_options.dart';
+import 'notification_progress.dart';
 
 class ServiceStartOptions {
   const ServiceStartOptions({
@@ -18,6 +19,7 @@ class ServiceStartOptions {
     required this.notificationContentTitle,
     required this.notificationContentText,
     this.notificationIcon,
+    this.notificationProgress,
     this.notificationButtons,
     this.notificationInitialRoute,
     this.callback,
@@ -31,6 +33,7 @@ class ServiceStartOptions {
   final String notificationContentTitle;
   final String notificationContentText;
   final NotificationIcon? notificationIcon;
+  final NotificationProgress? notificationProgress;
   final List<NotificationButton>? notificationButtons;
   final String? notificationInitialRoute;
   final Function? callback;
@@ -43,6 +46,7 @@ class ServiceStartOptions {
       'notificationContentTitle': notificationContentTitle,
       'notificationContentText': notificationContentText,
       'icon': notificationIcon?.toJson(),
+      'progress': notificationProgress?.toJson(),
       'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
       'initialRoute': notificationInitialRoute,
     };
@@ -54,8 +58,9 @@ class ServiceStartOptions {
     }
 
     if (callback != null) {
-      json['callbackHandle'] =
-          PluginUtilities.getCallbackHandle(callback!)?.toRawHandle();
+      json['callbackHandle'] = PluginUtilities.getCallbackHandle(
+        callback!,
+      )?.toRawHandle();
     }
 
     return json;
@@ -68,6 +73,7 @@ class ServiceUpdateOptions {
     required this.notificationContentTitle,
     required this.notificationContentText,
     this.notificationIcon,
+    this.notificationProgress,
     this.notificationButtons,
     this.notificationInitialRoute,
     this.callback,
@@ -77,6 +83,7 @@ class ServiceUpdateOptions {
   final String? notificationContentTitle;
   final String? notificationContentText;
   final NotificationIcon? notificationIcon;
+  final NotificationProgress? notificationProgress;
   final List<NotificationButton>? notificationButtons;
   final String? notificationInitialRoute;
   final Function? callback;
@@ -86,6 +93,7 @@ class ServiceUpdateOptions {
       'notificationContentTitle': notificationContentTitle,
       'notificationContentText': notificationContentText,
       'icon': notificationIcon?.toJson(),
+      'progress': notificationProgress?.toJson(),
       'buttons': notificationButtons?.map((e) => e.toJson()).toList(),
       'initialRoute': notificationInitialRoute,
     };
@@ -95,8 +103,9 @@ class ServiceUpdateOptions {
     }
 
     if (callback != null) {
-      json['callbackHandle'] =
-          PluginUtilities.getCallbackHandle(callback!)?.toRawHandle();
+      json['callbackHandle'] = PluginUtilities.getCallbackHandle(
+        callback!,
+      )?.toRawHandle();
     }
 
     return json;

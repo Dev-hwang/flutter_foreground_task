@@ -23,11 +23,15 @@ class MyTaskHandler extends TaskHandler {
 
   void _incrementCount() {
     _count++;
+    final int progress = _count % 10;
 
     // Update notification content.
     FlutterForegroundTask.updateService(
       notificationTitle: 'Hello MyTaskHandler :)',
       notificationText: 'count: $_count',
+      notificationProgress: progress == 0
+          ? const NotificationProgress.none()
+          : NotificationProgress(max: 10, progress: progress),
     );
 
     // Send data to main isolate.
@@ -176,6 +180,7 @@ class _ExamplePageState extends State<ExamplePage> {
         notificationTitle: 'Foreground Service is running',
         notificationText: 'Tap to return to the app',
         notificationIcon: null,
+        notificationProgress: const NotificationProgress(max: 10, progress: 0),
         notificationButtons: [
           const NotificationButton(id: 'btn_hello', text: 'hello'),
         ],
