@@ -1,6 +1,7 @@
-## 9.3.0
+## 10.0.0
 
-* [**CHORE**] Migrate to built-in Kotlin. AGP 9.0 will remove support for plugins that apply the Kotlin Gradle Plugin. Removes `apply plugin: "kotlin-android"` and the KGP classpath from `android/build.gradle`, and the same from `example/android/app/build.gradle`. Bumps minimum Flutter version to 3.44.0 and Dart SDK to 3.12.0 as required by the new `kotlin.compilerOptions` DSL.
+* [**CHORE**] Bump minimum supported SDK version to `Flutter 3.38.0`
+* [**FEAT**] Add UIScene life cycle support for iOS [#378](https://github.com/Dev-hwang/flutter_foreground_task/pull/378)
 
 ## 9.2.2
 
