@@ -71,10 +71,13 @@ class ForegroundTaskOptions {
       ForegroundTaskOptions(
         eventAction: eventAction ?? this.eventAction,
         autoRunOnBoot: autoRunOnBoot ?? this.autoRunOnBoot,
-        autoRunOnMyPackageReplaced: autoRunOnMyPackageReplaced ?? this.autoRunOnMyPackageReplaced,
+        autoRunOnMyPackageReplaced:
+            autoRunOnMyPackageReplaced ?? this.autoRunOnMyPackageReplaced,
         allowWakeLock: allowWakeLock ?? this.allowWakeLock,
         allowWifiLock: allowWifiLock ?? this.allowWifiLock,
         allowAutoRestart: allowAutoRestart ?? this.allowAutoRestart,
-        stopWithTask: identical(stopWithTask, _unset) ? this.stopWithTask : stopWithTask as bool?,
+        stopWithTask: identical(stopWithTask, _unset)
+            ? this.stopWithTask
+            : stopWithTask as bool?,
       );
 }

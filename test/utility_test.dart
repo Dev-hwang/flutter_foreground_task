@@ -17,8 +17,9 @@ void main() {
     FlutterForegroundTaskPlatform.instance = platformChannel;
     FlutterForegroundTask.resetStatic();
 
-    methodCallHandler =
-        UtilityMethodCallHandler(() => platformChannel.platform);
+    methodCallHandler = UtilityMethodCallHandler(
+      () => platformChannel.platform,
+    );
 
     // method channel
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -68,19 +69,13 @@ void main() {
       FlutterForegroundTask.setOnLockScreenVisibility(true);
       expect(
         methodCallHandler.log.last,
-        isMethodCall(
-          UtilityMethod.setOnLockScreenVisibility,
-          arguments: true,
-        ),
+        isMethodCall(UtilityMethod.setOnLockScreenVisibility, arguments: true),
       );
 
       FlutterForegroundTask.setOnLockScreenVisibility(false);
       expect(
         methodCallHandler.log.last,
-        isMethodCall(
-          UtilityMethod.setOnLockScreenVisibility,
-          arguments: false,
-        ),
+        isMethodCall(UtilityMethod.setOnLockScreenVisibility, arguments: false),
       );
     });
 
@@ -443,7 +438,8 @@ class UtilityMethodCallHandler {
     final Platform platform = _platformGetter();
     if (!UtilityMethod.getImplementation(platform).contains(method)) {
       throw UnimplementedError(
-          'Unimplemented method on ${platform.operatingSystem}: $method');
+        'Unimplemented method on ${platform.operatingSystem}: $method',
+      );
     }
   }
 

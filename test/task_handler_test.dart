@@ -19,27 +19,27 @@ void main() {
 
     // method channel
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      platformChannel.mMDChannel,
-      (MethodCall methodCall) async {
-        final String method = methodCall.method;
-        if (method == 'sendData') {
-          final dynamic data = methodCall.arguments;
-          platformChannel.mBGChannel
-              .invokeMethod(TaskEventMethod.onReceiveData, data);
-        }
-        return;
-      },
-    );
+        .setMockMethodCallHandler(platformChannel.mMDChannel, (
+      MethodCall methodCall,
+    ) async {
+      final String method = methodCall.method;
+      if (method == 'sendData') {
+        final dynamic data = methodCall.arguments;
+        platformChannel.mBGChannel.invokeMethod(
+          TaskEventMethod.onReceiveData,
+          data,
+        );
+      }
+      return;
+    });
 
     // background channel
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      platformChannel.mBGChannel,
-      (MethodCall methodCall) {
-        return platformChannel.onBackgroundChannel(methodCall, taskHandler);
-      },
-    );
+        .setMockMethodCallHandler(platformChannel.mBGChannel, (
+      MethodCall methodCall,
+    ) {
+      return platformChannel.onBackgroundChannel(methodCall, taskHandler);
+    });
   });
 
   tearDown(() {
@@ -305,8 +305,9 @@ class TestTaskHandler extends TaskHandler {
 
   @override
   void onNotificationButtonPressed(String id) {
-    log.add(TaskEvent(
-        method: TaskEventMethod.onNotificationButtonPressed, data: id));
+    log.add(
+      TaskEvent(method: TaskEventMethod.onNotificationButtonPressed, data: id),
+    );
   }
 
   @override
