@@ -16,3 +16,12 @@
   [SwiftFlutterForegroundTaskPlugin setPluginRegistrantCallback:callback];
 }
 @end
+
+@interface FlutterForegroundTaskEarlyRegistration : NSObject
+@end
+
+@implementation FlutterForegroundTaskEarlyRegistration
++ (void)load {
+  [SwiftFlutterForegroundTaskPlugin registerAppRefreshForBackgroundLaunch];
+}
+@end

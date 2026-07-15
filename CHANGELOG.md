@@ -1,6 +1,7 @@
-## 9.2.3
+## 10.0.0
 
-* [**FEAT**] Add Swift Package Manager (SPM) support for iOS.
+* [**CHORE**] Bump minimum supported SDK version to `Flutter 3.38.0`
+* [**FEAT**] Add UIScene life cycle support for iOS [#378](https://github.com/Dev-hwang/flutter_foreground_task/pull/378)
 
 ## 9.2.2
 
