@@ -55,6 +55,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
 
   Future<void> updateService({
     ForegroundTaskOptions? foregroundTaskOptions,
+    List<ForegroundServiceTypes>? serviceTypes,
     String? notificationTitle,
     String? notificationText,
     NotificationIcon? notificationIcon,
