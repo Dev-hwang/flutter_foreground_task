@@ -1,3 +1,8 @@
+## 10.0.0
+
+* [**CHORE**] Bump minimum supported SDK version to `Flutter 3.38.0`
+* [**FEAT**] Add UIScene life cycle support for iOS [#378](https://github.com/Dev-hwang/flutter_foreground_task/pull/378)
+
 ## 9.2.2
 
 * [**FIX**] Resolved frequent ForegroundServiceDidNotStartInTime and ForegroundServiceDidNotStopInTime exceptions by avoiding redundant foreground service start contracts. [#377](https://github.com/Dev-hwang/flutter_foreground_task/pull/377)
