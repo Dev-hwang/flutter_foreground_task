@@ -16,7 +16,9 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin, FlutterS
     instance.initServices()
     instance.initChannels(registrar.messenger())
     registrar.addApplicationDelegate(instance)
-    registrar.addSceneDelegate(instance)
+    if #available(iOS 13.0, *) {
+      registrar.addSceneDelegate(instance)
+    }
   }
   
   public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
