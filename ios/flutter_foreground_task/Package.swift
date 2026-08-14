@@ -16,7 +16,7 @@ let package = Package(
         .target(
             name: "flutter_foreground_task",
             dependencies: [
-                .product(name: "FlutterFramework", path: "../FlutterFramework")
+                .product(name: "FlutterFramework", package: "FlutterFramework")
             ],
             path: "Sources/flutter_foreground_task"
         )
