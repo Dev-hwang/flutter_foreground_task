@@ -3,6 +3,8 @@
 .idea/
 .packages
 .pub/
+.build/
+.swiftpm/
 
 /pubspec.lock
 build/

@@ -26,4 +26,4 @@ flutter:
         package: com.pravera.flutter_foreground_task
         pluginClass: FlutterForegroundTaskPlugin
       ios:
-        pluginClass: FlutterForegroundTaskPlugin
+        pluginClass: SwiftFlutterForegroundTaskPlugin
