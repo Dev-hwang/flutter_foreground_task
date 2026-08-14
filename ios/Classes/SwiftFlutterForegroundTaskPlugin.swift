@@ -2,7 +2,7 @@ import Flutter
 import UIKit
 import BackgroundTasks
 
-public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDelegate {
+public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   // ====================== Plugin ======================
   static private(set) var registerPlugins: FlutterPluginRegistrantCallback? = nil
   
@@ -125,12 +125,6 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin, FlutterS
     // Chance to handle onDestroy before app terminates
     sleep(5)
   }
-  
-  // ================ Scene Lifecycle ===================
-  @available(iOS 13.0, *)
-  public func sceneDidEnterBackground(_ scene: UIScene) {
-    SwiftFlutterForegroundTaskPlugin.scheduleAppRefresh()
-  }
 
   // ================= Service Delegate =================
   @available(iOS 10.0, *)
@@ -207,5 +201,12 @@ class AppRefreshOperation: Operation {
     }
     
     semaphore.wait()
+  }
+}
+
+@available(iOS 13.0, *)
+extension SwiftFlutterForegroundTaskPlugin: FlutterSceneLifeCycleDelegate {
+  public func sceneDidEnterBackground(_ scene: UIScene) {
+    SwiftFlutterForegroundTaskPlugin.scheduleAppRefresh()
   }
 }
