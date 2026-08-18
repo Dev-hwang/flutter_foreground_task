@@ -65,9 +65,6 @@ jobs:
           channel: stable
       - run: flutter --version
 
-      - name: Disable Swift Package Manager
-        run: flutter config --no-enable-swift-package-manager
-
       - name: Build example app
         working-directory: example
         run: flutter build ios --debug --simulator
