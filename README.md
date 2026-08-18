@@ -19,7 +19,7 @@ This plugin is used to implement a foreground service on the Android platform.
 - Flutter: `3.22.0+`
 - Dart: `3.4.0+`
 - Android: `5.0+ (minSdkVersion: 21)`
-- iOS: `12.0+`
+- iOS: `13.0+`
 
 ## Getting started
 
@@ -27,7 +27,7 @@ To use this plugin, add `flutter_foreground_task` as a [dependency in your pubsp
 
 ```yaml
 dependencies:
-  flutter_foreground_task: ^10.0.0
+  flutter_foreground_task: ^11.0.0
 ```
 
 After adding the plugin to your flutter project, we need to declare the platform-specific permissions ans service to use for this plugin to work properly.
@@ -127,9 +127,7 @@ Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
 ```objc
 #import "AppDelegate.h"
 #import "GeneratedPluginRegistrant.h"
-
-// this
-#import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
+@import flutter_foreground_task; // this (module import)
 
 // this
 void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
@@ -156,17 +154,12 @@ void registerPlugins(NSObject<FlutterPluginRegistry>* registry) {
 
 **Swift**:
 
-Declare the import statement below in the `ios/Runner/Runner-Bridging-Header.h` file.
-
-```objc
-#import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
-```
-
 Open the `ios/Runner/AppDelegate.swift` file and add the commented code.
 
 ```swift
 import UIKit
 import Flutter
+import flutter_foreground_task // this (module import)
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {

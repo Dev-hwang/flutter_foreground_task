@@ -1,5 +1,68 @@
 ## Migration
 
+### ver 11.0.0
+
+- Bump minimum supported SDK version to `Flutter 3.44/Dart 3.12`.
+
+```
+environment:
+   // sdk: ^3.4.0
+   // flutter: ">=3.38.0"
+   sdk: ^3.12.0
+   flutter: ">=3.44.0"
+```
+
+- Migrate to built-in Kotlin (KGP).
+
+```
+>> android/app/build.gradle
+
+plugins {
+    // id "kotlin-android"
+}
+
+android {
+    // kotlinOptions {
+    //     jvmTarget = JavaVersion.VERSION_11
+    // }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+    }
+}
+```
+
+```
+>> android/gradle/wrapper/gradle-wrapper.properties
+
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.14-bin.zip
+
+-----------------------------------------------------------------
+
+>> android/settings.gradle
+
+plugins {
+    id "com.android.application" version "8.11.1" apply false
+    id "org.jetbrains.kotlin.android" version "2.2.20" apply false
+}
+```
+
+- Support Swift Package Manager (SPM). The Obj-C bridging header import is no longer needed; use a module import in `AppDelegate.swift` instead.
+
+```
+>> ios/Runner/Runner-Bridging-Header.h
+
+// #import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
+
+-----------------------------------------------------------------
+
+>> ios/Runner/AppDelegate.swift
+
+import flutter_foreground_task // module import
+```
+
 ### ver 9.0.0
 
 - chore: Bump minimum supported SDK version to `Flutter 3.22/Dart 3.4`.
