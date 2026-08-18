@@ -1,5 +1,6 @@
 import UIKit
 import Flutter
+import flutter_foreground_task
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
