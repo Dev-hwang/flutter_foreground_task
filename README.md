@@ -16,8 +16,8 @@ This plugin is used to implement a foreground service on the Android platform.
 
 ## Support version
 
-- Flutter: `3.22.0+`
-- Dart: `3.4.0+`
+- Flutter: `3.44.0+`
+- Dart: `3.12.0+`
 - Android: `5.0+ (minSdkVersion: 21)`
 - iOS: `13.0+`
 
@@ -34,7 +34,7 @@ After adding the plugin to your flutter project, we need to declare the platform
 
 ### :baby_chick: Android
 
-This plugin requires `Kotlin version 1.9.10+` and `Gradle version 8.6.0+`. Please refer to the migration documentation for more details.
+This plugin requires `Kotlin version 2.2.20+` and `Gradle version 8.11.1+`. Please refer to the migration documentation for more details.
 
 - [project/settings.gradle](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/example/android/settings.gradle)
 - [project/gradle-wrapper.properties](https://github.com/Dev-hwang/flutter_foreground_task/blob/master/example/android/gradle/wrapper/gradle-wrapper.properties)
