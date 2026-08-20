@@ -144,17 +144,11 @@ class IOSNotificationOptions {
 
   /// Returns the data fields of [IOSNotificationOptions] in JSON format.
   Map<String, dynamic> toJson() {
-    return {
-      'showNotification': showNotification,
-      'playSound': playSound,
-    };
+    return {'showNotification': showNotification, 'playSound': playSound};
   }
 
   /// Creates a copy of the object replaced with new values.
-  IOSNotificationOptions copyWith({
-    bool? showNotification,
-    bool? playSound,
-  }) =>
+  IOSNotificationOptions copyWith({bool? showNotification, bool? playSound}) =>
       IOSNotificationOptions(
         showNotification: showNotification ?? this.showNotification,
         playSound: playSound ?? this.playSound,

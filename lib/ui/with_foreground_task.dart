@@ -28,5 +28,6 @@ class _WithForegroundTaskState extends State<WithForegroundTask> {
 
   @override
   Widget build(BuildContext context) =>
+      // ignore: deprecated_member_use
       WillPopScope(onWillPop: _onWillPop, child: widget.child);
 }

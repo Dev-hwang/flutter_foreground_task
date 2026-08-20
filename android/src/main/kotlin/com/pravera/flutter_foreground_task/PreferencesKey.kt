@@ -40,6 +40,7 @@ object PreferencesKey {
     const val NOTIFICATION_CONTENT_TITLE = "notificationContentTitle"
     const val NOTIFICATION_CONTENT_TEXT = "notificationContentText"
     const val NOTIFICATION_CONTENT_ICON = "icon"
+    const val NOTIFICATION_CONTENT_PROGRESS = "progress"
     const val NOTIFICATION_CONTENT_BUTTONS = "buttons"
     const val NOTIFICATION_INITIAL_ROUTE = "initialRoute"
 
