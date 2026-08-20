@@ -45,6 +45,32 @@ data class ForegroundServiceTypes(val value: Int) {
             }
         }
 
+        fun updateData(context: Context, map: Map<*, *>?) {
+            val prefs = context.getSharedPreferences(
+                PreferencesKey.FOREGROUND_SERVICE_TYPES_PREFS, Context.MODE_PRIVATE)
+
+            var value = 0
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val serviceTypes = map?.get(PreferencesKey.FOREGROUND_SERVICE_TYPES) as? List<*>
+                if (serviceTypes != null) {
+                    for (serviceType in serviceTypes) {
+                        getForegroundServiceTypeFlag(serviceType)?.let {
+                            value = value or it
+                        }
+                    }
+                }
+            }
+
+            // not none type
+            if (value > 0) {
+                with(prefs.edit()) {
+                    clear()
+                    putInt(PreferencesKey.FOREGROUND_SERVICE_TYPES, value)
+                    commit()
+                }
+            }
+        }
+
         fun clearData(context: Context) {
             val prefs = context.getSharedPreferences(
                 PreferencesKey.FOREGROUND_SERVICE_TYPES_PREFS, Context.MODE_PRIVATE)
