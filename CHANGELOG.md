@@ -1,3 +1,8 @@
+## 11.0.1
+
+* [**CHORE**] Upgrade shared_preferences from 2.5.3 to 2.5.5
+* [**DOCS**] Update README
+
 ## 11.0.0
 
 * [**CHORE**] Bump minimum supported SDK version to `Flutter 3.44/Dart 3.12`
