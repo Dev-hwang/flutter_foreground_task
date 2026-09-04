@@ -21,7 +21,7 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     }
   }
   
-  public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
+  @objc public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
     registerPlugins = callback
   }
 
