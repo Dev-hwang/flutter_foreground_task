@@ -1,3 +1,7 @@
+## 11.0.2
+
+* [**FIX-iOS**] Add objective-c shim for FlutterForegroundTaskPlugin
+
 ## 11.0.1
 
 * [**CHORE**] Upgrade shared_preferences from 2.5.3 to 2.5.5
