@@ -1,3 +1,7 @@
+## 11.0.3
+
+* [**FIX-iOS**] Include the objective-c shim in the podspec source_files so it is compiled under CocoaPods
+
 ## 11.0.2
 
 * [**FIX-iOS**] Add objective-c shim for FlutterForegroundTaskPlugin
