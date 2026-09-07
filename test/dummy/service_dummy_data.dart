@@ -24,10 +24,7 @@ class ServiceDummyData {
   );
 
   final IOSNotificationOptions iosNotificationOptions =
-      const IOSNotificationOptions(
-    showNotification: false,
-    playSound: false,
-  );
+      const IOSNotificationOptions(showNotification: false, playSound: false);
 
   final ForegroundTaskOptions foregroundTaskOptions = ForegroundTaskOptions(
     eventAction: ForegroundTaskEventAction.repeat(1000),
@@ -48,11 +45,22 @@ class ServiceDummyData {
     backgroundColor: Colors.orange,
   );
 
+  final NotificationProgress notificationProgress = const NotificationProgress(
+    max: 100,
+    progress: 42,
+  );
+
   final List<NotificationButton> notificationButtons = [
     const NotificationButton(
-        id: 'id_test1', text: 'test1', textColor: Colors.purple),
+      id: 'id_test1',
+      text: 'test1',
+      textColor: Colors.purple,
+    ),
     const NotificationButton(
-        id: 'id_test2', text: 'test2', textColor: Colors.green),
+      id: 'id_test2',
+      text: 'test2',
+      textColor: Colors.green,
+    ),
   ];
 
   Map<String, dynamic> getStartServiceArgs(Platform platform) {
@@ -64,6 +72,7 @@ class ServiceDummyData {
       notificationContentTitle: notificationTitle,
       notificationContentText: notificationText,
       notificationIcon: notificationIcon,
+      notificationProgress: notificationProgress,
       notificationButtons: notificationButtons,
       callback: testCallback,
     ).toJson(platform);
@@ -75,6 +84,7 @@ class ServiceDummyData {
       notificationContentTitle: notificationTitle,
       notificationContentText: notificationText,
       notificationIcon: notificationIcon,
+      notificationProgress: notificationProgress,
       notificationButtons: notificationButtons,
       callback: testCallback,
     ).toJson(platform);

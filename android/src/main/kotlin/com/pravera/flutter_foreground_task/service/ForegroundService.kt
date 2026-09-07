@@ -362,6 +362,13 @@ class ForegroundService : Service() {
             builder.setContentTitle(notificationContent.title)
             builder.setContentText(notificationContent.text)
             builder.style = Notification.BigTextStyle()
+            notificationContent.progress?.let { progress ->
+                if (progress.show) {
+                    builder.setProgress(progress.max, progress.progress, progress.indeterminate)
+                } else {
+                    builder.setProgress(0, 0, false)
+                }
+            }
             builder.setVisibility(notificationOptions.visibility)
             builder.setOnlyAlertOnce(notificationOptions.onlyAlertOnce)
             if (iconBackgroundColor != null) {
@@ -389,6 +396,13 @@ class ForegroundService : Service() {
             builder.setContentTitle(notificationContent.title)
             builder.setContentText(notificationContent.text)
             builder.setStyle(NotificationCompat.BigTextStyle().bigText(notificationContent.text))
+            notificationContent.progress?.let { progress ->
+                if (progress.show) {
+                    builder.setProgress(progress.max, progress.progress, progress.indeterminate)
+                } else {
+                    builder.setProgress(0, 0, false)
+                }
+            }
             builder.setVisibility(notificationOptions.visibility)
             builder.setOnlyAlertOnce(notificationOptions.onlyAlertOnce)
             if (iconBackgroundColor != null) {

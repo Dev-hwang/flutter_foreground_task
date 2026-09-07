@@ -1,9 +1,6 @@
 /// A class that defines the action of onRepeatEvent in [TaskHandler].
 class ForegroundTaskEventAction {
-  ForegroundTaskEventAction._private({
-    required this.type,
-    this.interval,
-  });
+  ForegroundTaskEventAction._private({required this.type, this.interval});
 
   /// Not use onRepeatEvent callback.
   factory ForegroundTaskEventAction.nothing() =>
@@ -16,7 +13,9 @@ class ForegroundTaskEventAction {
   /// Call onRepeatEvent at milliseconds [interval].
   factory ForegroundTaskEventAction.repeat(int interval) =>
       ForegroundTaskEventAction._private(
-          type: ForegroundTaskEventType.repeat, interval: interval);
+        type: ForegroundTaskEventType.repeat,
+        interval: interval,
+      );
 
   /// The type for [ForegroundTaskEventAction].
   final ForegroundTaskEventType type;
@@ -26,10 +25,7 @@ class ForegroundTaskEventAction {
 
   /// Returns the data fields of [ForegroundTaskEventAction] in JSON format.
   Map<String, dynamic> toJson() {
-    return {
-      'taskEventType': type.value,
-      'taskEventInterval': interval,
-    };
+    return {'taskEventType': type.value, 'taskEventInterval': interval};
   }
 }
 
