@@ -157,6 +157,7 @@ class FlutterForegroundTask {
   /// Update the foreground service.
   static Future<ServiceRequestResult> updateService({
     ForegroundTaskOptions? foregroundTaskOptions,
+    List<ForegroundServiceTypes>? serviceTypes,
     String? notificationTitle,
     String? notificationText,
     NotificationIcon? notificationIcon,
@@ -171,6 +172,7 @@ class FlutterForegroundTask {
 
       await _platform.updateService(
         foregroundTaskOptions: foregroundTaskOptions,
+        serviceTypes: serviceTypes,
         notificationText: notificationText,
         notificationTitle: notificationTitle,
         notificationIcon: notificationIcon,

@@ -71,6 +71,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @override
   Future<void> updateService({
     ForegroundTaskOptions? foregroundTaskOptions,
+    List<ForegroundServiceTypes>? serviceTypes,
     String? notificationTitle,
     String? notificationText,
     NotificationIcon? notificationIcon,
@@ -79,6 +80,7 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
     Function? callback,
   }) async {
     final Map<String, dynamic> optionsJson = ServiceUpdateOptions(
+      serviceTypes: serviceTypes,
       foregroundTaskOptions: foregroundTaskOptions,
       notificationContentTitle: notificationTitle,
       notificationContentText: notificationText,

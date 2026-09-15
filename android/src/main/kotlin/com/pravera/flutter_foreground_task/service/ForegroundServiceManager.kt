@@ -12,6 +12,7 @@ import com.pravera.flutter_foreground_task.models.ForegroundTaskData
 import com.pravera.flutter_foreground_task.models.ForegroundTaskOptions
 import com.pravera.flutter_foreground_task.models.NotificationContent
 import com.pravera.flutter_foreground_task.models.NotificationOptions
+import com.pravera.flutter_foreground_task.PreferencesKey
 
 /**
  * A class that provides foreground service control and management functions.
@@ -57,13 +58,22 @@ class ForegroundServiceManager {
 		val nIntent = Intent(context, ForegroundService::class.java)
 		val argsMap = arguments as? Map<*, *>
 		ForegroundServiceStatus.setData(context, ForegroundServiceAction.API_UPDATE)
+		ForegroundServiceTypes.updateData(context, argsMap)
 		ForegroundTaskOptions.updateData(context, argsMap)
 		ForegroundTaskData.updateData(context, argsMap)
 		NotificationContent.updateData(context, argsMap)
-		// Use startService instead of startForegroundService because the service
-		// is already running in the foreground and we only need to deliver the
-		// update command. This avoids the startForeground() contract requirement.
-		context.startService(nIntent)
+
+		val serviceTypes = argsMap?.get(PreferencesKey.FOREGROUND_SERVICE_TYPES) as? List<*>
+		if (serviceTypes.isNullOrEmpty()) {
+			// Use startService instead of startForegroundService because the service
+			// is already running in the foreground and we only need to deliver the
+			// update command. This avoids the startForeground() contract requirement.
+			context.startService(nIntent)
+		} else {
+			// If a type is specified, use `startForegroundService` to update the type.
+			ContextCompat.startForegroundService(context, nIntent)
+		}
+		
 	}
 
 	/** Stop the foreground service. */
