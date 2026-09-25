@@ -120,10 +120,14 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
     }
     
     BackgroundServiceStatus.setData(action: BackgroundServiceAction.APP_TERMINATE)
-    BackgroundService.sharedInstance.run()
+    var isDestroyed = false
+    BackgroundService.sharedInstance.run(onDestroyed: { isDestroyed = true })
     
-    // Chance to handle onDestroy before app terminates
-    sleep(5)
+    // Wait for onDestroy (max 2s); spin run loop so its reply is served. System allows ~5s total.
+    let deadline = Date().addingTimeInterval(2)
+    while !isDestroyed && Date() < deadline {
+      RunLoop.current.run(mode: .default, before: deadline)
+    }
   }
 
   // ================= Service Delegate =================

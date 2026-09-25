@@ -155,7 +155,11 @@ class ForegroundTask {
     }
   }
   
-  func destroy() {
+  func destroy(onDestroyed: @escaping () -> Void = {}) {
+    if isDestroyed {
+      onDestroyed()
+      return
+    }
     runIfNotDestroyed {
       stopRepeatTask()
       
@@ -164,10 +168,15 @@ class ForegroundTask {
         taskLifecycleListener.onEngineWillDestroy()
         flutterEngine?.destroyContext()
         flutterEngine = nil
+        onDestroyed()
       } else {
+        if backgroundChannel == nil {
+          onDestroyed()
+        }
         backgroundChannel?.invokeMethod(ACTION_TASK_DESTROY, arguments: nil) { _ in
           self.flutterEngine?.destroyContext()
           self.flutterEngine = nil
+          onDestroyed()
         }
         taskLifecycleListener.onTaskDestroy()
         taskLifecycleListener.onEngineWillDestroy()

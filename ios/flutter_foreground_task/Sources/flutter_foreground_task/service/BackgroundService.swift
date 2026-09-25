@@ -63,7 +63,7 @@ class BackgroundService: NSObject {
     super.init()
   }
   
-  func run() {
+  func run(onDestroyed: @escaping () -> Void = {}) {
     backgroundServiceStatus = BackgroundServiceStatus.getData()
     notificationOptions = NotificationOptions.getData()
     notificationContent = NotificationContent.getData()
@@ -93,7 +93,7 @@ class BackgroundService: NSObject {
         }
         break
       case .API_STOP, .APP_TERMINATE:
-        destroyForegroundTask()
+        destroyForegroundTask(onDestroyed: onDestroyed)
         removeAllNotification()
         isRunningService = false
         break
@@ -199,8 +199,12 @@ class BackgroundService: NSObject {
     foregroundTask?.update(taskEventAction: currForegroundTaskOptions.eventAction)
   }
   
-  private func destroyForegroundTask() {
-    foregroundTask?.destroy()
+  private func destroyForegroundTask(onDestroyed: @escaping () -> Void = {}) {
+    if let foregroundTask = foregroundTask {
+      foregroundTask.destroy(onDestroyed: onDestroyed)
+    } else {
+      onDestroyed()
+    }
     foregroundTask = nil
   }
 }
