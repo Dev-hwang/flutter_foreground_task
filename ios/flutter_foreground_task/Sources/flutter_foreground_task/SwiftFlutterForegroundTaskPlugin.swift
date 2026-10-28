@@ -27,8 +27,6 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
 
   @objc public static func registerAppRefreshForBackgroundLaunch() {
     if #available(iOS 13.0, *) {
-      let permitted = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String] ?? []
-      guard permitted.contains(refreshIdentifier) else { return }
       registerAppRefresh()
     }
   }
@@ -63,6 +61,16 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
           notificationPermissionManager!.requestPermission { permission in
             result(permission.rawValue)
           }
+        case "setIosBackgroundRefreshEnabled":
+          guard let enabled = args as? Bool else {
+            result(FlutterError(code: "invalid-arguments", message: "Expected a boolean", details: nil))
+            return
+          }
+          guard Self.refreshPolicy.setEnabled(enabled) else {
+            result(FlutterError(code: "background-refresh-configuration", message: "Add the permitted identifier and register before app launch finishes", details: nil))
+            return
+          }
+          result(nil)
         case "startService":
           try backgroundServiceManager!.start(arguments: args)
           result(true)
@@ -96,7 +104,9 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   
   // ================== App Lifecycle ===================
   public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
-    UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
+    if Self.refreshEnabled {
+      UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
+    }
     if #available(iOS 13.0, *) {
       SwiftFlutterForegroundTaskPlugin.registerAppRefresh()
     }
@@ -144,25 +154,44 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   // ============== Background App Refresh ==============
   public static var refreshIdentifier: String = "com.pravera.flutter_foreground_task.refresh"
   private static var isBgTaskRegistered: Bool = false
+  private static let refreshPolicy = IOSBackgroundRefreshPolicy(
+    permitted: { refreshPermitted }, registered: { isBgTaskRegistered },
+    cancel: { cancelAppRefresh() },
+    cancelRunning: {
+      for operation in refreshOperations.values { operation.cancel() }
+    })
+  private static var refreshLock: NSRecursiveLock { refreshPolicy.lock }
+  private static var refreshOperations = [UUID: AppRefreshOperation]()
+  private static var refreshPermitted: Bool {
+    let permitted = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String] ?? []
+    return permitted.contains(refreshIdentifier)
+  }
+  private static var refreshEnabled: Bool {
+    refreshPolicy.enabled
+  }
 
   @available(iOS 13.0, *)
   private static func registerAppRefresh() {
+    refreshLock.lock()
+    defer { refreshLock.unlock() }
+    guard refreshPermitted else {
+      cancelAppRefresh()
+      return
+    }
+    if !refreshEnabled { cancelAppRefresh() }
     guard !isBgTaskRegistered else { return }
-    isBgTaskRegistered = true
-    BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshIdentifier, using: nil) { task in
+    isBgTaskRegistered = BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshIdentifier, using: nil) { task in
       handleAppRefresh(task: task as! BGAppRefreshTask)
     }
   }
   
   @available(iOS 13.0, *)
   private static func scheduleAppRefresh() {
-    let request = BGAppRefreshTaskRequest(identifier: refreshIdentifier)
-    request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
-    
-    do {
-      try BGTaskScheduler.shared.submit(request)
-    } catch {
-      print("Could not schedule app refresh: \(error)")
+    refreshPolicy.submitIfEnabled {
+      let request = BGAppRefreshTaskRequest(identifier: refreshIdentifier)
+      request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
+      do { try BGTaskScheduler.shared.submit(request) }
+      catch { print("Could not schedule app refresh: \(error)") }
     }
   }
   
@@ -173,31 +202,46 @@ public class SwiftFlutterForegroundTaskPlugin: NSObject, FlutterPlugin {
   
   @available(iOS 13.0, *)
   private static func handleAppRefresh(task: BGAppRefreshTask) {
+    refreshLock.lock()
+    defer { refreshLock.unlock() }
+    guard refreshEnabled else {
+      task.setTaskCompleted(success: true)
+      return
+    }
     let queue = OperationQueue()
     let operation = AppRefreshOperation()
+    let id = UUID()
+    refreshOperations[id] = operation
     
     task.expirationHandler = {
       operation.cancel()
     }
     
-    operation.completionBlock = {
-      // Schedule a new refresh task
-      scheduleAppRefresh()
-
-      task.setTaskCompleted(success: true)
+    operation.completionBlock = { [weak operation] in
+      refreshLock.lock()
+      defer { refreshLock.unlock() }
+      let cancelled = operation?.isCancelled ?? true
+      refreshOperations.removeValue(forKey: id)
+      if !cancelled { scheduleAppRefresh() }
+      task.setTaskCompleted(success: !cancelled)
     }
     
     queue.addOperation(operation)
   }
 }
 
-class AppRefreshOperation: Operation {
+class AppRefreshOperation: Operation, @unchecked Sendable {
+  private let semaphore = DispatchSemaphore(value: 0)
+  override func cancel() {
+    super.cancel()
+    semaphore.signal()
+  }
   override func main() {
-    let semaphore = DispatchSemaphore(value: 0)
+    if isCancelled { return }
     
     // avoid non-platform thread
     DispatchQueue.main.asyncAfter(deadline: .now() + 25) {
-      semaphore.signal()
+      self.semaphore.signal()
     }
     
     semaphore.wait()

@@ -45,6 +45,11 @@ typedef DataCallback = void Function(Object data);
 
 /// A class that implements foreground task and provides useful utilities.
 class FlutterForegroundTask {
+  /// Disables unused iOS refresh and cancels pending/running refresh work.
+  /// The setting persists across launches and has no effect on Android.
+  static Future<void> setIosBackgroundRefreshEnabled(bool enabled) =>
+      _platform.setIosBackgroundRefreshEnabled(enabled);
+
   // ====================== Service ======================
 
   @visibleForTesting

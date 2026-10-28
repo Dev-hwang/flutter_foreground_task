@@ -30,6 +30,15 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   @visibleForTesting
   Platform platform = const LocalPlatform();
 
+  @override
+  Future<void> setIosBackgroundRefreshEnabled(bool enabled) async {
+    if (!platform.isIOS) return;
+    await mMDChannel.invokeMethod<void>(
+      'setIosBackgroundRefreshEnabled',
+      enabled,
+    );
+  }
+
   // ====================== Service ======================
 
   @override

@@ -40,6 +40,13 @@ void main() {
   group('Android', () {
     final Platform platform = FakePlatform(operatingSystem: Platform.android);
 
+    test('refresh policy does not call native code', () async {
+      platformChannel.platform = platform;
+      await FlutterForegroundTask.setIosBackgroundRefreshEnabled(false);
+      await FlutterForegroundTask.setIosBackgroundRefreshEnabled(true);
+      expect(methodCallHandler.log, isEmpty);
+    });
+
     test('init', () {
       platformChannel.platform = platform;
 
@@ -271,6 +278,24 @@ void main() {
 
   group('iOS', () {
     final Platform platform = FakePlatform(operatingSystem: Platform.iOS);
+
+    test('refresh policy works before service initialization', () async {
+      platformChannel.platform = platform;
+      final calls = <MethodCall>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platformChannel.mMDChannel, (call) async {
+        calls.add(call);
+        return null;
+      });
+      await FlutterForegroundTask.setIosBackgroundRefreshEnabled(false);
+      await FlutterForegroundTask.setIosBackgroundRefreshEnabled(true);
+      expect(FlutterForegroundTask.isInitialized, false);
+      expect(
+        calls.map((call) => call.method),
+        everyElement('setIosBackgroundRefreshEnabled'),
+      );
+      expect(calls.map((call) => call.arguments), [false, true]);
+    });
 
     test('init', () {
       platformChannel.platform = platform;
