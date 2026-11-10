@@ -14,6 +14,24 @@ This plugin is used to implement a foreground service on the Android platform.
 * Provides useful utilities that can use while performing tasks.
 * Provides an option to automatically resume the foreground service on boot.
 
+## Disabling unused iOS refresh
+
+If the foreground service is only needed on Android, disable iOS periodic refresh:
+
+```dart
+await FlutterForegroundTask.setIosBackgroundRefreshEnabled(false);
+```
+
+This setting persists across launches. Disabling cancels pending and running
+refresh work and prevents completion from scheduling another refresh. Android
+behavior is unchanged. This does not provide an execution allowance or transfer
+files in the background.
+
+The refresh identifier can be omitted from Info.plist when unused; registration
+and scheduling are then skipped safely. Existing configured apps retain refresh
+by default. Re-enabling requires its permitted identifier and a registered handler;
+relaunch after changing configuration.
+
 ## Support version
 
 - Flutter: `3.44.0+`

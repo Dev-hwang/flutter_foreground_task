@@ -1,3 +1,7 @@
+## Unreleased
+
+* Add persisted iOS refresh opt-out and guard missing refresh configuration.
+
 ## 11.0.3
 
 * [**FIX-iOS**] Include the objective-c shim in the podspec source_files so it is compiled under CocoaPods

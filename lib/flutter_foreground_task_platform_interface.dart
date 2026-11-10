@@ -31,6 +31,12 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<void> setIosBackgroundRefreshEnabled(bool enabled) {
+    throw UnimplementedError(
+      'setIosBackgroundRefreshEnabled() has not been implemented.',
+    );
+  }
+
   // ====================== Service ======================
 
   Future<void> startService({
