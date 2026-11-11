@@ -71,10 +71,18 @@ class ForegroundService : Service() {
             }
         }
 
-        fun sendData(data: Any?) {
-            if (isRunningServiceState.value) {
-                task?.invokeMethod(ACTION_RECEIVE_DATA, data)
+        fun sendData(data: Any?): Boolean {
+            if (!isRunningServiceState.value) {
+                return false
             }
+
+            // No task means no Dart isolate on the other side: the call used to
+            // return as if delivered, which is why a dead engine looked alive.
+            val handler = task ?: return false
+
+            handler.invokeMethod(ACTION_RECEIVE_DATA, data)
+
+            return true
         }
     }
 

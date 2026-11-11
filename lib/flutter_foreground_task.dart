@@ -272,7 +272,7 @@ class FlutterForegroundTask {
   }
 
   /// Send data to [TaskHandler].
-  static void sendDataToTask(Object data) => _platform.sendDataToTask(data);
+  static Future<bool> sendDataToTask(Object data) => _platform.sendDataToTask(data);
 
   /// Send date to main isolate.
   static void sendDataToMain(Object data) {

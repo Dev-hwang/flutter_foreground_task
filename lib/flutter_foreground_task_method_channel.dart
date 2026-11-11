@@ -166,8 +166,10 @@ class MethodChannelFlutterForegroundTask extends FlutterForegroundTaskPlatform {
   // =================== Communication ===================
 
   @override
-  void sendDataToTask(Object data) {
-    mMDChannel.invokeMethod('sendData', data);
+  Future<bool> sendDataToTask(Object data) async {
+    final sent = await mMDChannel.invokeMethod<bool>('sendData', data);
+
+    return sent ?? false;
   }
 
   // ====================== Utility ======================

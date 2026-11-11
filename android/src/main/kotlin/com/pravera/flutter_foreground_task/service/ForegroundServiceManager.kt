@@ -86,10 +86,12 @@ class ForegroundServiceManager {
 	}
 
 	/** Send data to TaskHandler. */
-	fun sendData(data: Any?) {
-		if (data != null) {
-			ForegroundService.sendData(data)
+	fun sendData(data: Any?): Boolean {
+		if (data == null) {
+			return false
 		}
+
+		return ForegroundService.sendData(data)
 	}
 
 	/** Returns whether the foreground service is running. */
