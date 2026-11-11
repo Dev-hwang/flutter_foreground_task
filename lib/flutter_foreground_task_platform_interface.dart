@@ -83,7 +83,7 @@ abstract class FlutterForegroundTaskPlatform extends PlatformInterface {
 
   // =================== Communication ===================
 
-  void sendDataToTask(Object data) {
+  Future<bool> sendDataToTask(Object data) {
     throw UnimplementedError('sendDataToTask() has not been implemented.');
   }
 
